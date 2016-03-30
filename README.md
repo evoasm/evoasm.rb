@@ -4,7 +4,7 @@
 
 *Awasm* is an AIMGP (*Automatic Induction of Machine code by Genetic Programming*) engine.
 
-You give it a set of examples, that is, several input/output pairs, that describe the a program's behavior.
+You give it a set of examples, that is, several input/output pairs, that describe a program's behavior.
 It will then try to come up with a short program (in the form of machine code) that follows your specification,
 by means of genetic programming.
 
@@ -25,6 +25,11 @@ And then execute:
 Or install it yourself as:
 
     $ gem install awasm --pre
+    
+### Requirements
+
+* [Capstone](http://www.capstone-engine.org/) for disassembling (*optional*).
+* POSIX-compliant OS (Linux and Mac OS X should both work).
 
 ## Usage
 
