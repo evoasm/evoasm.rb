@@ -1,0 +1,2 @@
+#!/bin/sh
+gdb -ex 'handle SIGFPE noprint nostop' --args $(rbenv which ruby) -rbundler/setup $@
