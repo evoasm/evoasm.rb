@@ -1,5 +1,8 @@
 # X64
 
+The table is automatically scraped from Intel's official instruction set manual.
+Errors contained in the manual have been corrected, if spotted.
+
 ## Operand Flags
 
 Flag  | Meaning | Example
