@@ -1,6 +1,13 @@
 # Awasm
 
-An AIMGP (*Automatic Induction of Machine code by Genetic Programming*) engine.
+## Description
+
+*Awasm* is an AIMGP (*Automatic Induction of Machine code by Genetic Programming*) engine.
+
+You give it a set of examples, that is, several input/output pairs, that describe the a program's behavior.
+It will then, try to come up with a short program (in the form of machine code) that follows your specification,
+by means of genetic programming.
+Currently, the only supported architecture is **x86_64**.
 
 ## Installation
 
@@ -20,6 +27,7 @@ Or install it yourself as:
 
 ## Usage
 
+Please see [Getting Started](https://github.com/furunkel/awasm/wiki/Getting-Started).
 
 
 ## Contributing
