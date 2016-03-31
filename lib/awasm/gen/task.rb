@@ -8,12 +8,16 @@ module Awasm
   module Gen
     class Task < Rake::TaskLib
       HEADER_N_LINES = 15
-      CSV_SEPARATOR = ';'
+      CSV_SEPARATOR = ','
 
       attr_accessor :ruby_bindings
       attr_reader :name, :archs
 
       ALL_ARCHS = %i(x64)
+      X64_TABLE_FILENAME = File.join(Awasm.data, 'tables', 'x64.csv')
+      ARCH_TABLES = {
+        x64: X64_TABLE_FILENAME
+      }
 
       def initialize(name = 'awasm:gen', &block)
         @ruby_bindings = true
@@ -28,14 +32,15 @@ module Awasm
       def define
         namespace 'awasm:gen' do
           archs.each do |arch|
-            prereqs, insts = prepare arch
-            translator = Translator.new(arch, insts, ruby: ruby_bindings)
+            prereqs = [ARCH_TABLES[arch]]
 
-            prereqs << translator.template_path
-            target_path = ext_path(translator.target_filename)
+            prereqs << Translator.template_path(arch)
+            target_path = ext_path(Translator.target_filename(arch))
 
             file target_path => prereqs do
               puts "Translating"
+              insts = load_insts arch
+              translator = Translator.new(arch, insts, ruby: ruby_bindings)
               translator.translate! do |filename, content|
                 File.write ext_path(filename), content
               end
@@ -54,12 +59,11 @@ module Awasm
         File.join Awasm.root, 'ext', 'awasm_native', filename
       end
 
-      def prepare(arch)
-        send :"prepare_#{arch}"
+      def load_insts(arch)
+        send :"load_#{arch}_insts"
       end
 
-      X64_TABLE_FILENAME = File.join(Awasm.data, 'tables', 'x64.csv')
-      def prepare_x64
+      def load_x64_insts
         require 'awasm/gen/x64/inst'
 
         rows = []
@@ -73,7 +77,7 @@ module Awasm
           end
         end
 
-        [[X64_TABLE_FILENAME], X64::Inst.load(rows)]
+        X64::Inst.load(rows)
       end
     end
   end

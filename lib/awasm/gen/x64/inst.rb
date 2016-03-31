@@ -173,14 +173,14 @@ module Awasm
               []
             else
               exceptions.strip
-                        .split(', ')
+                        .split('; ')
                         .map { |f| "#{f.downcase}".to_sym }
             end
         end
 
         private def load_prefs(row)
           self.prefs =
-            row[COL_PREFS].split(', ').map do |op|
+            row[COL_PREFS].split('; ').map do |op|
               op =~ %r{(.+?):(.+?)/(.+)} or fail("invalid prefix op '#{op}'")
               value =
                 begin
@@ -221,7 +221,7 @@ module Awasm
 
         IGNORED_OPERAND_NAMES = X64::IGNORED_RFLAGS + X64::IGNORED_MXCSR
         def load_operands(row)
-          ops = row[COL_OPS].split(', ').map do |op|
+          ops = row[COL_OPS].split('; ').map do |op|
             op =~ /(.*?):([a-z]+)/ || fail
             [$1, $2]
           end

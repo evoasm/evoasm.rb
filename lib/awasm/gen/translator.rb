@@ -684,12 +684,12 @@ module Awasm
         load_enums
       end
 
-      def target_filename(header: false)
+      def self.target_filename(arch, header: false)
         "awasm-#{arch}.#{header ? 'h' : 'c'}"
       end
 
-      def template_path(header: false)
-        File.join Awasm.data, 'templates', "#{target_filename(header: header)}.erb"
+      def self.template_path(arch, header: false)
+        File.join Awasm.data, 'templates', "#{target_filename(arch, header: header)}.erb"
       end
 
       def translate!(&block)
@@ -753,16 +753,16 @@ module Awasm
       end
 
       def translate_x64_h(&block)
-        target_filename = target_filename(header: true)
-        template_path = template_path(header: true)
+        target_filename = self.class.target_filename(arch, header: true)
+        template_path = self.class.template_path(arch, header: true)
 
         renderer = Erubis::Eruby.new(File.read(template_path))
         block[target_filename, renderer.result(binding)]
       end
 
       def translate_x64_c(&block)
-        target_filename = target_filename()
-        template_path = template_path()
+        target_filename = self.class.target_filename(arch)
+        template_path = self.class.template_path(arch)
 
         # NOTE: keep in correct order
         inst_funcs = inst_funcs_to_c

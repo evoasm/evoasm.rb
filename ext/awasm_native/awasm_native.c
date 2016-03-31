@@ -371,7 +371,6 @@ rb_examples_to_c(VALUE rb_examples, VALUE rb_arity, awasm_program_io *examples) 
     switch(examples->types[i % examples->arity]) {
       case AWASM_EXAMPLE_TYPE_F64:
         examples->vals[i].f64 = NUM2DBL(elem);
-        fprintf(stderr, "SET VALUE: %f\n", examples->vals[i].f64);
         break;
       case AWASM_EXAMPLE_TYPE_I64:
         examples->vals[i].i64 = NUM2LL(elem);

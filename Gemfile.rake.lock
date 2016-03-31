@@ -1,6 +1,6 @@
 GIT
   remote: https://bitbucket.org/furunkel/awasm-scrapers
-  revision: b06c9d89987ab08fc01a0cdc78bb2590259a4819
+  revision: d6a34bf32816539eb97da8d9c1de0c8ae7b89dd6
   branch: master
   specs:
     awasm-scrapers (0.1.0)
@@ -9,9 +9,9 @@ GIT
 PATH
   remote: .
   specs:
-    awasm (0.0.1)
-      pry
-      tty
+    awasm (0.0.2.pre4)
+      pastel (~> 0.6)
+      pry (~> 0.10)
 
 GEM
   remote: https://rubygems.org/
@@ -19,13 +19,9 @@ GEM
     coderay (1.1.1)
     equatable (0.5.0)
     erubis (2.7.0)
-    ffi (1.9.10)
-    gv (0.0.3)
-      ffi
     logger-colors (1.0.0)
     method_source (0.8.2)
     minitest (5.8.3)
-    necromancer (0.3.0)
     pastel (0.6.0)
       equatable (~> 0.5.0)
       tty-color (~> 0.3.0)
@@ -37,48 +33,7 @@ GEM
     rake-compiler (0.9.5)
       rake
     slop (3.6.0)
-    tty (0.4.0)
-      equatable (~> 0.5.0)
-      pastel (~> 0.6.0)
-      tty-color (~> 0.3.0)
-      tty-cursor (~> 0.2.0)
-      tty-pager (~> 0.4.0)
-      tty-platform (~> 0.1.0)
-      tty-progressbar (~> 0.8.0)
-      tty-prompt (~> 0.4.0)
-      tty-screen (~> 0.5.0)
-      tty-spinner (~> 0.1.0)
-      tty-table (~> 0.5.0)
-      tty-which (~> 0.1.0)
     tty-color (0.3.0)
-    tty-cursor (0.2.0)
-    tty-pager (0.4.0)
-      tty-screen (~> 0.5.0)
-      tty-which (~> 0.1.0)
-      verse (~> 0.4.0)
-    tty-platform (0.1.0)
-    tty-progressbar (0.8.1)
-      tty-screen (~> 0.5.0)
-    tty-prompt (0.4.0)
-      necromancer (~> 0.3.0)
-      pastel (~> 0.6.0)
-      tty-cursor (~> 0.2.0)
-      tty-platform (~> 0.1.0)
-      wisper (~> 1.6.1)
-    tty-screen (0.5.0)
-    tty-spinner (0.1.0)
-    tty-table (0.5.0)
-      equatable (~> 0.5.0)
-      necromancer (~> 0.3.0)
-      pastel (~> 0.6.0)
-      tty-screen (~> 0.5.0)
-      unicode_utils (~> 1.4.0)
-      verse (~> 0.4.0)
-    tty-which (0.1.0)
-    unicode_utils (1.4.0)
-    verse (0.4.0)
-      unicode_utils (~> 1.4.0)
-    wisper (1.6.1)
 
 PLATFORMS
   ruby
@@ -88,8 +43,7 @@ DEPENDENCIES
   awasm-scrapers!
   bundler (~> 1.7)
   erubis (~> 2.6)
-  gv
-  minitest
+  minitest (~> 5.8)
   rake (~> 10.0)
   rake-compiler (~> 0.9)
 

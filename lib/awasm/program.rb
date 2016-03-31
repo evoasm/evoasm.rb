@@ -5,7 +5,7 @@ module Awasm
     include Search::Util
 
     def run(*input_example)
-      run_all [input_example]
+      run_all([input_example]).first
     end
 
     def run_all(*input_examples)
