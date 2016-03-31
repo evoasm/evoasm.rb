@@ -14,18 +14,6 @@ Currently, the only supported architecture is **x86_64**.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'awasm'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
     $ gem install awasm --pre
     
 ### Requirements
