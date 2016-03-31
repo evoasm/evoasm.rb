@@ -10,6 +10,8 @@ by means of genetic programming.
 
 Currently, the only supported architecture is **x86_64**.
 
+**NOTE:** *Awasm* is in a very early stage.
+
 ## Installation
 
 Add this line to your application's Gemfile:
