@@ -210,7 +210,7 @@ awasm_domain_intersect(awasm_domain * restrict domain1, awasm_domain * restrict 
         if(v1 < v2) {
           i++;
         }
-        else if(v2 < v2) {
+        else if(v2 < v1) {
           j++;
         }
         else {
@@ -224,10 +224,7 @@ awasm_domain_intersect(awasm_domain * restrict domain1, awasm_domain * restrict 
     {
       awasm_enum *enm;
       awasm_interval *interval;
-      awasm_enum *enum_dst = (awasm_enum *) domain_dst;
       unsigned i;
-
-      enum_dst->len = 0;
 
       case _AWASM_DOMAIN_TYPES2(AWASM_DOMAIN_TYPE_ENUM, AWASM_DOMAIN_TYPE_INTERVAL):
       case _AWASM_DOMAIN_TYPES2(AWASM_DOMAIN_TYPE_ENUM, AWASM_DOMAIN_TYPE_INTERVAL64):
@@ -238,10 +235,13 @@ awasm_domain_intersect(awasm_domain * restrict domain1, awasm_domain * restrict 
       case _AWASM_DOMAIN_TYPES2(AWASM_DOMAIN_TYPE_INTERVAL64, AWASM_DOMAIN_TYPE_ENUM):
         enm = (awasm_enum *) domain2;
         interval = (awasm_interval *) domain1;
-    intersect:
-        for(i = 0; i < enm->len; i++) {
-          if(enm->vals[i] >= interval->min && enm->vals[i] <= interval->max) {
-            enum_dst->vals[enum_dst->len++] = enm->vals[i];
+    intersect: {
+          awasm_enum *enum_dst = (awasm_enum *) domain_dst;
+          enum_dst->len = 0;
+          for(i = 0; i < enm->len; i++) {
+            if(enm->vals[i] >= interval->min && enm->vals[i] <= interval->max) {
+              enum_dst->vals[enum_dst->len++] = enm->vals[i];
+            }
           }
         }
         break;

@@ -116,7 +116,7 @@ awasm_buf_reset(awasm_buf *buf) {
 awasm_success
 awasm_buf_protect(awasm_buf *buf, awasm_buf_prot mode)
 {
-  int m;
+  int m = 0;
 
   if(mode & AWASM_BUF_PROT_R) {
     m |= PROT_READ;

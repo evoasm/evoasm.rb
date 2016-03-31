@@ -224,8 +224,8 @@ module Awasm::Gen
                             :reg_reg_access do
       include StateDSL
 
-      def reg_bits(reg, is_reg_code: false)
-        reg_code = if is_reg_code
+      def reg_bits(reg, reg_code: false)
+        reg_code = if reg_code
                    reg
                  else
                    [:reg_code, reg]
@@ -242,7 +242,7 @@ module Awasm::Gen
                 reg_bits(reg_reg_param)
               else
                 # ModRM.reg is free, use a parameter
-                reg_bits(:modrm_reg, is_reg_code: true)
+                reg_bits(:modrm_reg, reg_code: true)
               end
 
         write [mod, reg, rm], [2, 3, 3]
@@ -342,6 +342,7 @@ module Awasm::Gen
       state def disp_only
         state do
           log :trace, 'disp only'
+          set :_reg_index, :reg_index
           write_modrm 0b00, 0b100
           write_sib nil, nil, 0b101
           write :disp, 32

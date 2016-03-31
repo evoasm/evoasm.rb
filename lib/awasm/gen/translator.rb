@@ -266,7 +266,7 @@ module Awasm
         EOL
 
         io.puts %Q{awasm_set_error(AWASM_ERROR_TYPE_ARCH, #{error_code_to_c code}, &error_data, "#{msg}");}
-        io.puts 'goto error;'
+        io.puts 'retval = false;'
       end
 
       def emit_func_epilog(acc)

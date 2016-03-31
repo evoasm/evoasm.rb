@@ -588,13 +588,13 @@ param_val_to_c(VALUE rb_value) {
 
 static awasm_domain *
 rb_domain_to_c(VALUE rb_domain) {
-  awasm_domain *domain;
-
   if(rb_obj_is_kind_of(rb_domain, rb_cRange)) {
     VALUE rb_beg;
     VALUE rb_end;
     int exclp;
+
     awasm_interval *interval = ALLOC(awasm_interval);
+    interval->type = AWASM_DOMAIN_TYPE_INTERVAL;
 
     if(rb_range_values(rb_domain, &rb_beg, &rb_end, &exclp) == Qtrue) {
       interval->min = NUM2LL(rb_beg);
@@ -604,24 +604,30 @@ rb_domain_to_c(VALUE rb_domain) {
     else {
       awasm_assert_not_reached();
     }
+    return (awasm_domain *) interval;
   } else {
     Check_Type(rb_domain, T_ARRAY);
 
-    if(RARRAY_LEN(rb_domain) > AWASM_ENUM_MAX_LEN) {
-      rb_raise(rb_eArgError, "array exceeds maximum length of %d", AWASM_ENUM_MAX_LEN);
-      return NULL;
-    }
-
     {
       unsigned i;
-      awasm_enum *enm = xmalloc(AWASM_ENUM_SIZE(RARRAY_LEN(rb_domain)));
+      long len = RARRAY_LEN(rb_domain);
+      awasm_enum *enm;
+
+      if(len > AWASM_ENUM_MAX_LEN) {
+        rb_raise(rb_eArgError, "array exceeds maximum length of %d", AWASM_ENUM_MAX_LEN);
+        return NULL;
+      }
+
+      enm = xmalloc(AWASM_ENUM_SIZE(RARRAY_LEN(rb_domain)));
+      enm->type = AWASM_DOMAIN_TYPE_ENUM;
+      enm->len = (uint16_t) len;
+
       for(i = 0; i < RARRAY_LEN(rb_domain); i++) {
         enm->vals[i] = param_val_to_c(RARRAY_AREF(rb_domain, i));
       }
+      return (awasm_domain *) enm;
     }
   }
-
-  return domain;
 }
 
 static int
