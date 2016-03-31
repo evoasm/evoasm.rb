@@ -30,6 +30,7 @@ Or install it yourself as:
     
 ### Requirements
 
+* Ruby 2.3 (MRI)
 * [Capstone](http://www.capstone-engine.org/) for disassembling (*optional*).
 * POSIX-compliant OS (Linux and Mac OS X should both work).
 

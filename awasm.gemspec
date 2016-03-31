@@ -17,9 +17,10 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
+  spec.extensions    = spec.files.grep(%r{extconf.rb})
 
   spec.add_dependency "pry", "~> 0.10"
-  spec.add_dependency "tty", "~> 0.4"
+  spec.add_dependency "pastel", "~> 0.6"
 
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"

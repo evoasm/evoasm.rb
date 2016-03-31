@@ -1,5 +1,5 @@
 require 'yaml'
-require 'tty'
+require 'pastel'
 require 'pry'
 
 module Awasm
