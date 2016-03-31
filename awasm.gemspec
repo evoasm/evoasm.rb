@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Awasm::VERSION
   spec.authors       = ["Julian Aron Prenner (furunkel)"]
   spec.email         = ["furunkel@polyadic.com"]
-  spec.summary       = %q{A runtime assembler}
+  spec.summary       = %q{An AIMGP (Automatic Induction of Machine code by Genetic Programming) engine}
   spec.homepage      = "https://github.com/furunkel/awasm/"
-  spec.license       = "MPL 2"
+  spec.license       = "MPL-2.0"
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.bindir        = 'exe'
@@ -18,8 +18,8 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "pry"
-  spec.add_dependency "tty"
+  spec.add_dependency "pry", "~> 0.10"
+  spec.add_dependency "tty", "~> 0.4"
 
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"

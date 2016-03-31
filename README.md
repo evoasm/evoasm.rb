@@ -48,6 +48,6 @@ Please see [Getting Started](https://github.com/furunkel/awasm/wiki/Getting-Star
 
 ## License
 
-[MPL 2][license]
+[MPL-2.0][license]
 
 [license]: https://github.com/furunkel/awasm/blob/master/LICENSE.txt
