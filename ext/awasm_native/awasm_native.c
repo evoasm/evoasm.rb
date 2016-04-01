@@ -143,7 +143,7 @@ x64_disassemble(unsigned char *data, size_t len, bool addr) {
     for(j = 0; j < count; j++) {
       VALUE line;
       if(addr) {
-        line = rb_sprintf("0x%"PRIx64":  %s   %s\n", insn[j].address, insn[j].mnemonic, insn[j].op_str);
+        line = rb_sprintf("0x%"PRIx64":  %s   %s", insn[j].address, insn[j].mnemonic, insn[j].op_str);
       } else {
         line = rb_sprintf("%s %s", insn[j].mnemonic, insn[j].op_str);
       }

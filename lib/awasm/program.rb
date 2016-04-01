@@ -12,5 +12,9 @@ module Awasm
       input_examples, input_arity = flatten_examples input_examples
       __run__ input_examples, input_arity
     end
+
+    def disassemble(*args)
+      buffer.disassemble(*args)
+    end
   end
 end
