@@ -394,6 +394,36 @@ example_val_to_rb(awasm_example_val val, awasm_example_type type) {
 }
 
 static VALUE
+rb_program_eliminate_introns_bang(VALUE self) {
+  rb_awasm_program *program;
+
+  TypedData_Get_Struct(self, rb_awasm_program, &rb_program_type, program);
+
+  awasm_program_eliminate_introns(&program->program);
+
+  return self;
+}
+
+static VALUE
+rb_program_output_registers(VALUE self) {
+  rb_awasm_program *program;
+  VALUE ary = rb_ary_new();
+  unsigned i;
+
+  TypedData_Get_Struct(self, rb_awasm_program, &rb_program_type, program);
+
+  for(i = 0; i < program->program.n_output_regs; i++) {
+    switch(program->program.arch->cls->id) {
+        case AWASM_ARCH_X64:
+          rb_ary_push(ary, ID2SYM(rb_x64_reg_ids[program->program.output_regs[i]]));
+          break;
+        default: awasm_assert_not_reached();
+    }
+  }
+  return ary;
+}
+
+static VALUE
 rb_program_run(VALUE self, VALUE rb_input, VALUE rb_arity) {
   rb_awasm_program *program;
   unsigned i, j;
@@ -939,7 +969,7 @@ result_func(VALUE user_data) {
 
   {
     size_t params_size = sizeof(awasm_program_params) + data->program->params->size * sizeof(awasm_program_param);
-    size_t matching_size =_program._output.arity * sizeof(unsigned);
+    size_t matching_size =_program._output.arity * sizeof(uint_fast8_t);
 
     _program.index = 0;
     _program._signal_ctx = NULL;
@@ -1579,6 +1609,8 @@ void Init_awasm_native() {
   rb_define_method(cProgram, "parameters", rb_program_parameters, 0);
   rb_define_method(cProgram, "instructions", rb_program_instructions, 0);
   rb_define_private_method(cProgram, "__run__", rb_program_run, 2);
+  rb_define_method(cProgram, "eliminate_introns!", rb_program_eliminate_introns_bang, 0);
+  rb_define_method(cProgram, "output_registers", rb_program_output_registers, 0);
 
   rb_define_method(cParameter, "domain", rb_parameter_domain, 0);
   rb_define_method(cParameter, "name", rb_parameter_name, 0);

@@ -71,7 +71,9 @@ typedef struct {
   awasm_buf *buf;
   awasm_buf *body_buf;
   uint32_t index;
-  bool reset_rflags;
+  bool reset_rflags : 1;
+  bool need_emit    : 1;
+
   void *_signal_ctx;
 
   awasm_program_input _input;
@@ -153,6 +155,9 @@ awasm_program_run(awasm_program *program,
 
 void
 awasm_program_io_destroy(awasm_program_io *program_io);
+
+void
+awasm_program_eliminate_introns(awasm_program *program);
 
 #define awasm_program_output_destroy(program_output) \
   awasm_program_io_destroy((awasm_program_io *)program_output)
