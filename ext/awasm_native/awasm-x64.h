@@ -1981,18 +1981,6 @@ typedef enum awasm_x64_operand_type {
 } awasm_x64_operand_type;
 
 
-typedef enum {
-  AWASM_X64_OPERAND_SIZE_UNKNOWN,
-  AWASM_X64_OPERAND_SIZE_1,
-  AWASM_X64_OPERAND_SIZE_8,
-  AWASM_X64_OPERAND_SIZE_16,
-  AWASM_X64_OPERAND_SIZE_32,
-  AWASM_X64_OPERAND_SIZE_64,
-  AWASM_X64_OPERAND_SIZE_128,
-  AWASM_X64_OPERAND_SIZE_256,
-  AWASM_X64_OPERAND_SIZE_512,
-} awasm_x64_operand_size;
-
 typedef struct {
   unsigned type: 3;
   unsigned acc_r: 1;

@@ -58,8 +58,13 @@ typedef struct {
 #define AWASM_PROGRAM_MAX_INPUT_REGS 254
 
 typedef struct {
+  awasm_reg_id id;
+  uint8_t size;
+} awasm_sized_reg_id;
+
+typedef struct {
   awasm_program_params *params;
-  awasm_reg_id output_regs[AWASM_PROGRAM_MAX_OUTPUT_REGS];
+  awasm_sized_reg_id output_regs[AWASM_PROGRAM_MAX_OUTPUT_REGS];
   awasm_reg_id input_regs[AWASM_PROGRAM_MAX_INPUT_REGS];
   uint_fast8_t n_output_regs;
   uint_fast8_t n_input_regs;
@@ -75,6 +80,7 @@ typedef struct {
   bool need_emit    : 1;
 
   void *_signal_ctx;
+  uint32_t exception_mask;
 
   awasm_program_input _input;
   awasm_program_output _output;
@@ -156,7 +162,7 @@ awasm_program_run(awasm_program *program,
 void
 awasm_program_io_destroy(awasm_program_io *program_io);
 
-void
+awasm_success
 awasm_program_eliminate_introns(awasm_program *program);
 
 #define awasm_program_output_destroy(program_output) \

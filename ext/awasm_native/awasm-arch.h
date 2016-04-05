@@ -10,8 +10,19 @@
 #define AWASM_ARCH_MAX_PARAMS 64
 
 typedef uint8_t awasm_reg_id;
-typedef uint8_t awasm_operand_size;
 typedef uint16_t awasm_inst_id;
+
+typedef enum {
+  AWASM_OPERAND_SIZE_1,
+  AWASM_OPERAND_SIZE_8,
+  AWASM_OPERAND_SIZE_16,
+  AWASM_OPERAND_SIZE_32,
+  AWASM_OPERAND_SIZE_64,
+  AWASM_OPERAND_SIZE_128,
+  AWASM_OPERAND_SIZE_256,
+  AWASM_OPERAND_SIZE_512,
+  AWASM_N_OPERAND_SIZES,
+} awasm_operand_size;
 
 struct awasm_arch;
 struct awasm_inst;

@@ -399,9 +399,12 @@ rb_program_eliminate_introns_bang(VALUE self) {
 
   TypedData_Get_Struct(self, rb_awasm_program, &rb_program_type, program);
 
-  awasm_program_eliminate_introns(&program->program);
+  AWASM_TRY(raise, awasm_program_eliminate_introns, &program->program);
 
   return self;
+raise:
+    awasm_raise_last_error();
+    return Qnil;
 }
 
 static VALUE
@@ -415,7 +418,7 @@ rb_program_output_registers(VALUE self) {
   for(i = 0; i < program->program.n_output_regs; i++) {
     switch(program->program.arch->cls->id) {
         case AWASM_ARCH_X64:
-          rb_ary_push(ary, ID2SYM(rb_x64_reg_ids[program->program.output_regs[i]]));
+          rb_ary_push(ary, ID2SYM(rb_x64_reg_ids[program->program.output_regs[i].id]));
           break;
         default: awasm_assert_not_reached();
     }
@@ -1345,15 +1348,14 @@ rb_x64_operand_size(VALUE self) {
   TypedData_Get_Struct(self, awasm_x64_operand, &rb_x64_op_type, op);
 
   switch(op->size) {
-    case AWASM_X64_OPERAND_SIZE_UNKNOWN: return Qnil;
-    case AWASM_X64_OPERAND_SIZE_1: return INT2FIX(1);
-    case AWASM_X64_OPERAND_SIZE_8: return INT2FIX(8);
-    case AWASM_X64_OPERAND_SIZE_16: return INT2FIX(16);
-    case AWASM_X64_OPERAND_SIZE_32: return INT2FIX(32);
-    case AWASM_X64_OPERAND_SIZE_64: return INT2FIX(64);
-    case AWASM_X64_OPERAND_SIZE_128: return INT2FIX(128);
-    case AWASM_X64_OPERAND_SIZE_256: return INT2FIX(256);
-    case AWASM_X64_OPERAND_SIZE_512: return INT2FIX(512);
+    case AWASM_OPERAND_SIZE_1: return INT2FIX(1);
+    case AWASM_OPERAND_SIZE_8: return INT2FIX(8);
+    case AWASM_OPERAND_SIZE_16: return INT2FIX(16);
+    case AWASM_OPERAND_SIZE_32: return INT2FIX(32);
+    case AWASM_OPERAND_SIZE_64: return INT2FIX(64);
+    case AWASM_OPERAND_SIZE_128: return INT2FIX(128);
+    case AWASM_OPERAND_SIZE_256: return INT2FIX(256);
+    case AWASM_OPERAND_SIZE_512: return INT2FIX(512);
     default: return Qnil;
   }
   return Qnil;
