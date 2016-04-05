@@ -103,11 +103,6 @@ awasm_signal_context_uninstall(struct awasm_signal_context *signal_ctx) {
   }
 }
 
-static void
-awasm_signal_context_set_exception_mask(struct awasm_signal_context *signal_ctx, uint32_t mask) {
-  signal_ctx->exception_mask = mask;
-}
-
 #else
 #error
 #endif
@@ -222,7 +217,8 @@ awasm_program_x64_emit_output_save(awasm_program *program,
 
   for(i = 0; i < program->n_output_regs; i++) {
     awasm_example_val *val_addr = &program->output_vals[(program->n_output_regs * example_index) + i];
-    enum awasm_x64_reg_type reg_type = awasm_x64_reg_type(program->output_regs[i]);
+    awasm_x64_reg_id reg_id = (awasm_x64_reg_id) program->output_regs[i].id;
+    enum awasm_x64_reg_type reg_type = awasm_x64_reg_type(reg_id);
 
     awasm_arch_param_val addr_imm = (awasm_arch_param_val)(uintptr_t) val_addr;
 
@@ -233,14 +229,14 @@ awasm_program_x64_emit_output_save(awasm_program *program,
 
     switch(reg_type) {
       case AWASM_X64_REG_TYPE_GP: {
-        AWASM_X64_SET(AWASM_X64_PARAM_REG1, (awasm_x64_reg_id) program->output_regs[i]);
+        AWASM_X64_SET(AWASM_X64_PARAM_REG1, reg_id);
         AWASM_X64_SET(AWASM_X64_PARAM_REG_BASE, AWASM_SEARCH_X64_REG_TMP);
         AWASM_X64_ENC(mov_rm64_r64);
         awasm_arch_save(arch, program->buf);
         break;
       }
       case AWASM_X64_REG_TYPE_XMM: {
-        AWASM_X64_SET(AWASM_X64_PARAM_REG1, (awasm_x64_reg_id) program->output_regs[i]);
+        AWASM_X64_SET(AWASM_X64_PARAM_REG1, reg_id);
         AWASM_X64_SET(AWASM_X64_PARAM_REG_BASE, AWASM_SEARCH_X64_REG_TMP);
         AWASM_X64_ENC(movsd_xmm2m64_xmm1);
         awasm_arch_save(arch, program->buf);
@@ -347,24 +343,36 @@ enc_failed:
   return false;
 }
 
+
+static awasm_x64_reg_id
+awasm_op_x64_reg_id(awasm_x64_operand *op, awasm_program_param *param) {
+  awasm_inst *inst = param->inst;
+
+  if(op->param_idx < inst->params_len) {
+    return (awasm_x64_reg_id) param->param_vals[inst->params[op->param_idx].id];
+  } else if(op->reg_id < AWASM_X64_N_REGS) {
+    return op->reg_id;
+  } else {
+    awasm_assert_not_reached();
+    return 0;
+  }
+}
+
 static void
 awasm_program_x64_setup(awasm_program *program) {
   unsigned i, j;
   awasm_program_params *program_params = program->params;
 
-  /*FIXME: hardcoded 4 (max written operands)*/
-  uint_fast8_t output_sizes[AWASM_PROGRAM_MAX_OUTPUT_REGS] = {0};
-
   program->n_input_regs = 0;
   program->n_output_regs = 0;
 
   for(i = 0; i < program_params->size; i++) {
-    awasm_inst *inst = program_params->params[i].inst;
-    awasm_x64_inst *x64_inst =  (awasm_x64_inst *) inst;
-    awasm_arch_param_val *param_vals = program_params->params[i].param_vals;
+    awasm_program_param *param = &program_params->params[i];
+    awasm_x64_inst *x64_inst = (awasm_x64_inst *) param->inst;
     unsigned output_sizes_len = program->n_output_regs;
 
     for(j = 0; j < x64_inst->n_operands; j++) {
+      unsigned k;
       awasm_x64_operand *op = &x64_inst->operands[j];
 
       if(op->type == AWASM_X64_OPERAND_TYPE_REG ||
@@ -377,20 +385,13 @@ awasm_program_x64_setup(awasm_program *program) {
           }
         }
         else {
-          if(op->param_idx < inst->params_len) {
-            reg_id = (awasm_x64_reg_id) param_vals[inst->params[op->param_idx].id];
-          } else if(op->reg_id < AWASM_X64_N_REGS) {
-            reg_id = op->reg_id;
-          } else {
-            awasm_assert_not_reached();
-          }
+          reg_id = awasm_op_x64_reg_id(op, param);
 
           /*
            * Conditional writes (acc_c) might or might not do the write.
            */
 
           if(op->acc_r || op->acc_c) {
-            unsigned k;
             bool dirty_read = true;
 
             for(k = 0; k < output_sizes_len; k++) {
@@ -400,10 +401,11 @@ awasm_program_x64_setup(awasm_program *program) {
                * thus we always initialize.
                */
 
-              if(program->output_regs[k] == reg_id &&
-                 (op->size < output_sizes[k] ||
-                   (op->size == output_sizes[k] &&
-                    output_sizes[k] != AWASM_X64_OPERAND_SIZE_8))) {
+              awasm_sized_reg_id output_reg = program->output_regs[k];
+              if(output_reg.id == reg_id &&
+                 (op->size < output_reg.size ||
+                 (op->size == output_reg.size &&
+                  output_reg.size != AWASM_OPERAND_SIZE_8))) {
                 dirty_read = false;
                 break;
               }
@@ -415,11 +417,21 @@ awasm_program_x64_setup(awasm_program *program) {
           }
 
           if(op->acc_w) {
-            program->output_regs[program->n_output_regs] = (awasm_reg_id) reg_id;
-            output_sizes[program->n_output_regs] = (uint_fast8_t)
-              AWASM_MAX(output_sizes[program->n_output_regs], op->acc_c ? AWASM_X64_OPERAND_SIZE_UNKNOWN : op->size);
+            // ???
+            //awasm_operand_size reg_size = (awasm_operand_size) AWASM_MIN(output_sizes[program->n_output_regs],
+            //    op->acc_c ? AWASM_N_OPERAND_SIZES : op->size);
+
+            for(k = 0; k < program->n_output_regs; k++) {
+              if(program->output_regs[k].id == reg_id &&
+                 program->output_regs[k].size == op->size)
+                goto skip;
+            }
+
+            program->output_regs[program->n_output_regs].id = (awasm_reg_id) reg_id;
+            program->output_regs[program->n_output_regs].size = op->size;
 
             program->n_output_regs++;
+skip:;
           }
         }
       }
@@ -498,6 +510,8 @@ awasm_program_x64_emit_program_body(awasm_program *program) {
   awasm_buf *buf = program->body_buf;
   awasm_arch *arch = program->arch;
 
+  awasm_buf_reset(buf);
+
   for(i = 0; i < program_params->size; i++) {
     awasm_inst *inst = program_params->params[i].inst;
     awasm_x64_inst *x64_inst = (awasm_x64_inst *) inst;
@@ -511,25 +525,19 @@ awasm_program_x64_emit_program_body(awasm_program *program) {
     awasm_arch_save(arch, buf);
   }
 
-  awasm_signal_context_set_exception_mask((struct awasm_signal_context *) program->_signal_ctx, exception_mask);
-
+  program->exception_mask = exception_mask;
   return true;
 error:
   return false;
 }
 
 static awasm_success
-awasm_program_x64_emit(awasm_program *program,
-                       awasm_program_input *input) {
+awasm_program_x64_emit_sandbox(awasm_program *program,
+                               awasm_program_input *input) {
   unsigned i;
   unsigned n_examples = AWASM_PROGRAM_INPUT_N(input);
 
-  awasm_buf_reset(program->body_buf);
   awasm_buf_reset(program->buf);
-
-  AWASM_TRY(error, awasm_program_x64_emit_program_body, program);
-
-  awasm_program_x64_setup(program);
 
   AWASM_TRY(error, awasm_x64_func_prolog, (awasm_x64 *) program->arch, program->buf, AWASM_X64_ABI_SYSV);
 
@@ -551,14 +559,38 @@ error:
   return false;
 }
 
-static bool
+static awasm_success
+awasm_program_x64_emit(awasm_program *program,
+                       awasm_program_input *input,
+                       bool setup, bool body, bool sandbox) {
+  if(body) {
+    AWASM_TRY(error, awasm_program_x64_emit_program_body, program);
+  }
+
+  if(setup) {
+    awasm_program_x64_setup(program);
+  }
+
+  if(sandbox) {
+    AWASM_TRY(error, awasm_program_x64_emit_sandbox, program, input);
+  }
+
+  return true;
+
+error:
+  return false;
+}
+
+static awasm_success
 awasm_program_emit(awasm_program *program,
-                   awasm_program_input *input) {
+                   awasm_program_input *input,
+                   bool setup, bool body, bool sandbox) {
   awasm_arch *arch = program->arch;
 
   switch(arch->cls->id) {
     case AWASM_ARCH_X64: {
-      return awasm_program_x64_emit(program, input);
+      return awasm_program_x64_emit(program, input,
+                                    setup, body, sandbox);
       break;
     }
     default:
@@ -833,7 +865,6 @@ awasm_program_assess(awasm_program *program,
   }
 
 #if AWASM_MIN_LOG_LEVEL <= AWASM_LOG_LEVEL_DEBUG
-  /* < is just to silence warning */
   if(fitness == 0.0) {
     awasm_program_log_program_output(program,
                                       output,
@@ -860,13 +891,6 @@ awasm_program_load_output(awasm_program *program,
   loaded_output->len = (uint16_t)(AWASM_PROGRAM_INPUT_N(input) * output->arity);
   loaded_output->vals = awasm_malloc((size_t) loaded_output->len * sizeof(awasm_example_val));
 
-#if AWASM_MIN_LOG_LEVEL <= AWASM_LOG_LEVEL_INFO
-  awasm_program_log_program_output(program,
-                                    output,
-                                    matching,
-                                    AWASM_LOG_LEVEL_DEBUG);
-#endif
-
   for(i = 0; i < n_examples; i++) {
     for(j = 0; j < height; j++) {
       loaded_output->vals[i * height + j] = program->output_vals[i * width + matching[j]];
@@ -875,6 +899,13 @@ awasm_program_load_output(awasm_program *program,
 
   loaded_output->arity = output->arity;
   memcpy(loaded_output->types, output->types, AWASM_ARY_LEN(output->types));
+
+//#if AWASM_MIN_LOG_LEVEL <= AWASM_LOG_LEVEL_INFO
+  awasm_program_log_program_output(program,
+                                  loaded_output,
+                                    matching,
+                                    AWASM_LOG_LEVEL_WARN);
+//#endif
 }
 
 void
@@ -905,8 +936,12 @@ awasm_program_run(awasm_program *program,
   }
 
   program->output_vals = alloca(AWASM_PROGRAM_OUTPUT_VALS_SIZE(input));
+  signal_ctx.exception_mask = program->exception_mask;
   program->_signal_ctx = &signal_ctx;
-  awasm_program_emit(program, input);
+
+  if(!awasm_program_emit(program, input, false, false, true)) {
+    return false;
+  }
 
   // FIXME:
   if(program->n_output_regs == 0) {
@@ -945,30 +980,158 @@ awasm_program_run(awasm_program *program,
   return retval;
 }
 
-static awasm_fitness
+static awasm_success
 awasm_search_eval_program(awasm_search *search,
-                          awasm_program *program) {
+                          awasm_program *program,
+                          awasm_fitness *fitness) {
 
-  awasm_fitness fitness;
-  awasm_program_emit(program, &search->params.program_input);
+  if(!awasm_program_emit(program, &search->params.program_input, true, true, true)) {
+    *fitness = INFINITY;
+    return false;
+  }
 
   if(AWASM_UNLIKELY(program->n_output_regs == 0)) {
-    return INFINITY;
+    *fitness = INFINITY;
+    return true;
   }
 
   //awasm_buf_log(program->buf, AWASM_LOG_LEVEL_INFO);
 
+  struct awasm_signal_context *signal_ctx = (struct awasm_signal_context *) program->_signal_ctx;
+  signal_ctx->exception_mask = program->exception_mask;
+
   if(_AWASM_SIGNAL_CONTEXT_TRY((struct awasm_signal_context *)program->_signal_ctx)) {
     awasm_buf_exec(program->buf);
-    fitness = awasm_program_assess(program, &search->params.program_output, search->pop.matching);
+    *fitness = awasm_program_assess(program, &search->params.program_output, search->pop.matching);
   } else {
     awasm_debug("program %d signaled", program->index);
-    fitness = INFINITY;
+    *fitness = INFINITY;
   }
-  return fitness;
+  return true;
 }
 
 static bool
+awasm_program_param_x64_writes_p(awasm_program_param *param, awasm_reg_id writes_reg_id) {
+  awasm_x64_inst *x64_inst = (awasm_x64_inst *) param->inst;
+  unsigned i;
+
+  for(i = 0; i < x64_inst->n_operands; i++) {
+    awasm_x64_operand *op = &x64_inst->operands[i];
+    awasm_x64_reg_id reg_id = awasm_op_x64_reg_id(op, param);
+
+    if(op->acc_w && reg_id == writes_reg_id) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static bool
+awasm_program_param_writes_p(awasm_program_param *param, awasm_reg_id writes_reg_id, awasm_arch_id arch_id) {
+  switch(arch_id) {
+    case AWASM_ARCH_X64: {
+      return awasm_program_param_x64_writes_p(param, writes_reg_id);
+    }
+    default:
+      awasm_assert_not_reached();
+      return false;
+  }
+}
+
+static int
+awasm_program_find_writer(awasm_program *program, awasm_reg_id reg_id, unsigned index) {
+  int i;
+  for(i = (int) index; i >= 0; i--) {
+    awasm_program_param *param = &program->params->params[i];
+
+    if(awasm_program_param_writes_p(param, reg_id, program->arch->cls->id)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+static void
+awasm_program_mark(awasm_program *program, awasm_reg_id reg_id, awasm_bitmap *marked, unsigned index);
+
+static void
+awasm_program_x64_mark(awasm_program *program, awasm_bitmap *marked, unsigned writer_idx) {
+  unsigned i;
+  awasm_program_param *param = &program->params->params[writer_idx];
+  awasm_x64_inst *x64_inst = (awasm_x64_inst *) param->inst;
+
+  for(i = 0; i < x64_inst->n_operands; i++) {
+    awasm_x64_operand *op = &x64_inst->operands[i];
+    awasm_x64_reg_id reg_id = awasm_op_x64_reg_id(op, param);
+
+    if(op->acc_r && writer_idx > 0) {
+      awasm_program_mark(program, reg_id, marked, writer_idx - 1);
+    }
+  }
+}
+
+static void
+awasm_program_mark(awasm_program *program, awasm_reg_id reg_id, awasm_bitmap *marked, unsigned index) {
+  int writer_idx = awasm_program_find_writer(program, reg_id, index);
+  fprintf(stderr, "marking %d\n", writer_idx);
+  if(writer_idx >= 0) {
+    awasm_bitmap_set(marked, (unsigned) writer_idx);
+
+    switch(program->arch->cls->id) {
+      case AWASM_ARCH_X64: {
+        awasm_program_x64_mark(program, marked, (unsigned) writer_idx);
+        break;
+      }
+      default:
+        awasm_assert_not_reached();
+    }
+  }
+}
+
+
+awasm_success
+awasm_program_eliminate_introns(awasm_program *program) {
+  awasm_bitmap512 marked = {0};
+  unsigned i, j;
+  awasm_sized_reg_id *result_regs = alloca(program->_output.arity * sizeof(awasm_sized_reg_id));
+
+  for(i = 0; i < program->_output.arity; i++) {
+    result_regs[i] = program->output_regs[program->_matching[i]];
+  }
+
+  for(i = 0; i < program->_output.arity; i++) {
+    uint_fast8_t reg_idx = program->_matching[i];
+    awasm_reg_id reg_id = program->output_regs[reg_idx].id;
+    awasm_program_mark(program, reg_id, (awasm_bitmap *) &marked, program->params->size - 1);
+  }
+
+  for(j = 0, i = 0; i < program->params->size; i++) {
+    if(awasm_bitmap_get((awasm_bitmap *) &marked, i)) {
+      program->params->params[j++] = program->params->params[i];
+    }
+  }
+  program->params->size = (awasm_program_size) j;
+
+  if(!awasm_program_emit(program, NULL, true, true, false)) {
+    return false;
+  }
+
+  for(i = 0; i < program->_output.arity; i++) {
+    for(j = 0; j < program->n_output_regs; j++) {
+      if(program->output_regs[j].id == result_regs[i].id &&
+         program->output_regs[j].size == result_regs[i].size) {
+        program->_matching[i] = (uint_fast8_t) j;
+        goto next;
+      }
+    }
+    awasm_assert_not_reached();
+  next:;
+  }
+
+  return true;
+}
+
+static awasm_success
 awasm_search_eval_population(awasm_search *search, unsigned char *programs,
                              awasm_fitness min_fitness, awasm_search_result_func result_func,
                              void *user_data) {
@@ -995,7 +1158,11 @@ awasm_search_eval_population(awasm_search *search, unsigned char *programs,
 
     program.output_vals = pop->output_vals;
 
-    fitness = awasm_search_eval_program(search, &program);
+    if(!awasm_search_eval_program(search, &program, &fitness)) {
+      retval = false;
+      goto done;
+    }
+
     pop->fitnesses[i] = fitness;
 
     awasm_debug("program %d has fitness %lf", i, fitness);
@@ -1008,7 +1175,7 @@ awasm_search_eval_population(awasm_search *search, unsigned char *programs,
 
     if(AWASM_UNLIKELY(fitness / n_examples <= min_fitness)) {
       program._output = search->params.program_output;
-      program._input = search->params.program_output;
+      program._input = search->params.program_input;
       program._matching = search->pop.matching;
 
       if(!result_func(&program, fitness, user_data)) {
@@ -1224,7 +1391,7 @@ awasm_search_new_generation(awasm_search *search, unsigned char **programs) {
 
 #define AWASM_SEARCH_CONVERGENCE_THRESHOLD 0.03
 
-static bool
+static awasm_success
 awasm_search_start_(awasm_search *search, unsigned char **programs,
                     awasm_fitness min_fitness, awasm_search_result_func result_func,
                     void *user_data) {

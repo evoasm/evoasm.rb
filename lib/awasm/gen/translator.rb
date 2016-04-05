@@ -966,7 +966,11 @@ module Awasm
             io.puts params.size, eol: ','
           end
 
-          io.puts operand_size_to_c(op.size)
+          if op.size
+            io.puts operand_size_to_c(op.size)
+          else
+            io.puts 'AWASM_N_OPERAND_SIZES'
+          end
         end
         io.puts '}', eol: eol
       end

@@ -16,7 +16,7 @@ examples:
   5.0: 11.61895003862225
 program_size: 5..15
 population_size: 1600
-min_fitness: 0.01
+min_fitness: 0.0
 parameters: [reg0, reg1, reg2]
 domains:
   reg0: &regs [XMM0, XMM1, XMM2, XMM3]
