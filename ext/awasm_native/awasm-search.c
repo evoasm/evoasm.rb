@@ -1073,7 +1073,6 @@ awasm_program_x64_mark(awasm_program *program, awasm_bitmap *marked, unsigned wr
 static void
 awasm_program_mark(awasm_program *program, awasm_reg_id reg_id, awasm_bitmap *marked, unsigned index) {
   int writer_idx = awasm_program_find_writer(program, reg_id, index);
-  fprintf(stderr, "marking %d\n", writer_idx);
   if(writer_idx >= 0) {
     awasm_bitmap_set(marked, (unsigned) writer_idx);
 
@@ -1398,11 +1397,6 @@ awasm_search_start_(awasm_search *search, unsigned char **programs,
   unsigned gen;
   awasm_fitness last_fitness = 0.0;
   unsigned ups = 0;
-
-  for(gen = 0; gen < search->params.program_input.len; gen++) {
-    fprintf(stderr, "VALUE: %f\n", *(double *) &search->params.program_input.vals[gen]);
-  }
-
 
   for(gen = 0;;gen++) {
     if(!awasm_search_eval_population(search, *programs, min_fitness, result_func, user_data)) {
