@@ -7,6 +7,7 @@
 You give it a set of examples, that is, several input/output pairs, that describe a program's behavior.
 It will then try to come up with a short program (in the form of machine code) that follows your specification,
 by means of genetic programming.
+*Awasm* contains a JIT that executes the generated machine code on the fly.
 
 Currently, the only supported architecture is **x86_64**.
 
