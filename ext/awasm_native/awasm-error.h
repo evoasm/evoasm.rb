@@ -31,6 +31,7 @@ typedef enum {
   AWASM_ERROR_TYPE_ARGUMENT,
   AWASM_ERROR_TYPE_MEMORY,
   AWASM_ERROR_TYPE_ARCH,
+  AWASM_ERROR_TYPE_GRAPH,
 } awasm_error_type;
 
 typedef struct {
