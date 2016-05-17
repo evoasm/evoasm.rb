@@ -5,8 +5,10 @@ require 'awasm/gen/translator'
 require 'rake'
 
 module Awasm
-  module Gen
-    class Task < Rake::TaskLib
+  module Tasks
+    class GenTask < Rake::TaskLib
+      include Awasm::Gen
+
       HEADER_N_LINES = 15
       CSV_SEPARATOR = ','
 

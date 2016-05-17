@@ -1,0 +1,24 @@
+#pragma once
+
+#include <stdint.h>
+#include "awasm-error.h"
+
+$includes
+
+typedef struct $s {
+  uint32_t capa;
+  uint32_t len;
+  uint32_t first_free;
+  uint32_t last_free;
+  $e *data;
+
+#if $embed > 0
+  $e _data[$embed];
+#endif
+} $s;
+
+void $p_clear($s *seq, uint32_t start, uint32_t end);
+awasm_success $p_init($s *seq, uint32_t capa);
+$e *$p_push($s *seq, uint32_t *index_);
+$e *$p_get($s *seq, uint32_t index);
+$e *$p_delete_at($s *seq, uint32_t index);
