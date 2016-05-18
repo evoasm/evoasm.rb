@@ -1,6 +1,7 @@
 %{
 #include <uchar.h>
 #include "awasm-parser.h"
+#include "awasm-token.h"
 
 AWASM_DECL_LOG_TAG("lexer")
 
@@ -14,11 +15,11 @@ yield_scanner_token(_awasm_parse_ctx *ctx, awasm_token *token)
 }
 
 static awasm_token *
-new_token(awasm_parser *parser, int token_id, size_t len)
+new_token(awasm_parser *parser)
 {
-  awasm_token *token = awasm_token_new(len);
+  awasm_token *token;
 
-  token->id = (uint32_t) token_id;
+  token->id = (uint16_t) token_id;
   token->line = ctx->line;
   token->col = ctx->last_col;
   token->begin = ctx->last_pos;

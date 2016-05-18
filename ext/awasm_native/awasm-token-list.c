@@ -10,20 +10,14 @@
 
 #define AWASM_SEQ_NOT_FREE ((uint32_t)-1)
 
-#if 0 > 0
-#  define DATA(seq) (seq->data != NULL ? seq->data : seq->_data)
-#else
-#  define DATA(seq) (seq->data)
-#endif
-
 void
 awasm_token_list_clear(awasm_token_list *seq, uint32_t start, uint32_t end) {
   for(uint32_t i = start; i < end - 1; i++) {
-    DATA(seq)[i].free = true;
-    DATA(seq)[i].next_free = i + 1;
+    AWASM_SEQ_DATA(seq)[i].free = true;
+    AWASM_SEQ_DATA(seq)[i].next_free = i + 1;
   }
-  DATA(seq)[end - 1].next_free = AWASM_SEQ_NOT_FREE;
-  DATA(seq)[end - 1].free = true;
+  AWASM_SEQ_DATA(seq)[end - 1].next_free = AWASM_SEQ_NOT_FREE;
+  AWASM_SEQ_DATA(seq)[end - 1].free = true;
 
   seq->last_free = end - 1;
 }
@@ -31,7 +25,7 @@ awasm_token_list_clear(awasm_token_list *seq, uint32_t start, uint32_t end) {
 
 awasm_token *
 awasm_token_list_data(awasm_token_list *seq) {
- return DATA(seq);
+ return AWASM_SEQ_DATA(seq);
 }
 
 awasm_success
@@ -87,16 +81,16 @@ update:
   return true;
 }
 
-awasm_token *
-awasm_token_list_push(awasm_token_list *seq, uint32_t *index_) {
+awasm_success
+awasm_token_list_push(awasm_token_list *seq, awasm_token **ee) {
   if(seq->first_free == AWASM_SEQ_NOT_FREE) {
     if(!awasm_token_list_grow(seq)) {
-      return NULL;
+      return false;
     }
   }
 
   {
-    awasm_token *entry = &DATA(seq)[seq->first_free];
+    awasm_token *entry = &AWASM_SEQ_DATA(seq)[seq->first_free];
 
     uint32_t index = seq->first_free;
 
@@ -113,11 +107,8 @@ awasm_token_list_push(awasm_token_list *seq, uint32_t *index_) {
 
     seq->len++;
 
-    if(index_ != NULL) {
-      *index_ = index;
-    }
-
-    return entry;
+    *ee = e;
+    return true;
   }
 }
 
@@ -126,24 +117,21 @@ awasm_token_list_get(awasm_token_list *seq, uint32_t index) {
   if(index >= seq->capa) {
     return NULL;
   }
-  return DATA(seq)[index].free ? NULL : &DATA(seq)[index];
+  return AWASM_SEQ_DATA(seq)[index].free ? NULL : &AWASM_SEQ_DATA(seq)[index];
 }
 
 awasm_token *
-awasm_token_list_delete_at(awasm_token_list *seq, uint32_t index) {
-  awasm_token *e = awasm_token_list_get(seq, index);
-  if(e) {
-    e->next_free = seq->first_free;
-    e->free = true;
+awasm_token_list_delete(awasm_token_list *seq, awasm_token *e) {
+  e->next_free = seq->first_free;
+  e->free = true;
 
-    // only free slot
-    if(seq->last_free == AWASM_SEQ_NOT_FREE) {
-      seq->last_free = index;
-    }
-
-    seq->first_free = index;
-    seq->len--;
+  // only free slot
+  if(seq->last_free == AWASM_SEQ_NOT_FREE) {
+    seq->last_free = index;
   }
+
+  seq->first_free = index;
+  seq->len--;
   return e;
 }
 
@@ -153,13 +141,13 @@ awasm_token_list_cmp(awasm_token_list *a, awasm_token_list *b) {
 }
 
 bool
-awasm_token_list_index(awasm_token_list *seq, awasm_token *value, uint32_t *index) {
+awasm_token_list_find(awasm_token_list *seq, awasm_token *value, uint32_t *index) {
 
   if(seq->len == 0) return false;
 
   for(uint32_t i = 0; i < seq->capa; i++) {
-    if(!DATA(seq)[i].free) {
-      if(awasm_token_list_cmp(value, &DATA(seq)[i])) {
+    if(!AWASM_SEQ_DATA(seq)[i].free) {
+      if(awasm_token_list_cmp(value, &AWASM_SEQ_DATA(seq)[i])) {
         if(index != NULL) *index = i;
         return true;
       }

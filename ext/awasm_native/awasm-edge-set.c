@@ -10,20 +10,14 @@
 
 #define AWASM_SEQ_NOT_FREE ((uint32_t)-1)
 
-#if 3 > 0
-#  define DATA(seq) (seq->data != NULL ? seq->data : seq->_data)
-#else
-#  define DATA(seq) (seq->data)
-#endif
-
 void
 awasm_edge_set_clear(awasm_edge_set *seq, uint32_t start, uint32_t end) {
   for(uint32_t i = start; i < end - 1; i++) {
-    DATA(seq)[i].free = true;
-    DATA(seq)[i].next_free = i + 1;
+    AWASM_SEQ_DATA(seq)[i].free = true;
+    AWASM_SEQ_DATA(seq)[i].next_free = i + 1;
   }
-  DATA(seq)[end - 1].next_free = AWASM_SEQ_NOT_FREE;
-  DATA(seq)[end - 1].free = true;
+  AWASM_SEQ_DATA(seq)[end - 1].next_free = AWASM_SEQ_NOT_FREE;
+  AWASM_SEQ_DATA(seq)[end - 1].free = true;
 
   seq->last_free = end - 1;
 }
@@ -31,7 +25,7 @@ awasm_edge_set_clear(awasm_edge_set *seq, uint32_t start, uint32_t end) {
 
 awasm_edge *
 awasm_edge_set_data(awasm_edge_set *seq) {
- return DATA(seq);
+ return AWASM_SEQ_DATA(seq);
 }
 
 awasm_success
@@ -87,16 +81,16 @@ update:
   return true;
 }
 
-awasm_edge *
-awasm_edge_set_push(awasm_edge_set *seq, uint32_t *index_) {
+awasm_success
+awasm_edge_set_push(awasm_edge_set *seq, awasm_edge **ee) {
   if(seq->first_free == AWASM_SEQ_NOT_FREE) {
     if(!awasm_edge_set_grow(seq)) {
-      return NULL;
+      return false;
     }
   }
 
   {
-    awasm_edge *entry = &DATA(seq)[seq->first_free];
+    awasm_edge *entry = &AWASM_SEQ_DATA(seq)[seq->first_free];
 
     uint32_t index = seq->first_free;
 
@@ -113,11 +107,8 @@ awasm_edge_set_push(awasm_edge_set *seq, uint32_t *index_) {
 
     seq->len++;
 
-    if(index_ != NULL) {
-      *index_ = index;
-    }
-
-    return entry;
+    *ee = e;
+    return true;
   }
 }
 
@@ -126,24 +117,21 @@ awasm_edge_set_get(awasm_edge_set *seq, uint32_t index) {
   if(index >= seq->capa) {
     return NULL;
   }
-  return DATA(seq)[index].free ? NULL : &DATA(seq)[index];
+  return AWASM_SEQ_DATA(seq)[index].free ? NULL : &AWASM_SEQ_DATA(seq)[index];
 }
 
 awasm_edge *
-awasm_edge_set_delete_at(awasm_edge_set *seq, uint32_t index) {
-  awasm_edge *e = awasm_edge_set_get(seq, index);
-  if(e) {
-    e->next_free = seq->first_free;
-    e->free = true;
+awasm_edge_set_delete(awasm_edge_set *seq, awasm_edge *e) {
+  e->next_free = seq->first_free;
+  e->free = true;
 
-    // only free slot
-    if(seq->last_free == AWASM_SEQ_NOT_FREE) {
-      seq->last_free = index;
-    }
-
-    seq->first_free = index;
-    seq->len--;
+  // only free slot
+  if(seq->last_free == AWASM_SEQ_NOT_FREE) {
+    seq->last_free = index;
   }
+
+  seq->first_free = index;
+  seq->len--;
   return e;
 }
 
@@ -156,13 +144,13 @@ awasm_edge_set_cmp(awasm_edge_set *a, awasm_edge_set *b) {
 }
 
 bool
-awasm_edge_set_index(awasm_edge_set *seq, awasm_edge *value, uint32_t *index) {
+awasm_edge_set_find(awasm_edge_set *seq, awasm_edge *value, uint32_t *index) {
 
   if(seq->len == 0) return false;
 
   for(uint32_t i = 0; i < seq->capa; i++) {
-    if(!DATA(seq)[i].free) {
-      if(awasm_edge_set_cmp(value, &DATA(seq)[i])) {
+    if(!AWASM_SEQ_DATA(seq)[i].free) {
+      if(awasm_edge_set_cmp(value, &AWASM_SEQ_DATA(seq)[i])) {
         if(index != NULL) *index = i;
         return true;
       }

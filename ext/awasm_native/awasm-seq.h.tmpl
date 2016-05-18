@@ -5,6 +5,12 @@
 
 $includes
 
+#if $embed > 0
+#  define AWASM_SEQ_DATA(seq) (seq->data != NULL ? seq->data : seq->_data)
+#else
+#  define AWASM_SEQ_DATA(seq) (seq->data)
+#endif
+
 typedef struct $s {
   uint32_t capa;
   uint32_t len;
@@ -17,8 +23,16 @@ typedef struct $s {
 #endif
 } $s;
 
+static inline uint32_t
+$p_index($s *seq, $e *e) {
+  return (uint32_t)(e - AWASM_SEQ_DATA(seq));
+}
+
 void $p_clear($s *seq, uint32_t start, uint32_t end);
 awasm_success $p_init($s *seq, uint32_t capa);
-$e *$p_push($s *seq, uint32_t *index_);
+$e *$p_push($s *seq, $e **e);
 $e *$p_get($s *seq, uint32_t index);
-$e *$p_delete_at($s *seq, uint32_t index);
+$e *$p_delete($s *seq, $e *e);
+void $p_destroy($s *seq);
+$e * $p_data($s *seq);
+bool $p_find($s *seq, $e *value, uint32_t *index);

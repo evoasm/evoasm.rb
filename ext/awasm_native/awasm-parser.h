@@ -1,16 +1,10 @@
 #pragma once
 
-#include "awasm-token-list.h"
-#include "awasm-graph.h"
+#include "awasm-src-graph.h"
 
 typedef struct {
   void *scanner;
 } awasm_parser;
-
-typedef struct {
-  awasm_graph graph;
-  awasm_token_list tokens;
-} awasm_src_graph;
 
 typedef struct {
   awasm_parser *parser;
