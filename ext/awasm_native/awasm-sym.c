@@ -8,7 +8,7 @@
 
 awasm_success
 awasm_sym_tbl_init(awasm_sym_tbl *tbl, uint32_t capa) {
-  uint8_t *data = awasm_malloc(sizeof(uint8_t) * capa);
+  char *data = awasm_malloc(sizeof(char) * capa);
   if(data == NULL) {
     return false;
   }
@@ -21,7 +21,7 @@ awasm_sym_tbl_init(awasm_sym_tbl *tbl, uint32_t capa) {
 }
 
 awasm_success
-awasm_sym_tbl_get(awasm_sym_tbl *tbl, const char *key, size_t len, awasm_sym *sym) {
+awasm_sym_tbl_get(awasm_sym_tbl *tbl, const char *key, uint32_t len, awasm_sym *sym) {
   unsigned i, j;
   /* Use matching algorithm or at least vectorize */
   for(i = 0; i < tbl->len; i++) {
@@ -33,7 +33,7 @@ awasm_sym_tbl_get(awasm_sym_tbl *tbl, const char *key, size_t len, awasm_sym *sy
         }
       }
       if(tbl->data[j + 1] == '\0') {
-        sym->idx = i;
+        *sym = (awasm_sym) i;
         return true;
       }
     }
@@ -53,7 +53,7 @@ next:;
   memcpy(tbl->data + tbl->len, key, sizeof(char) * len);
   tbl->data[tbl->len + len + 1] = '\0';
 
-  sym->idx = tbl->len;
+  *sym = tbl->len;
   tbl->len += len + 1;
 
   return true;

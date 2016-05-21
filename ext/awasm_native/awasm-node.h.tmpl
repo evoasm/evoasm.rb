@@ -1,0 +1,17 @@
+#pragma once
+
+#include <stdint.h>
+#include <stdbool.h>
+
+$includes
+
+typedef struct {
+  bool free : 1;
+  union {
+    struct {
+      $t $l;
+      uint$w_t edge_idx;
+    };
+    uint$w_t next_free;
+  };
+} $s;

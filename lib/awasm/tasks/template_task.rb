@@ -4,52 +4,48 @@ require 'yaml'
 module Awasm
   module Tasks
     class TemplateTask < Rake::TaskLib
-      attr_reader :name
+      attr_accessor :source
+      attr_accessor :target
+      attr_accessor :subs
 
-      ALL_ARCHS = %i(x64)
-      X64_TABLE_FILENAME = File.join(Awasm.data, 'tables', 'x64.csv')
-      ARCH_TABLES = {
-        x64: X64_TABLE_FILENAME
-      }
+      class << self
+        attr_reader :all
+      end
+      @all = []
 
-      def initialize(name = 'awasm:gen', &block)
-        @ruby_bindings = true
-        @name = name
-        @archs = ALL_ARCHS
-
+      def initialize(&block)
         block[self] if block
-
         define
       end
 
       def define
-        deps = []
-
-        namespace 'awasm:templates' do
-          yml_filename = ext_path('tmpls.yml')
-          tmpls = YAML.load File.read(yml_filename)
-          tmpls.each_value do |tmpl|
-            srcs = Array(tmpl['src']).map{|f| ext_path f}
-            dsts = Array(tmpl['dst']).map{|f| ext_path f}
-            srcs.zip(dsts).each do |src, dst|
-              deps << dst
-              file dst => [src, yml_filename] do
-                data = File.read src
-
-                tmpl['locals'].sort_by{|k, _| k.length }.reverse.each do |name, value|
-                  p name
-                  data.gsub! "$#{name}", value.to_s
-                end
-                File.write dst, data
-              end
+        srcs = Array(source).map { |f| ext_path f }
+        dsts = Array(target).map { |f| gen_path f }
+        srcs.zip(dsts).each do |src, dst|
+          file dst => src do
+            data = File.read src
+            subs.sort_by{|k, _| k.length }.reverse.each do |name, value|
+              data.gsub! "$#{name}", value.to_s
+              data.gsub! "$#{name.upcase}", value.to_s.upcase
+              p "$-#{name}"
+              data.gsub! "$-#{name}", value.to_s.gsub('_', '-')
             end
+            File.write dst, data
           end
+          self.class.all << dst
         end
-        task 'awasm:templates' => deps
+      end
+
+      def ext_dir
+        File.join Awasm.root, 'ext', 'awasm_native'
       end
 
       def ext_path(filename)
-        File.join Awasm.root, 'ext', 'awasm_native', filename
+        File.join ext_dir, filename
+      end
+
+      def gen_path(filename)
+        File.join ext_dir, 'gen', filename
       end
     end
   end

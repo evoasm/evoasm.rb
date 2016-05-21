@@ -26,7 +26,7 @@ extern FILE *          awasm_log_file;
 #  define AWASM_LOG_ATTRS
 #endif
 
-#define AWASM_DECL_LOG_TAG(tag) awasm_used static const char *_awasm_log_tag = "arch";
+#define AWASM_DECL_LOG_TAG(tag) awasm_used static const char *_awasm_log_tag = tag;
 #define AWASM_LOG_TAG _awasm_log_tag
 
 void

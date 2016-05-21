@@ -15,8 +15,10 @@ yield_scanner_token(_awasm_parse_ctx *ctx, awasm_token *token)
 }
 
 static awasm_token *
-new_token(awasm_parser *parser)
+new_token(_awasm_parse_ctx *ctx)
 {
+  awasm_src_graph_init();
+
   awasm_token *token;
 
   token->id = (uint16_t) token_id;

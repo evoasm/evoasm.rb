@@ -37,14 +37,14 @@ module Awasm
             prereqs = [ARCH_TABLES[arch]]
 
             prereqs << Translator.template_path(arch)
-            target_path = ext_path(Translator.target_filename(arch))
+            target_path = gen_path(Translator.target_filename(arch))
 
             file target_path => prereqs do
               puts "Translating"
               insts = load_insts arch
               translator = Translator.new(arch, insts, ruby: ruby_bindings)
               translator.translate! do |filename, content|
-                File.write ext_path(filename), content
+                File.write gen_path(filename), content
               end
             end
 
@@ -57,8 +57,8 @@ module Awasm
         task name => 'gen:translate'
       end
 
-      def ext_path(filename)
-        File.join Awasm.root, 'ext', 'awasm_native', filename
+      def gen_path(filename)
+        File.join Awasm.root, 'ext', 'awasm_native', 'gen', filename
       end
 
       def load_insts(arch)
@@ -79,7 +79,7 @@ module Awasm
           end
         end
 
-        X64::Inst.load(rows)
+        Gen::X64::Inst.load(rows)
       end
     end
   end

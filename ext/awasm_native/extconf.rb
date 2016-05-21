@@ -6,6 +6,8 @@ if have_header('capstone/capstone.h')
   $LDFLAGS << ' -lcapstone'
 end
 
+$CFLAGS << " -I#{__dir__}/gen"
+
 $CFLAGS << ' -std=c11 -Wextra -Wall -pedantic -Wno-unused-label -Wuninitialized'\
            ' -Wswitch-default -fstrict-aliasing -Wstrict-aliasing=3 -Wunreachable-code'\
            ' -Wundef -Wpointer-arith -Wwrite-strings -Wconversion -Winit-self -Wno-unused-parameter'
