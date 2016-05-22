@@ -1,20 +1,3 @@
-#define _DEFAULT_SOURCE
-
-#if !defined(_WIN32) && \
-    (defined(__unix__) || defined(__unix) ||\
-    (defined(__APPLE__) && defined(__MACH__)))
-#define HAVE_MMAP
-
-#include <sys/mman.h>
-#include <errno.h>
-
-#if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
-#  define MAP_ANONYMOUS MAP_ANON
-#endif
-
-#endif
-
-#include <unistd.h>
 #include <string.h>
 
 #include "awasm-buf.h"
@@ -23,35 +6,22 @@
 #include "awasm-alloc.h"
 #include "awasm-log.h"
 
-AWASM_DECL_LOG_TAG("buf")
-
-static long _awasm_page_size = -1;
-static size_t
-awasm_page_size()
-{
-  if(_awasm_page_size < 0) {
-    _awasm_page_size = sysconf(_SC_PAGESIZE);
-  }
-  if(_awasm_page_size >= 0) return (size_t) _awasm_page_size;
-  return 0;
-}
+AWASM_DECL_LOG_TAG("buf");
 
 static awasm_success
 awasm_buf_init_mmap(awasm_buf *buf, size_t size) {
   uint8_t *mem;
 
-  size = AWASM_ALIGN_UP(size, awasm_page_size());
-  mem = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+  //size = AWASM_ALIGN_UP(size, awasm_page_size());
+  mem = awasm_mmap(size, NULL);
 
-  if(mem != MAP_FAILED) {
+  if(mem) {
     buf->capa = size;
     buf->data = mem;
     buf->pos = 0;
     return true;
   }
   else {
-    awasm_set_error(AWASM_ERROR_TYPE_MEMORY, AWASM_ERROR_CODE_NONE,
-        NULL, "Allocationg buffer of size %zu via mmap failed: %s", size, strerror(errno));
     return false;
   }
 }
@@ -69,8 +39,6 @@ awasm_buf_init_malloc(awasm_buf *buf, size_t size) {
     return true;
   }
   else {
-    awasm_set_error(AWASM_ERROR_TYPE_MEMORY, AWASM_ERROR_CODE_NONE,
-        NULL, "Allocationg buffer of size %zu via malloc failed: %s", size, strerror(errno));
     return false;
   }
 }
@@ -88,7 +56,7 @@ awasm_buf_init(awasm_buf *buf, awasm_buf_type buf_type, size_t size)
 
 static awasm_success
 awasm_buf_destroy_mmap(awasm_buf *buf) {
-  return (bool)(munmap(buf->data, buf->capa) == 0);
+  return awasm_munmap(buf->data, buf->capa);
 }
 
 static awasm_success
@@ -114,29 +82,8 @@ awasm_buf_reset(awasm_buf *buf) {
 }
 
 awasm_success
-awasm_buf_protect(awasm_buf *buf, awasm_buf_prot mode)
-{
-  int m = 0;
-
-  if(mode & AWASM_BUF_PROT_R) {
-    m |= PROT_READ;
-  }
-
-  if(mode & AWASM_BUF_PROT_W) {
-    m |= PROT_WRITE;
-  }
-
-  if(mode & AWASM_BUF_PROT_X) {
-    m |= PROT_EXEC;
-  }
-
-  if(mprotect(buf->data, buf->capa, m) != 0) {
-    awasm_set_error(AWASM_ERROR_TYPE_MEMORY, AWASM_ERROR_CODE_NONE,
-        NULL, "Changing memory protection failed");
-    return false;
-  }
-
-  return true;
+awasm_buf_protect(awasm_buf *buf, int mode) {
+  return awasm_mprot(buf->data, buf->capa, mode);
 }
 
 intptr_t

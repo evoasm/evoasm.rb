@@ -49,11 +49,11 @@ end
 
 Awasm::Tasks::TemplateTask.new do |t|
   t.source = %w(awasm-edge.h.tmpl)
-  t.target = %w(awasm-src-edge.h)
+  t.target = %w(awasm-asg-edge.h)
   t.subs = {
     t: 'awasm_sym',
-    s: 'awasm_src_edge',
-    w: 16,
+    s: 'awasm_asg_edge',
+    w: 32,
     includes: <<~EOL
       #include "awasm-sym.h"
     EOL
@@ -62,12 +62,12 @@ end
 
 Awasm::Tasks::TemplateTask.new do |t|
   t.source = %w(awasm-node.h.tmpl)
-  t.target = %w(awasm-src-node.h)
+  t.target = %w(awasm-asg-node.h)
   t.subs = {
     t: 'awasm_token',
     l: 'token',
-    s: 'awasm_src_node',
-    w: 16,
+    s: 'awasm_asg_node',
+    w: 32,
     includes: <<~EOL
       #include "awasm-token.h"
     EOL
@@ -76,13 +76,13 @@ end
 
 Awasm::Tasks::TemplateTask.new do |t|
   t.source = %w(awasm-seq.c.tmpl awasm-seq.h.tmpl)
-  t.target = %w(awasm-src-edge-list.c awasm-src-edge-list.h)
+  t.target = %w(awasm-asg-edge-list.c awasm-asg-edge-list.h)
   t.subs = {
-    s: 'awasm_src_edge_list',
-    e: 'awasm_src_edge',
-    includes: '#include "gen/awasm-src-edge.h"',
+    s: 'awasm_asg_edge_list',
+    e: 'awasm_asg_edge',
+    includes: '#include "gen/awasm-asg-edge.h"',
     embed: 0,
-    w: 16,
+    w: 32,
     eql: <<~EOL
       return a->dir == b->dir &&
              a->node_idx == b->node_idx &&
@@ -93,30 +93,30 @@ end
 
 Awasm::Tasks::TemplateTask.new do |t|
   t.source = %w(awasm-seq.c.tmpl awasm-seq.h.tmpl)
-  t.target = %w(awasm-src-node-list.c awasm-src-node-list.h)
+  t.target = %w(awasm-asg-node-list.c awasm-asg-node-list.h)
   t.subs = {
-    s: 'awasm_src_node_list',
-    e: 'awasm_src_node',
-    w: 16,
-    includes: '#include "awasm-src-node.h"',
+    s: 'awasm_asg_node_list',
+    e: 'awasm_asg_node',
+    w: 32,
+    includes: '#include "awasm-asg-node.h"',
     embed: 0,
   }
 end
 
 Awasm::Tasks::TemplateTask.new do |t|
   t.source = %w(awasm-graph.c.tmpl awasm-graph.h.tmpl)
-  t.target = %w(awasm-src-graph.c awasm-src-graph.h)
+  t.target = %w(awasm-asg.c awasm-asg.h)
   t.subs = {
-    s: 'awasm_src_graph',
-    el: 'awasm_src_edge_list',
-    nl: 'awasm_src_node_list',
-    e: 'awasm_src_edge',
-    n: 'awasm_src_node',
+    s: 'awasm_asg',
+    el: 'awasm_asg_edge_list',
+    nl: 'awasm_asg_node_list',
+    e: 'awasm_asg_edge',
+    n: 'awasm_asg_node',
     l: 'awasm_sym',
-    w: 16,
+    w: 32,
     includes: <<~END,
-      #include "awasm-src-edge-list.h"
-      #include "awasm-src-node-list.h"
+      #include "awasm-asg-edge-list.h"
+      #include "awasm-asg-node-list.h"
       #include "awasm-sym.h"
     END
     edge_eql: <<~EOL,

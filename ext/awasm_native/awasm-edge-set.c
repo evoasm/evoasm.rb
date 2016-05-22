@@ -69,8 +69,6 @@ awasm_edge_set_grow(awasm_edge_set *seq) {
     awasm_edge *new_data = awasm_realloc(seq->data, size);
 
     if(AWASM_UNLIKELY(new_data == NULL)) {
-      awasm_set_error(AWASM_ERROR_TYPE_MEMORY, AWASM_ERROR_CODE_NONE,
-          NULL, "Reallocationg buffer of size %zu failed: %s", size, strerror(errno));
       return false;
     }
   }

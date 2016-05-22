@@ -21,13 +21,6 @@ typedef struct {
     uint8_t *data;
 } awasm_buf;
 
-typedef enum {
-  AWASM_BUF_PROT_R = 1 << 0,
-  AWASM_BUF_PROT_W = 1 << 1,
-  AWASM_BUF_PROT_X = 1 << 2,
-} awasm_buf_prot;
-
-
 awasm_success
 awasm_buf_init(awasm_buf *buf, awasm_buf_type buf_type, size_t size);
 
@@ -41,7 +34,7 @@ size_t
 awasm_buf_append(awasm_buf * restrict dst, awasm_buf * restrict src);
 
 awasm_success
-awasm_buf_protect(awasm_buf *buf, awasm_buf_prot mode);
+awasm_buf_protect(awasm_buf *buf, int mode);
 
 intptr_t
 awasm_buf_exec(awasm_buf *buf);

@@ -2,52 +2,24 @@
 #include <uchar.h>
 #include "awasm-parser.h"
 #include "awasm-token.h"
+#include "awasm-asg.h"
+#include "awasm-log.h"
 
 AWASM_DECL_LOG_TAG("lexer")
 
-void
-yield_scanner_token(_awasm_parse_ctx *ctx, awasm_token *token)
-{
-  if(ctx->parser->token_func != NULL)
-  {
-    (*ctx->parser->token_func)(ctx->parser, token);
-  }
-}
-
 static awasm_token *
-new_token(_awasm_parse_ctx *ctx)
-{
-  awasm_src_graph_init();
+new_token(_awasm_parse_ctx *ctx, uint16_t token_id) {
+  awasm_asg_node *node;
 
-  awasm_token *token;
+  awasm_asg_add(ctx->asg, &node);
 
-  token->id = (uint16_t) token_id;
-  token->line = ctx->line;
-  token->col = ctx->last_col;
-  token->begin = ctx->last_pos;
-  token->end = ctx->pos;
+  node->token.id = (uint16_t) token_id;
+  node->token.line = ctx->line;
+  node->token.col = ctx->last_col;
+  node->token.begin = ctx->last_pos;
+  node->token.end = ctx->pos;
 
-  return token;
-}
-
-static int
-yield_token(_awasm_parse_ctx *ctx, awasm_token *token)
-{
-  ctx->parser->prev_token = ctx->parser->token;
-  ctx->parser->token = token;
-
-  
-  /* either scan or parse, never both */
-  if(ctx->parser->mode == AWASM_PARSER_MODE_SCAN)
-  {
-    yield_scanner_token(ctx, token);
-  }
-  else
-  {
-    Parse(ctx->parser->parser, (int)token->id, token, ctx);
-  }
-
-  return (int)token->id;
+  return &node->token;
 }
 
 static size_t
@@ -71,8 +43,9 @@ unescape_snglq(char *string, size_t len, char *buffer, char str_char)
   for(i = 0; i < len; i++)
   {
     /* escape /' /] etc.  and // */
-    if(string[i] == '\\' && (i + 1 < len) && (string[i + 1] == str_char || string[i + 1] == '\\'))
-    {
+    if(string[i] == '\\'
+       && (i + 1 < len)
+       && (string[i + 1] == str_char || string[i + 1] == '\\')) {
       continue;
     }
     else
@@ -145,8 +118,7 @@ unescape_dblq(char *string, size_t len, char *buffer, char str_char)
 
           u8_len = c32rtomb(u8_buffer, code_point[0], NULL);
 
-          if(u8_len == (size_t)-1)
-          {
+          if(u8_len == (size_t)-1) {
             awasm_warn("Invalid unicode escape");
           }
 
@@ -185,7 +157,7 @@ count_newlines(const char *buffer, size_t len)
 }
 
 static void
-update_lineno(awasm_parser *parser, const char *text, size_t len)
+update_lineno(_awasm_parse_ctx *ctx, const char *text, size_t len)
 {
   int nls = count_newlines(text, len);
   if(nls > 0)
@@ -197,8 +169,10 @@ update_lineno(awasm_parser *parser, const char *text, size_t len)
   }
 }
 
+#define NEW_TOKEN(t) new_token(yyctx, AWASM_TOKEN_ID_##t)
+
 #define yyctx (yyextra)
-#define YIELD_SIMPLE_TOKEN(id) yield_token(yyextra, NEW_TOKEN(id, 0));
+#define YIELD_SIMPLE_TOKEN(id) yield_token(yyextra, NEW_TOKEN(id));
 
 #define YYLESS(n)\
   do {\
@@ -224,7 +198,6 @@ update_lineno(awasm_parser *parser, const char *text, size_t len)
 
 #define YIELD_SCANNER_TOKEN(id, value) yield_scanner_token(yyctx, new_token(yyctx, id, value))
 
-#define NEW_TOKEN(t, l) new_token(yyctx, AWASM_PARSER_TOKEN_ID_##t, l)
 
 static void
 preparse_number(char *num_str, int *basep, const char *text, size_t len)
@@ -461,82 +434,68 @@ utf8 ({utf8_1}|{utf8_2}|{utf8_3}|{utf8_4}|{utf8_5})
 }
 
 "." {
-  awasm_token *token = NEW_TOKEN(ASSERT, 0);
-  return yield_token(yyextra, token);
-}
-
-"?" {
-  awasm_token *token = NEW_TOKEN(QUERY, 0);
-  return yield_token(yyextra, token);
-}
-
-"~" {
-  awasm_token *token = NEW_TOKEN(RETRACT, 0);
+  awasm_token *token = NEW_TOKEN(DOT, 0);
   return yield_token(yyextra, token);
 }
 
 ":-" {
-  return yield_sym(IMPLY);
+  return YIELD_SIMPLE_TOKEN(TO);
 }
 
 "(" {
-  return yield_sym(LPAREN);
+  return YIELD_SIMPLE_TOKEN(LPAREN);
 }
 
 ")" {
-  return yield_sym(RPAREN);
+  return YIELD_SIMPLE_TOKEN(RPAREN);
 }
 
 "[" {
-  return yield_sym(LBRACK);
+  return YIELD_SIMPLE_TOKEN(LBRACK);
 }
 
 "]" {
-  return yield_sym(RBRACK);
+  return YIELD_SIMPLE_TOKEN(RBRACK);
 }
 
 "," {
-  return yield_sym(COMMA);
+  return YIELD_SIMPLE_TOKEN(COMMA);
 }
 
 ";" {
-  return yield_sym(SEMIC);
+  return YIELD_SIMPLE_TOKEN(SEMIC);
 }
 
 "|" {
-  return yield_sym(BAR);
+  return YIELD_SIMPLE_TOKEN(BAR);
 }
 
 "=" {
-  return yield_sym(UNIFY);
-}
-
-"is" {
-  return yield_sym(IS);
+  return YIELD_SIMPLE_TOKEN(EQL);
 }
 
 "%" {
-  return yield_sym(MOD);
+  return YIELD_SIMPLE_TOKEN(MOD);
 }
 
 "/" {
-  return yield_sym(DIV);
+  return YIELD_SIMPLE_TOKEN(DIV);
 }
 
 "*" {
-  return yield_sym(MUL);
+  return YIELD_SIMPLE_TOKEN(MUL);
 }
 
 "-" {
-  return yield_sym(MINUS);
+  return YIELD_SIMPLE_TOKEN(MINUS);
 }
 
 "+" {
-  return yield_sym(PLUS);
+  return YIELD_SIMPLE_TOKEN(PLUS);
 }
 
 "**" {
-  return yield_sym(POW);
+  return YIELD_SIMPLE_TOKEN(POW);
 }
 
 {atom} {
