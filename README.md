@@ -1,8 +1,8 @@
-# Awasm
+# Evoasm
 
 ## Description
 
-*Awasm* is an AIMGP (*Automatic Induction of Machine code by Genetic Programming*) engine.
+*Evoasm* is an AIMGP (*Automatic Induction of Machine code by Genetic Programming*) engine.
 
 You give it a set of examples, that is, several input/output pairs, that describe a program's behavior.
 It will then try to come up with a short program (in the form of machine code) that follows your specification,
@@ -10,11 +10,11 @@ by means of genetic programming.
 
 Currently, the only supported architecture is **x86_64**.
 
-**NOTE:** *Awasm* is in a very early stage.
+**NOTE:** *Evoasm* is in a very early stage.
 
 ## Installation
 
-    $ gem install awasm --pre
+    $ gem install evoasm --pre
     
 ### Requirements
 
@@ -24,12 +24,12 @@ Currently, the only supported architecture is **x86_64**.
 
 ## Usage
 
-Please see [Getting Started](https://github.com/furunkel/awasm/wiki/Getting-Started).
+Please see [Getting Started](https://github.com/furunkel/evoasm/wiki/Getting-Started).
 
 
 ## Contributing
 
-1. Fork it ( https://github.com/furunkel/awasm/fork )
+1. Fork it ( https://github.com/furunkel/evoasm/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
@@ -39,4 +39,4 @@ Please see [Getting Started](https://github.com/furunkel/awasm/wiki/Getting-Star
 
 [MPL-2.0][license]
 
-[license]: https://github.com/furunkel/awasm/blob/master/LICENSE.txt
+[license]: https://github.com/furunkel/evoasm/blob/master/LICENSE.txt

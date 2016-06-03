@@ -1,15 +1,15 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'awasm/version'
+require 'evoasm/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "awasm"
-  spec.version       = Awasm::VERSION
+  spec.name          = "evoasm"
+  spec.version       = Evoasm::VERSION
   spec.authors       = ["Julian Aron Prenner (furunkel)"]
   spec.email         = ["furunkel@polyadic.com"]
   spec.summary       = %q{An AIMGP (Automatic Induction of Machine code by Genetic Programming) engine}
-  spec.homepage      = "https://github.com/furunkel/awasm/"
+  spec.homepage      = "https://github.com/furunkel/evoasm/"
   spec.license       = "MPL-2.0"
 
   spec.files         = `git ls-files -z`.split("\x0")

@@ -1,0 +1,42 @@
+edge_set:
+  src: [evoasm-seq.c.tmpl, evoasm-seq.h.tmpl]
+  dst: [evoasm-edge-set.c, evoasm-edge-set.h]
+  locals:
+    p: evoasm_edge_set
+    s: evoasm_edge_set
+    e: evoasm_edge
+    includes: >
+      #include "evoasm-edge.h"
+    embed: 3
+    header: evoasm-edge-set.h
+    cmp: >
+      return a->dir == b->dir &&
+             a->node_index == b->node_index &&
+             a->index == b->index;
+
+node_list:
+  src: [evoasm-seq.c.tmpl, evoasm-seq.h.tmpl]
+  dst: [evoasm-node-list.c, evoasm-node-list.h]
+  locals:
+    p: evoasm_node_list
+    s: evoasm_node_list
+    e: evoasm_node
+    includes: >
+      #include "evoasm-node.h"
+    embed: 0
+    header: evoasm-node-list.h
+    cmp: return false;
+
+token_list:
+  src: [evoasm-seq.c.tmpl, evoasm-seq.h.tmpl]
+  dst: [evoasm-token-list.c, evoasm-token-list.h]
+  locals:
+    p: evoasm_token_list
+    s: evoasm_token_list
+    e: evoasm_token
+    includes: >
+      #include "evoasm-token.h"
+    embed: 0
+    header: evoasm-token-list.h
+    cmp: return false;
+

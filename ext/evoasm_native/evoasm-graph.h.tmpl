@@ -1,0 +1,21 @@
+#pragma once
+
+#include "evoasm-util.h"
+
+$includes
+
+typedef struct  {
+  $nl nodes;
+  $el edges;
+} $s;
+
+static inline uint$w_t
+$s_node_index($s *graph, $n *node) {
+  return (uint$w_t)(node - graph->nodes.data);
+}
+
+void $s_destroy($s *graph);
+evoasm_success $s_init($s *graph, uint$w_t capa);
+evoasm_success $s_add($s *graph, $n **node);
+evoasm_success $s_link($s *graph, $n *from, $n *to, $l label);
+

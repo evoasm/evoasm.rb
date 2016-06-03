@@ -1,0 +1,124 @@
+#include <assert.h>
+#include <errno.h>
+
+#include "evoasm-asg-edge-list.h"
+#include "evoasm-alloc.h"
+
+#include "gen/evoasm-asg-edge.h"
+
+void
+evoasm_asg_edge_list_clear(evoasm_asg_edge_list *free_list, uint32_t start, uint32_t end) {
+  for(uint32_t i = start; i < end - 1; i++) {
+    EVOASM_ASG_EDGE_LIST_DATA(free_list)[i].free = true;
+    EVOASM_ASG_EDGE_LIST_DATA(free_list)[i].next_free = i + 1;
+  }
+  EVOASM_ASG_EDGE_LIST_DATA(free_list)[end - 1].next_free = EVOASM_ASG_EDGE_LIST_NULL_IDX;
+  EVOASM_ASG_EDGE_LIST_DATA(free_list)[end - 1].free = true;
+
+  free_list->last_free = end - 1;
+}
+
+
+evoasm_asg_edge *
+evoasm_asg_edge_list_data(evoasm_asg_edge_list *free_list) {
+ return EVOASM_ASG_EDGE_LIST_DATA(free_list);
+}
+
+evoasm_success
+evoasm_asg_edge_list_init(evoasm_asg_edge_list *free_list, uint32_t capa) {
+
+#if 0 > 0
+  free_list->data = NULL;
+  free_list->capa = EVOASM_SEQ_EMBED_N;
+#else
+  size_t size = sizeof(evoasm_asg_edge) * capa;
+  free_list->data = evoasm_malloc(size);
+  if(free_list->data == NULL) {
+    evoasm_set_error(EVOASM_ERROR_TYPE_MEMORY, EVOASM_ERROR_CODE_NONE,
+        NULL, "Allocationg buffer of size %zu failed: %s", size, strerror(errno));
+    return false;
+  }
+  free_list->capa = capa;
+#endif
+
+  free_list->first_free = 0;
+  free_list->len = 0;
+
+  evoasm_asg_edge_list_clear(free_list, 0, free_list->capa);
+  return true;
+}
+
+evoasm_success
+_evoasm_asg_edge_list_grow(evoasm_asg_edge_list *free_list) {
+  uint32_t new_capa = free_list->capa + free_list->capa / 2;
+
+#if 0 > 0
+  if(free_list->data == NULL) {
+    free_list->data = malloc(sizeof(evoasm_asg_edge) * new_capa);
+    memcpy(free_list->data, free_list->_data, sizeof(evoasm_asg_edge) * free_list->capa);
+    goto update;
+  }
+#endif
+
+  {
+    size_t size = sizeof(evoasm_asg_edge) * new_capa;
+    evoasm_asg_edge *new_data = evoasm_realloc(free_list->data, size);
+
+    if(EVOASM_UNLIKELY(new_data == NULL)) {
+      evoasm_set_error(EVOASM_ERROR_TYPE_MEMORY, EVOASM_ERROR_CODE_NONE,
+          NULL, "Reallocationg buffer of size %zu failed: %s", size, strerror(errno));
+      return false;
+    }
+  }
+update:
+  free_list->first_free = free_list->capa;
+  evoasm_asg_edge_list_clear(free_list, free_list->capa, new_capa);
+  free_list->capa = new_capa;
+  return true;
+}
+
+evoasm_asg_edge *
+evoasm_asg_edge_list_delete(evoasm_asg_edge_list *free_list, evoasm_asg_edge *e) {
+  uint32_t idx = evoasm_asg_edge_list_index(free_list, e);
+
+  e->next_free = free_list->first_free;
+  e->free = true;
+
+  // only free slot
+  if(free_list->last_free == EVOASM_ASG_EDGE_LIST_NULL_IDX) {
+    free_list->last_free = idx;
+  }
+
+  free_list->first_free = idx;
+  free_list->len--;
+  return e;
+}
+
+bool
+evoasm_asg_edge_list_eql(evoasm_asg_edge_list *a, evoasm_asg_edge_list *b) {
+  return a->dir == b->dir &&
+       a->node_idx == b->node_idx &&
+       a->label == b->label;
+
+}
+
+bool
+evoasm_asg_edge_list_find(evoasm_asg_edge_list *free_list, evoasm_asg_edge *value, uint32_t *index) {
+
+  if(free_list->len == 0) return false;
+
+  for(uint32_t i = 0; i < free_list->capa; i++) {
+    if(!EVOASM_ASG_EDGE_LIST_DATA(free_list)[i].free) {
+      if(evoasm_asg_edge_list_cmp(value, &EVOASM_ASG_EDGE_LIST_DATA(free_list)[i])) {
+        if(index != NULL) *index = i;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void
+evoasm_asg_edge_list_destroy(evoasm_asg_edge_list *free_list) {
+  evoasm_free(free_list->data);
+}

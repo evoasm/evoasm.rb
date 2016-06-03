@@ -2,7 +2,7 @@ require_relative 'test_helper'
 
 class X64Test < Minitest::Test
   def setup
-    @x64 = Awasm::X64.new
+    @x64 = Evoasm::X64.new
     @x64.encode :add_r32_rm32, reg0: :A, reg1: :B
   end
 
