@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+# filetype=ruby
+
+begin
+  require 'evoasm'
+  require 'evoasm/cli'
+rescue LoadError
+  $LOAD_PATH.unshift File.expand_path File.join(__dir__, '../lib')
+  retry
+end
+
+search = Evoasm::Cli::Search.new ARGV[0], ARGV[1..-1]
+search.start!

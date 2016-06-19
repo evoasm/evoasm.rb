@@ -1,13 +1,13 @@
 require_relative '../test_helper'
 
-require 'awasm'
+require 'evoasm'
 
 module MiniTest::Assertions
-  include Awasm
+  include Evoasm
 
   def assert_disassembles_to(disasm, inst_name, **params)
     assert_equal disasm,
-        Awasm::X64.disassemble(@x64.encode(inst_name, params)).first
+        Evoasm::X64.disassemble(@x64.encode(inst_name, params)).first
   end
 
   def assert_assembles_to(asm, inst_name, **params)

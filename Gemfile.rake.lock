@@ -1,15 +1,15 @@
 GIT
-  remote: https://bitbucket.org/furunkel/awasm-scrapers
+  remote: https://bitbucket.org/furunkel/evoasm-scrapers
   revision: d6a34bf32816539eb97da8d9c1de0c8ae7b89dd6
   branch: master
   specs:
-    awasm-scrapers (0.1.0)
+    evoasm-scrapers (0.1.0)
       logger-colors
 
 PATH
   remote: .
   specs:
-    awasm (0.0.2.pre4)
+    evoasm (0.0.2.pre4)
       pastel (~> 0.6)
       pry (~> 0.10)
 
@@ -39,8 +39,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  awasm!
-  awasm-scrapers!
+  evoasm!
+  evoasm-scrapers!
   bundler (~> 1.7)
   erubis (~> 2.6)
   minitest (~> 5.8)
