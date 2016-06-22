@@ -655,8 +655,39 @@ set_domain(VALUE key, VALUE val, VALUE user_data) {
 }
 
 static VALUE
+set_size_param(VALUE rb_size, evoasm_search_params *params, int id) {  
+  unsigned min_size, max_size;
+  
+  if(FIXNUM_P(rb_size)) {
+    min_size = (evoasm_program_size) FIX2UINT(rb_size);
+    max_size = min_program_size;
+  } else {
+    VALUE rb_beg;
+    VALUE rb_end;
+    int exclp;
+    if(rb_range_values(rb_program_size, &rb_beg, &rb_end, &exclp) == Qtrue) {
+      min_size = FIX2UINT(rb_beg);
+      max_size = FIX2UINT(rb_end);
+      if(exclp) max_size--;
+    } else {
+      rb_raise(rb_eArgError, "invalid program size");
+    }
+  }
+  
+  if(id == 0) {
+    params->min_kernel_size = min_size;
+    params->max_kernel_size = max_size;    
+  } elif(id == 1) {
+    params->min_program_size = min_size;
+    params->max_program_size = max_size;        
+  }  else {
+    evoasm_assert_not_reached();
+  }
+}
+
+static VALUE
 rb_search_initialize(int argc, VALUE* argv, VALUE self) {
-  VALUE rb_arch, rb_pop_size, rb_program_size, rb_insts, rb_input, rb_output;
+  VALUE rb_arch, rb_pop_size, rb_kernel_size, rb_program_size, rb_insts, rb_input, rb_output;
   VALUE rb_input_arity, rb_output_arity, rb_params, rb_mutation_rate;
   VALUE rb_seed, rb_domains;
 
@@ -670,8 +701,7 @@ rb_search_initialize(int argc, VALUE* argv, VALUE self) {
   long params_len;
   uint32_t pop_size;
   uint32_t mutation_rate;
-  evoasm_program_size min_program_size;
-  evoasm_program_size max_program_size;
+  
   evoasm_program_input input;
   evoasm_program_input output;
 
@@ -682,7 +712,8 @@ rb_search_initialize(int argc, VALUE* argv, VALUE self) {
     &rb_output_arity,
     &rb_arch,
     &rb_pop_size,
-    &rb_program_size,
+    &rb_kernel_size,
+    &rb_program_size,    
     &rb_insts,
     &rb_params,
     &rb_mutation_rate,
@@ -715,22 +746,6 @@ rb_search_initialize(int argc, VALUE* argv, VALUE self) {
 
   if(RARRAY_LEN(rb_seed) < 64) {
     rb_raise(rb_eArgError, "seed must be an array of size at least 64");
-  }
-
-  if(FIXNUM_P(rb_program_size)) {
-    min_program_size = (evoasm_program_size) FIX2UINT(rb_program_size);
-    max_program_size = min_program_size;
-  } else {
-    VALUE rb_beg;
-    VALUE rb_end;
-    int exclp;
-    if(rb_range_values(rb_program_size, &rb_beg, &rb_end, &exclp) == Qtrue) {
-      min_program_size = (evoasm_program_size) FIX2UINT(rb_beg);
-      max_program_size = (evoasm_program_size) FIX2UINT(rb_end);
-      if(exclp) max_program_size--;
-    } else {
-      rb_raise(rb_eArgError, "invalid program size");
-    }
   }
 
   if(pop_size % 2) {
@@ -789,6 +804,9 @@ rb_search_initialize(int argc, VALUE* argv, VALUE self) {
   for(i = 0; i < EVOASM_ARY_LEN(search_params.seed64.data); i++) {
     search_params.seed64.data[i] = (uint64_t) NUM2ULL(RARRAY_AREF(rb_seed, i));
   }
+  
+  set_size_param(rb_kernel_size, &search_params, 0);
+  set_size_param(rb_program_size, &search_params, 1);
 
   {
     struct arch_with_params user_data = {arch, &search_params};
@@ -954,7 +972,7 @@ result_func(VALUE user_data) {
   }
 
   {
-    size_t params_size = sizeof(evoasm_program_params) + data->program->params->size * sizeof(evoasm_program_param);
+    size_t params_size = sizeof(evoasm_kernel_params) + data->program->params->size * sizeof(evoasm_kernel_param);
     size_t matching_size =_program._output.arity * sizeof(uint_fast8_t);
 
     _program.index = 0;

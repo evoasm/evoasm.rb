@@ -10,6 +10,9 @@
 typedef double evoasm_fitness;
 typedef uint8_t evoasm_program_size;
 
+#define EVOASM_KERNEL_SIZE_MAX UINT8_MAX
+typedef uint8_t evoasm_kernel_size;
+
 typedef enum {
   EVOASM_EXAMPLE_TYPE_I64,
   EVOASM_EXAMPLE_TYPE_U64,
@@ -47,31 +50,35 @@ typedef struct {
   evoasm_inst *inst;
   evoasm_arch_params_bitmap set_params;
   evoasm_arch_param_val param_vals[EVOASM_ARCH_MAX_PARAMS];
-} evoasm_program_param;
+} evoasm_kernel_param;
+
+typedef struct {
+  evoasm_kernel_size size;
+  /* kernel executed next (jumped to)
+   * Kernel terminates if EVOASM_KERNEL_SIZE_MAX 
+   */
+  evoasm_kernel_size next;
+  evoasm_kernel_param params[];
+} evoasm_kernel_params;
 
 typedef struct {
   evoasm_program_size size;
-  evoasm_program_param params[];
+  evoasm_kernel_params kernel_params[];
 } evoasm_program_params;
 
-#define EVOASM_PROGRAM_MAX_OUTPUT_REGS 254
-#define EVOASM_PROGRAM_MAX_INPUT_REGS 254
+#define EVOASM_KERNEL_MAX_OUTPUT_REGS 254
+#define EVOASM_KERNEL_MAX_INPUT_REGS 254
+#define EVOASM_PROGRAM_MAX_SIZE 64
 
 typedef struct {
-  evoasm_reg_id id;
-  uint8_t size;
-} evoasm_sized_reg_id;
-
-typedef struct {
-  evoasm_program_params *params;
-  evoasm_sized_reg_id output_regs[EVOASM_PROGRAM_MAX_OUTPUT_REGS];
-  evoasm_reg_id input_regs[EVOASM_PROGRAM_MAX_INPUT_REGS];
+  evoasm_kernel_params *params;
+  evoasm_reg output_regs[EVOASM_KERNEL_MAX_OUTPUT_REGS];
+  evoasm_reg input_regs[EVOASM_KERNEL_MAX_INPUT_REGS];
   uint_fast8_t n_output_regs;
-  uint_fast8_t n_input_regs;
-  uint8_t in_arity;
-  uint8_t out_arity;
-  evoasm_example_type types[EVOASM_PROGRAM_OUTPUT_MAX_ARITY];
-  evoasm_example_val *output_vals;
+  uint_fast8_t n_input_regs;  
+} evoasm_kernel;
+
+typedef struct {
   evoasm_arch *arch;
   evoasm_buf *buf;
   evoasm_buf *body_buf;
@@ -82,9 +89,16 @@ typedef struct {
   void *_signal_ctx;
   uint32_t exception_mask;
 
+  uint8_t in_arity;
+  uint8_t out_arity;
+  evoasm_example_type types[EVOASM_PROGRAM_OUTPUT_MAX_ARITY];
+  evoasm_example_val *output_vals;
+
+  evoasm_kernel kernels[EVOASM_PROGRAM_MAX_SIZE];
   evoasm_program_input _input;
   evoasm_program_output _output;
   uint_fast8_t *_matching;
+  evoasm_kernel_size term_kernel_idx;
 } evoasm_program;
 
 #define EVOASM_SEARCH_ELITE_SIZE 4
@@ -120,6 +134,9 @@ typedef struct {
   evoasm_inst **insts;
   evoasm_program_size min_program_size;
   evoasm_program_size max_program_size;
+  evoasm_program_size min_kernel_size;
+  evoasm_program_size max_kernel_size;
+  
   uint16_t insts_len;
   uint8_t params_len;
   uint32_t pop_size;
@@ -142,7 +159,7 @@ typedef struct {
 
 bool
 evoasm_search_init(evoasm_search *search,
-                  evoasm_arch *arch, evoasm_search_params *params);
+                   evoasm_arch *arch, evoasm_search_params *params);
 
 bool
 evoasm_search_destroy(evoasm_search *search);

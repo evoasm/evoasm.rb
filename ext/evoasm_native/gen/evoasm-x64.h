@@ -94,6 +94,14 @@ enum evoasm_x64_reg_type {
 };
 
 
+typedef enum {
+  EVOASM_X64_REG_SEG_64 = 1,
+  EVOASM_X64_REG_SEG_32,
+  EVOASM_X64_REG_SEG_16,
+  EVOASM_X64_REG_SEG_8U,
+  EVOASM_X64_REG_SEG_8L,
+} evoasm_x64_reg_seg_id;
+
 extern uint8_t evoasm_x64_reg_type_sizes[EVOASM_X64_N_REG_TYPES];
 
 typedef enum evoasm_x64_reg_id {

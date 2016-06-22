@@ -18,7 +18,7 @@ Evoasm::Tasks::GenTask.new
 begin
   require 'evoasm/scrapers'
   Evoasm::Scrapers::X64.new do |t|
-    t.output_filename = Evoasm::Gen::Task::X64_TABLE_FILENAME
+    t.output_filename = Evoasm::Tasks::GenTask::X64_TABLE_FILENAME
   end
 rescue LoadError
 end
