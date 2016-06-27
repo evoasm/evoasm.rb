@@ -50,8 +50,21 @@ module Evoasm
         io.write '}'
         io.write " #{type_name}" if typedef
         io.puts ';'
+        unless flags?
+          io.puts "#define #{bits_const_name_to_c} #{Math.log2(max).ceil.to_i}"
+        end
 
         io.string
+      end
+
+      def max
+        @map.each_with_index.inject(0) do |acc, (index, (k, v))|
+          if v
+            [v + 1, acc + 1].max
+          else
+            acc + 1
+          end
+        end - 1
       end
 
       def c_type(typedef = false)
@@ -60,6 +73,10 @@ module Evoasm
 
       def c_type_name
         name_to_c name, @prefix
+      end
+
+      def bits_const_name_to_c
+        name_to_c "#{prefix_name}_bits", @prefix, const: true
       end
 
       def n_elem_to_c

@@ -16,14 +16,6 @@
 
 <%= reg_types.to_c typedef: false %>
 
-typedef enum {
-  EVOASM_X64_REG_SEG_64 = 1,
-  EVOASM_X64_REG_SEG_32,
-  EVOASM_X64_REG_SEG_16,
-  EVOASM_X64_REG_SEG_8U,
-  EVOASM_X64_REG_SEG_8L,
-} evoasm_x64_reg_seg_id;
-
 extern uint8_t evoasm_x64_reg_type_sizes[EVOASM_X64_N_REG_TYPES];
 
 <%= reg_names.to_c %>
@@ -63,6 +55,13 @@ typedef struct {
 
 <%= operand_types.to_c %>
 
+typedef enum {
+  EVOASM_X64_BIT_SEG_0_127,
+  EVOASM_X64_BIT_SEG_0_63,
+  EVOASM_X64_BIT_SEG_0_31,
+  EVOASM_X64_N_BIT_SEGS
+} evoasm_x64_bit_seg;
+
 typedef struct {
   unsigned type: 3;
   unsigned acc_r: 1;
@@ -74,6 +73,7 @@ typedef struct {
   unsigned reg_id: 7;
   unsigned param_idx: 5;
   unsigned size: 4;
+  unsigned acc_w_seg: 4;
 } evoasm_x64_operand;
 
 typedef struct {

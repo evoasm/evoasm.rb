@@ -15,6 +15,7 @@ static VALUE cArchitecture;
 static VALUE cBuffer;
 static VALUE cSearch;
 static VALUE cProgram;
+static VALUE cKernel;
 static VALUE eError;
 static VALUE eArchitectureError;
 
@@ -233,13 +234,28 @@ rb_search_alloc(VALUE klass) {
 }
 
 typedef struct {
+  evoasm_kernel kernel;
+  VALUE params;
+  VALUE insts;
+  VALUE program;
+} rb_evoasm_kernel;
+
+typedef struct {
   evoasm_program program;
   VALUE params;
   VALUE buffer;
   VALUE body_buffer;
   VALUE insts;
   VALUE arch;
+  VALUE kernels[EVOASM_PROGRAM_MAX_SIZE];
 } rb_evoasm_program;
+
+static void
+kernel_free(void *p) {
+  rb_evoasm_kernel *kernel = (rb_evoasm_kernel *)p;
+  xfree(kernel->kernel.params);
+  xfree(p);
+}
 
 static void
 program_free(void *p) {
@@ -249,19 +265,37 @@ program_free(void *p) {
   xfree(p);
 }
 
+
+static void
+kernel_mark(void *p) {
+  rb_evoasm_kernel *kernel = (rb_evoasm_kernel *)p;
+  rb_gc_mark(kernel->params);
+  rb_gc_mark(kernel->insts);
+  rb_gc_mark(kernel->program);
+}
+
 static void
 program_mark(void *p) {
+  unsigned i;
   rb_evoasm_program *program = (rb_evoasm_program *)p;
   rb_gc_mark(program->buffer);
   rb_gc_mark(program->body_buffer);
-  rb_gc_mark(program->params);
-  rb_gc_mark(program->insts);
   rb_gc_mark(program->buffer);
+  for(i = 0; i < program->program.params->size; i++) {
+    rb_gc_mark(program->kernels[i]);
+  }
 }
 
 static const rb_data_type_t rb_program_type = {
   "Evoasm::Program",
   {program_mark, program_free, NULL,},
+  NULL, NULL,
+  RUBY_TYPED_FREE_IMMEDIATELY,
+};
+
+static const rb_data_type_t rb_kernel_type = {
+  "Evoasm::Kernel",
+  {kernel_mark, kernel_free, NULL,},
   NULL, NULL,
   RUBY_TYPED_FREE_IMMEDIATELY,
 };
@@ -395,13 +429,16 @@ rb_program_output_registers(VALUE self) {
   rb_evoasm_program *program;
   VALUE ary = rb_ary_new();
   unsigned i;
+  evoasm_kernel *last_kernel;
 
   TypedData_Get_Struct(self, rb_evoasm_program, &rb_program_type, program);
+  
+  last_kernel = &program->program.kernels[program->program.params->size - 1];
 
-  for(i = 0; i < program->program.n_output_regs; i++) {
+  for(i = 0; i < last_kernel->n_output_regs; i++) {
     switch(program->program.arch->cls->id) {
         case EVOASM_ARCH_X64:
-          rb_ary_push(ary, ID2SYM(rb_x64_reg_ids[program->program.output_regs[i].id]));
+          rb_ary_push(ary, ID2SYM(rb_x64_reg_ids[last_kernel->output_regs[i].id]));
           break;
         default: evoasm_assert_not_reached();
     }
@@ -472,16 +509,19 @@ rb_x64_parameters_alloc(VALUE klass) {
 }
 
 static VALUE
-rb_program_parameters(VALUE self) {
+rb_kernel_parameters(VALUE self) {
+  rb_evoasm_kernel *kernel;
   rb_evoasm_program *program;
-  TypedData_Get_Struct(self, rb_evoasm_program, &rb_program_type, program);
+  
+  TypedData_Get_Struct(self, rb_evoasm_kernel, &rb_kernel_type, kernel);
+  TypedData_Get_Struct(kernel->program, rb_evoasm_program, &rb_program_type, program);
 
-  if(program->params != Qnil) return program->params;
+  if(kernel->params != Qnil) return kernel->params;
 
   {
     unsigned i;
-    program->params = rb_ary_new2(program->program.params->size);
-    for(i = 0; i < program->program.params->size; i++) {
+    kernel->params = rb_ary_new2(kernel->kernel.params->size);
+    for(i = 0; i < kernel->kernel.params->size; i++) {
       VALUE rb_params;
 
       switch(program->program.arch->cls->id) {
@@ -489,55 +529,70 @@ rb_program_parameters(VALUE self) {
           evoasm_x64_params *params;
           rb_params = rb_x64_parameters_alloc(cX64Parameters);
           TypedData_Get_Struct(rb_params, evoasm_x64_params, &rb_x64_params_type, params);
-          MEMCPY(params->vals, program->program.params->params[i].param_vals, evoasm_arch_param_val, EVOASM_X64_N_PARAMS);
-          params->set = program->program.params->params[i].set_params;
+          MEMCPY(params->vals, kernel->kernel.params->params[i].param_vals, evoasm_arch_param_val, EVOASM_X64_N_PARAMS);
+          params->set = kernel->kernel.params->params[i].set_params;
           break;
         }
         default: evoasm_assert_not_reached();
       }
-      rb_ary_push(program->params, rb_params);
+      rb_ary_push(kernel->params, rb_params);
     }
   }
 
-  return program->params;
+  return kernel->params;
 }
 
 static VALUE
-rb_program_instructions(VALUE self) {
+rb_kernel_instructions(VALUE self) {
+  rb_evoasm_kernel *kernel;
   rb_evoasm_program *program;
-  TypedData_Get_Struct(self, rb_evoasm_program, &rb_program_type, program);
+  
+  TypedData_Get_Struct(self, rb_evoasm_kernel, &rb_kernel_type, kernel);
+  TypedData_Get_Struct(kernel->program, rb_evoasm_program, &rb_program_type, program);
 
-  if(program->insts != Qnil) return program->insts;
+  if(kernel->insts != Qnil) return kernel->insts;
 
   {
     unsigned i;
-    program->insts = rb_ary_new2(program->program.params->size);
-    for(i = 0; i < program->program.params->size; i++) {
+    kernel->insts = rb_ary_new2(kernel->kernel.params->size);
+    for(i = 0; i < kernel->kernel.params->size; i++) {
       VALUE rb_inst;
 
       switch(program->program.arch->cls->id) {
         case EVOASM_ARCH_X64: {
           rb_evoasm_x64_inst *inst = ALLOC(rb_evoasm_x64_inst);
           inst->arch = program->arch;
-          inst->inst = (evoasm_x64_inst *) program->program.params->params[i].inst;
+          inst->inst = (evoasm_x64_inst *) kernel->kernel.params->params[i].inst;
           rb_inst = TypedData_Wrap_Struct(evoasm_cX64Instruction, &rb_x64_inst_type, inst);
           break;
         }
         default: evoasm_assert_not_reached();
       }
-      rb_ary_push(program->insts, rb_inst);
+      rb_ary_push(kernel->insts, rb_inst);
     }
   }
 
-  return program->insts;
+  return kernel->insts;
 }
 
 static VALUE
 rb_program_alloc(VALUE klass) {
+  unsigned i;
   rb_evoasm_program *program = ALLOC(rb_evoasm_program);
   program->params = Qnil;
   program->buffer = Qnil;
+  for(i = 0; i < EVOASM_PROGRAM_MAX_SIZE; i++) {
+    program->kernels[i] = Qnil;
+  }
   return TypedData_Wrap_Struct(klass, &rb_program_type, program);
+}
+
+static VALUE
+rb_kernel_alloc(VALUE klass) {
+  rb_evoasm_kernel *kernel = ALLOC(rb_evoasm_kernel);
+  kernel->params = Qnil;
+  kernel->program = Qnil;
+  return TypedData_Wrap_Struct(klass, &rb_kernel_type, kernel);
 }
 
 
@@ -654,18 +709,18 @@ set_domain(VALUE key, VALUE val, VALUE user_data) {
   return ST_CONTINUE;
 }
 
-static VALUE
+static void
 set_size_param(VALUE rb_size, evoasm_search_params *params, int id) {  
   unsigned min_size, max_size;
   
   if(FIXNUM_P(rb_size)) {
     min_size = (evoasm_program_size) FIX2UINT(rb_size);
-    max_size = min_program_size;
+    max_size = min_size;
   } else {
     VALUE rb_beg;
     VALUE rb_end;
     int exclp;
-    if(rb_range_values(rb_program_size, &rb_beg, &rb_end, &exclp) == Qtrue) {
+    if(rb_range_values(rb_size, &rb_beg, &rb_end, &exclp) == Qtrue) {
       min_size = FIX2UINT(rb_beg);
       max_size = FIX2UINT(rb_end);
       if(exclp) max_size--;
@@ -675,11 +730,11 @@ set_size_param(VALUE rb_size, evoasm_search_params *params, int id) {
   }
   
   if(id == 0) {
-    params->min_kernel_size = min_size;
-    params->max_kernel_size = max_size;    
-  } elif(id == 1) {
-    params->min_program_size = min_size;
-    params->max_program_size = max_size;        
+    params->min_kernel_size = (evoasm_kernel_size) min_size;
+    params->max_kernel_size = (evoasm_kernel_size) max_size;    
+  } else if(id == 1) {
+    params->min_program_size = (evoasm_program_size) min_size;
+    params->max_program_size = (evoasm_program_size) max_size;        
   }  else {
     evoasm_assert_not_reached();
   }
@@ -786,8 +841,6 @@ rb_search_initialize(int argc, VALUE* argv, VALUE self) {
 
   search_params = (evoasm_search_params) {
     .pop_size = pop_size,
-    .min_program_size = min_program_size,
-    .max_program_size = max_program_size,
     .insts = insts,
     .program_input = input,
     .program_output = output,
@@ -1564,6 +1617,7 @@ void Init_evoasm_native() {
   cBuffer = rb_define_class_under(mEvoasm, "Buffer", rb_cData);
   cSearch = rb_define_class_under(mEvoasm, "Search", rb_cData);
   cProgram = rb_define_class_under(mEvoasm, "Program", rb_cData);
+  cKernel = rb_define_class_under(mEvoasm, "Kernel", rb_cData);
   cParameters = rb_define_class_under(mEvoasm, "Parameters", rb_cData);
   cX64Parameters = rb_define_class_under(cX64, "Parameters", cParameters);
   cInstruction = rb_define_class_under(mEvoasm, "Instruction", rb_cData);
@@ -1609,11 +1663,13 @@ void Init_evoasm_native() {
 
   rb_define_alloc_func(cProgram, rb_program_alloc);
   rb_define_method(cProgram, "buffer", rb_program_buffer, -1);
-  rb_define_method(cProgram, "parameters", rb_program_parameters, 0);
-  rb_define_method(cProgram, "instructions", rb_program_instructions, 0);
   rb_define_private_method(cProgram, "__run__", rb_program_run, 2);
   rb_define_method(cProgram, "eliminate_introns!", rb_program_eliminate_introns_bang, 0);
   rb_define_method(cProgram, "output_registers", rb_program_output_registers, 0);
+  
+  rb_define_alloc_func(cKernel, rb_kernel_alloc);
+  rb_define_method(cKernel, "parameters", rb_kernel_parameters, 0);
+  rb_define_method(cKernel, "instructions", rb_kernel_instructions, 0);
 
   rb_define_method(cParameter, "domain", rb_parameter_domain, 0);
   rb_define_method(cParameter, "name", rb_parameter_name, 0);

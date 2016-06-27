@@ -971,6 +971,12 @@ module Evoasm
           else
             io.puts 'EVOASM_N_OPERAND_SIZES'
           end
+
+          if op.accessed_bits.key? :w
+            io.puts bit_seg_to_c(op.accessed_bits[:w])
+          else
+            io.puts 'EVOASM_X64_N_BIT_SEGS'
+          end
         end
         io.puts '}', eol: eol
       end

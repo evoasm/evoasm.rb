@@ -55,6 +55,10 @@ module Evoasm
         const_name_to_c size, :operand_size
       end
 
+      def bit_seg_to_c(seg)
+        const_name_to_c "#{seg.min}_#{seg.max}", arch_prefix(:bit_seg)
+      end
+
       def feature_name_to_c(name)
         const_name_to_c name, arch_prefix(:feature)
       end

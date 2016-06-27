@@ -10,17 +10,8 @@
 #define EVOASM_ARCH_MAX_PARAMS 64
 
 typedef uint8_t evoasm_reg_id;
-typedef uint8_t evoasm_reg_seg_id;
+#define EVOASM_REG_ID_MAX UINT8_MAX
 typedef uint16_t evoasm_inst_id;
-
-typedef enum {
-  EVOASM_SUBREG_
-} evoasm_subreg_id;
-
-typedef struct {
-  evoasm_reg_id reg;
-  evoasm_reg_seg_id seg;
-} evoasm_reg;
 
 typedef enum {
   EVOASM_OPERAND_SIZE_1,
@@ -33,6 +24,8 @@ typedef enum {
   EVOASM_OPERAND_SIZE_512,
   EVOASM_N_OPERAND_SIZES,
 } evoasm_operand_size;
+
+#define EVOASM_OPERAND_SIZE_BITS 3
 
 struct evoasm_arch;
 struct evoasm_inst;
