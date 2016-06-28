@@ -51,7 +51,8 @@ module Evoasm
         io.write " #{type_name}" if typedef
         io.puts ';'
         unless flags?
-          io.puts "#define #{bits_const_name_to_c} #{Math.log2(max).ceil.to_i}"
+          io.puts "#define #{bitsize_const_name_to_c} #{Math.log2(max + 1).ceil.to_i}"
+          io.puts "#define #{bitsize_const_name_to_c true} #{Math.log2(max + 2).ceil.to_i}"
         end
 
         io.string
@@ -75,8 +76,8 @@ module Evoasm
         name_to_c name, @prefix
       end
 
-      def bits_const_name_to_c
-        name_to_c "#{prefix_name}_bits", @prefix, const: true
+      def bitsize_const_name_to_c(with_n = false)
+        name_to_c "#{prefix_name}_bitsize#{with_n ? '_WITH_N' : ''}", @prefix, const: true
       end
 
       def n_elem_to_c

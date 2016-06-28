@@ -667,6 +667,7 @@ module Evoasm
       attr_reader :features, :inst_flags
       attr_reader :reg_names, :exceptions
       attr_reader :reg_types, :operand_types
+      attr_reader :bit_segs
       attr_reader :insts, :regs
       attr_reader :registered_param_domains
 
@@ -735,6 +736,7 @@ module Evoasm
           @reg_types = Enum.new :reg_type, Evoasm::Gen::X64::REGISTERS.keys, prefix: arch
           @operand_types = Enum.new :operand_type, Evoasm::Gen::X64::Inst::OPERAND_TYPES, prefix: arch
           @reg_names = Enum.new :reg_id, Evoasm::Gen::X64::REGISTER_NAMES, prefix: arch
+          @bit_segs = Enum.new :bit_seg, %i(full 0_127 0_63 0_31), prefix: arch
         end
       end
 
@@ -975,7 +977,7 @@ module Evoasm
           if op.accessed_bits.key? :w
             io.puts bit_seg_to_c(op.accessed_bits[:w])
           else
-            io.puts 'EVOASM_X64_N_BIT_SEGS'
+            io.puts bit_seg_to_c(:full)
           end
         end
         io.puts '}', eol: eol

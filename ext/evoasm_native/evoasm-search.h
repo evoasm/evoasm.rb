@@ -12,6 +12,7 @@ typedef uint8_t evoasm_program_size;
 
 #define EVOASM_KERNEL_SIZE_MAX UINT8_MAX
 typedef uint8_t evoasm_kernel_size;
+#define EVOASM_KERNEL_MAX_SIZE (EVOASM_KERNEL_SIZE_MAX - 1)
 
 typedef enum {
   EVOASM_EXAMPLE_TYPE_I64,
@@ -70,27 +71,14 @@ typedef struct {
 #define EVOASM_PROGRAM_MAX_SIZE 64
 
 typedef struct {
-  struct {
-    unsigned id : (sizeof(evoasm_x64_re) * CHAR_BIT);
-    evoasm_operand_size size;
-    /* disambiguate {A,B,C,D}L from {A,B,C,D}H regs */
-    bool rex : 1;
-    bool alive : 1;
-    union {
-      evoasm_x64_bits_seg seg;
-    };
-  } regs[EVOASM_REG_ID_MAX];
-  uint_fast8_t n_output_regs;
-} evoasm_kernel_output;
-
-typedef struct {
-  bool rex : 1;
-  bool read : 1;
+  bool l8 : 1;
+  bool h8 : 1;
+  bool input : 1;
   bool written : 1;
-  unsigned reg_id : EVOASM_X64_REG_BITS;
-  unsigned seg : EVOASM_X64_BITS_SEG_BITS;
-  unsigned size: EVOASM_OPERAND_SIZE_BITS;
-} evoasm_x64_reg_info;
+  unsigned seg : EVOASM_X64_BIT_SEG_BITSIZE;
+  unsigned reg_id : EVOASM_X64_REG_BITSIZE_WITH_N;
+  unsigned size: EVOASM_OPERAND_SIZE_BITSIZE_WITH_N;
+} evoasm_kernel_x64_reg_info;
 
 typedef struct {
   evoasm_kernel_params *params;
@@ -99,6 +87,8 @@ typedef struct {
   } reg_info;
   uint_fast8_t n_input_regs;
   uint_fast8_t n_output_regs;
+  uint8_t idx;
+  uint16_t start;
 } evoasm_kernel;
 
 typedef struct {
@@ -114,6 +104,7 @@ typedef struct {
 
   uint8_t in_arity;
   uint8_t out_arity;
+  uint16_t body_end;
   evoasm_example_type types[EVOASM_PROGRAM_OUTPUT_MAX_ARITY];
   evoasm_example_val *output_vals;
 
@@ -123,7 +114,6 @@ typedef struct {
   evoasm_program_input _input;
   evoasm_program_output _output;
   uint_fast8_t *_matching;
-  evoasm_kernel_size term_kernel_idx;
   evoasm_program_size max_kernel_size;
 } evoasm_program;
 

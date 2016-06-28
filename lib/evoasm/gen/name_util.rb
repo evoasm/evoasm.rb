@@ -56,7 +56,12 @@ module Evoasm
       end
 
       def bit_seg_to_c(seg)
-        const_name_to_c "#{seg.min}_#{seg.max}", arch_prefix(:bit_seg)
+        name =
+          case seg
+          when Range then"#{seg.min}_#{seg.max}"
+          else seg.to_s
+          end
+        const_name_to_c name, arch_prefix(:bit_seg)
       end
 
       def feature_name_to_c(name)

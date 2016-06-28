@@ -80,7 +80,8 @@ typedef enum evoasm_x64_exception_id {
   EVOASM_X64_EXCEPTION_PFX = 23,
   EVOASM_X64_N_EXCEPTIONS
 } evoasm_x64_exception_id;
-#define EVOASM_X64_EXCEPTION_BITS 5
+#define EVOASM_X64_EXCEPTION_BITSIZE 5
+#define EVOASM_X64_EXCEPTION_BITSIZE_WITH_N 5
 
 
 enum evoasm_x64_reg_type {
@@ -93,7 +94,8 @@ enum evoasm_x64_reg_type {
   EVOASM_X64_REG_TYPE_ZMM = 6,
   EVOASM_X64_N_REG_TYPES
 };
-#define EVOASM_X64_REG_TYPE_BITS 3
+#define EVOASM_X64_REG_TYPE_BITSIZE 3
+#define EVOASM_X64_REG_TYPE_BITSIZE_WITH_N 3
 
 
 extern uint8_t evoasm_x64_reg_type_sizes[EVOASM_X64_N_REG_TYPES];
@@ -166,7 +168,8 @@ typedef enum evoasm_x64_reg_id {
   EVOASM_X64_REG_ZMM31 = 64,
   EVOASM_X64_N_REGS
 } evoasm_x64_reg_id;
-#define EVOASM_X64_REG_BITS 6
+#define EVOASM_X64_REG_BITSIZE 7
+#define EVOASM_X64_REG_BITSIZE_WITH_N 7
 
 
 static inline enum evoasm_x64_reg_type
@@ -274,7 +277,8 @@ typedef enum evoasm_x64_param_id {
   EVOASM_X64_PARAM_VEX_V = 28,
   EVOASM_X64_N_PARAMS
 } evoasm_x64_param_id;
-#define EVOASM_X64_PARAM_BITS 5
+#define EVOASM_X64_PARAM_BITSIZE 5
+#define EVOASM_X64_PARAM_BITSIZE_WITH_N 5
 
 
 typedef enum {
@@ -1983,28 +1987,45 @@ typedef enum evoasm_x64_operand_type {
   EVOASM_X64_OPERAND_TYPE_IMM = 4,
   EVOASM_X64_N_OPERAND_TYPES
 } evoasm_x64_operand_type;
-#define EVOASM_X64_OPERAND_TYPE_BITS 2
+#define EVOASM_X64_OPERAND_TYPE_BITSIZE 3
+#define EVOASM_X64_OPERAND_TYPE_BITSIZE_WITH_N 3
 
 
-typedef enum {
-  EVOASM_X64_BIT_SEG_0_127,
-  EVOASM_X64_BIT_SEG_0_63,
-  EVOASM_X64_BIT_SEG_0_31,
+typedef enum evoasm_x64_bit_seg {
+  EVOASM_X64_BIT_SEG_FULL = 0,
+  EVOASM_X64_BIT_SEG_0_127 = 1,
+  EVOASM_X64_BIT_SEG_0_63 = 2,
+  EVOASM_X64_BIT_SEG_0_31 = 3,
   EVOASM_X64_N_BIT_SEGS
 } evoasm_x64_bit_seg;
+#define EVOASM_X64_BIT_SEG_BITSIZE 2
+#define EVOASM_X64_BIT_SEG_BITSIZE_WITH_N 3
+
+
+static inline bool
+evoasm_x64_bit_seg_covered(evoasm_x64_bit_seg seg, evoasm_x64_bit_seg by) {
+  /* right now, will become more complicated if overlapping segments
+  * are added */
+  return by <= seg;
+}
+
+static inline bool
+evoasm_x64_bit_seg_union(evoasm_x64_bit_seg seg, evoasm_x64_bit_seg by) {
+  return EVOASM_MIN(seg, by);
+}
 
 typedef struct {
-  unsigned type: 3;
   unsigned acc_r: 1;
   unsigned acc_w: 1;
   unsigned acc_u: 1;
   unsigned acc_c: 1;
   unsigned implicit: 1;
-  unsigned reg_type: 3;
-  unsigned reg_id: 7;
   unsigned param_idx: 5;
-  unsigned size: 4;
-  unsigned acc_w_seg: 4;
+  unsigned type: EVOASM_X64_OPERAND_TYPE_BITSIZE;
+  unsigned reg_type: EVOASM_X64_REG_TYPE_BITSIZE_WITH_N;
+  unsigned reg_id: EVOASM_X64_REG_BITSIZE_WITH_N;
+  unsigned size: EVOASM_OPERAND_SIZE_BITSIZE_WITH_N;
+  unsigned acc_w_seg: EVOASM_X64_BIT_SEG_BITSIZE;
 } evoasm_x64_operand;
 
 typedef struct {

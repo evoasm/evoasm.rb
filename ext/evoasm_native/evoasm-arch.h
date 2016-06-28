@@ -25,7 +25,8 @@ typedef enum {
   EVOASM_N_OPERAND_SIZES,
 } evoasm_operand_size;
 
-#define EVOASM_OPERAND_SIZE_BITS 3
+#define EVOASM_OPERAND_SIZE_BITSIZE 3
+#define EVOASM_OPERAND_SIZE_BITSIZE_WITH_N 4
 
 struct evoasm_arch;
 struct evoasm_inst;

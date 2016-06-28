@@ -55,25 +55,32 @@ typedef struct {
 
 <%= operand_types.to_c %>
 
-typedef enum {
-  EVOASM_X64_BIT_SEG_0_127,
-  EVOASM_X64_BIT_SEG_0_63,
-  EVOASM_X64_BIT_SEG_0_31,
-  EVOASM_X64_N_BIT_SEGS
-} evoasm_x64_bit_seg;
+<%= bit_segs.to_c %>
+
+static inline bool
+evoasm_x64_bit_seg_covered(evoasm_x64_bit_seg seg, evoasm_x64_bit_seg by) {
+  /* right now, will become more complicated if overlapping segments
+  * are added */
+  return by <= seg;
+}
+
+static inline bool
+evoasm_x64_bit_seg_union(evoasm_x64_bit_seg seg, evoasm_x64_bit_seg by) {
+  return EVOASM_MIN(seg, by);
+}
 
 typedef struct {
-  unsigned type: 3;
   unsigned acc_r: 1;
   unsigned acc_w: 1;
   unsigned acc_u: 1;
   unsigned acc_c: 1;
   unsigned implicit: 1;
-  unsigned reg_type: 3;
-  unsigned reg_id: 7;
   unsigned param_idx: 5;
-  unsigned size: 4;
-  unsigned acc_w_seg: 4;
+  unsigned type: EVOASM_X64_OPERAND_TYPE_BITSIZE;
+  unsigned reg_type: EVOASM_X64_REG_TYPE_BITSIZE_WITH_N;
+  unsigned reg_id: EVOASM_X64_REG_BITSIZE_WITH_N;
+  unsigned size: EVOASM_OPERAND_SIZE_BITSIZE_WITH_N;
+  unsigned acc_w_seg: EVOASM_X64_BIT_SEG_BITSIZE;
 } evoasm_x64_operand;
 
 typedef struct {
