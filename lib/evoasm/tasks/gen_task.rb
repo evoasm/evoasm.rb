@@ -58,7 +58,7 @@ module Evoasm
       end
 
       def gen_path(filename)
-        File.join Evoasm.root, 'ext', 'evoasm_native', 'gen', filename
+        File.join Evoasm.root, 'ext', 'evoasm_native', filename
       end
 
       def load_insts(arch)

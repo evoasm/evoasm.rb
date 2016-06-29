@@ -14,7 +14,8 @@ examples:
   4.0: 8.48528137423857
   4.5: 10.00624804809475
   5.0: 11.61895003862225
-program_size: 5..15
+kernel_size: 5..15
+program_size: 1
 population_size: 1600
 min_fitness: 0.0
 parameters: [reg0, reg1, reg2]

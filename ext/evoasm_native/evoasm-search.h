@@ -75,8 +75,7 @@ typedef struct {
   bool h8 : 1;
   bool input : 1;
   bool written : 1;
-  unsigned seg : EVOASM_X64_BIT_SEG_BITSIZE;
-  unsigned reg_id : EVOASM_X64_REG_BITSIZE_WITH_N;
+  unsigned mask : EVOASM_X64_BIT_MASK_BITSIZE;
   unsigned size: EVOASM_OPERAND_SIZE_BITSIZE_WITH_N;
 } evoasm_kernel_x64_reg_info;
 
@@ -200,3 +199,6 @@ evoasm_program_eliminate_introns(evoasm_program *program);
 
 #define evoasm_program_output_destroy(program_output) \
   evoasm_program_io_destroy((evoasm_program_io *)program_output)
+
+void
+evoasm_program_output_regs(evoasm_program *program, evoasm_reg_id *output_regs, size_t *len);

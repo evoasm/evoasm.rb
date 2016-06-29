@@ -667,7 +667,7 @@ module Evoasm
       attr_reader :features, :inst_flags
       attr_reader :reg_names, :exceptions
       attr_reader :reg_types, :operand_types
-      attr_reader :bit_segs
+      attr_reader :bit_masks
       attr_reader :insts, :regs
       attr_reader :registered_param_domains
 
@@ -736,7 +736,7 @@ module Evoasm
           @reg_types = Enum.new :reg_type, Evoasm::Gen::X64::REGISTERS.keys, prefix: arch
           @operand_types = Enum.new :operand_type, Evoasm::Gen::X64::Inst::OPERAND_TYPES, prefix: arch
           @reg_names = Enum.new :reg_id, Evoasm::Gen::X64::REGISTER_NAMES, prefix: arch
-          @bit_segs = Enum.new :bit_seg, %i(full 0_127 0_63 0_31), prefix: arch
+          @bit_masks = Enum.new :bit_mask, %i(rest 64_127 32_63 0_31), prefix: arch, flags: true
         end
       end
 
@@ -939,23 +939,11 @@ module Evoasm
       def inst_operand_to_c(translator, op, io = StrIO.new, eol:)
         io.puts '{'
         io.indent do
-          io.puts operand_type_to_c(op.type), eol: ','
           io.puts op.access.include?(:r) ? '1' : '0', eol: ','
           io.puts op.access.include?(:w) ? '1' : '0', eol: ','
           io.puts op.access.include?(:u) ? '1' : '0', eol: ','
           io.puts op.access.include?(:c) ? '1' : '0', eol: ','
           io.puts op.implicit? ? '1' : '0', eol: ','
-          if op.reg_type
-            io.puts reg_type_to_c(op.reg_type), eol: ','
-          else
-            io.puts reg_types.n_elem_to_c, eol: ','
-          end
-
-          if op.reg
-            io.puts reg_name_to_c(op.reg), eol: ','
-          else
-            io.puts reg_names.n_elem_to_c, eol: ','
-          end
 
           params = translator.registered_params.reject{|p| local_param? p}
           if op.param
@@ -968,16 +956,30 @@ module Evoasm
             io.puts params.size, eol: ','
           end
 
+          io.puts operand_type_to_c(op.type), eol: ','
+
           if op.size
-            io.puts operand_size_to_c(op.size)
+            io.puts operand_size_to_c(op.size), eol: ','
           else
-            io.puts 'EVOASM_N_OPERAND_SIZES'
+            io.puts 'EVOASM_N_OPERAND_SIZES', eol: ','
+          end
+
+          if op.reg
+            io.puts reg_name_to_c(op.reg), eol: ','
+          else
+            io.puts reg_names.n_elem_to_c, eol: ','
+          end
+
+          if op.reg_type
+            io.puts reg_type_to_c(op.reg_type), eol: ','
+          else
+            io.puts reg_types.n_elem_to_c, eol: ','
           end
 
           if op.accessed_bits.key? :w
-            io.puts bit_seg_to_c(op.accessed_bits[:w])
+            io.puts bit_mask_to_c(op.accessed_bits[:w])
           else
-            io.puts bit_seg_to_c(:full)
+            io.puts bit_masks.all_to_c
           end
         end
         io.puts '}', eol: eol

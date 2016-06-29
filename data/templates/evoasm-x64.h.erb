@@ -55,19 +55,9 @@ typedef struct {
 
 <%= operand_types.to_c %>
 
-<%= bit_segs.to_c %>
-
-static inline bool
-evoasm_x64_bit_seg_covered(evoasm_x64_bit_seg seg, evoasm_x64_bit_seg by) {
-  /* right now, will become more complicated if overlapping segments
-  * are added */
-  return by <= seg;
-}
-
-static inline bool
-evoasm_x64_bit_seg_union(evoasm_x64_bit_seg seg, evoasm_x64_bit_seg by) {
-  return EVOASM_MIN(seg, by);
-}
+<%= bit_masks.to_c %>
+#define <%= bit_mask_to_c 0..63 %> (<%= bit_mask_to_c 0..31 %> | <%= bit_mask_to_c 32..63 %>)
+#define <%= bit_mask_to_c 0..127 %> (<%= bit_mask_to_c 0..63 %> | <%= bit_mask_to_c 64..127 %>)
 
 typedef struct {
   unsigned acc_r: 1;
@@ -77,10 +67,10 @@ typedef struct {
   unsigned implicit: 1;
   unsigned param_idx: 5;
   unsigned type: EVOASM_X64_OPERAND_TYPE_BITSIZE;
-  unsigned reg_type: EVOASM_X64_REG_TYPE_BITSIZE_WITH_N;
-  unsigned reg_id: EVOASM_X64_REG_BITSIZE_WITH_N;
   unsigned size: EVOASM_OPERAND_SIZE_BITSIZE_WITH_N;
-  unsigned acc_w_seg: EVOASM_X64_BIT_SEG_BITSIZE;
+  unsigned reg_id: EVOASM_X64_REG_BITSIZE_WITH_N;
+  unsigned reg_type: EVOASM_X64_REG_TYPE_BITSIZE_WITH_N;
+  unsigned acc_w_mask: EVOASM_X64_BIT_MASK_BITSIZE;
 } evoasm_x64_operand;
 
 typedef struct {
