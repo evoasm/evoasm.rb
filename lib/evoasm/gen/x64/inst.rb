@@ -25,9 +25,8 @@ module Evoasm
         MEM_OP_REGEXP = /^m(\d*)$/
         MOFFS_OP_REGEXP = /^moffs(\d+)$/
         VSIB_OP_REGEXP = /^vm(\d+)(?:x|y)$/
-        RM_OP_REGEXP = %r{^(r\d*|xmm|ymm|zmm|mm)(?:\d)?/m(\d+)$}
-        REG_OP_REGEXP = /^(r|xmm|ymm|zmm|mm)(?:(\d+)(?:a|b)?)?$/
-
+        RM_OP_REGEXP = %r{^(r\d*|xmm|ymm|zmm|mm)?/m(\d+)$}
+        REG_OP_REGEXP = /^(r|xmm|ymm|zmm|mm)(8|16|32|64)?$/
 
         Operand = Struct.new :name, :param, :type, :size, :access,
                              :encoded, :mnem, :reg, :implicit,
@@ -287,7 +286,7 @@ module Evoasm
             operand.type = :vsib
             operand.size = $1.to_i
           else
-            raise
+            raise "unexpected operand '#{op_name}'"
           end
 
           if (operand.type == :rm || operand.type == :reg)
@@ -318,7 +317,7 @@ module Evoasm
           when 'mm'
             [:mm, 64]
           else
-            fail "unexpected reg type '#{reg_op.match}' (#{reg_op})"
+            fail "unexpected reg type '#{type_match}/#{size_match}'"
           end
         end
 

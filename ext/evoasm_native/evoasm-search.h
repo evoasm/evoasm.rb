@@ -75,6 +75,7 @@ typedef struct {
   bool h8 : 1;
   bool input : 1;
   bool written : 1;
+  bool output : 1;
   unsigned mask : EVOASM_X64_BIT_MASK_BITSIZE;
   unsigned size: EVOASM_OPERAND_SIZE_BITSIZE_WITH_N;
 } evoasm_kernel_x64_reg_info;

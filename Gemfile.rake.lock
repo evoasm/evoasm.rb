@@ -1,6 +1,6 @@
 GIT
   remote: https://bitbucket.org/furunkel/evoasm-scrapers
-  revision: 76bf763c51c9e259c0538c5a83426eddfaf119ed
+  revision: cb7f44aeed5c8fbca2a08480a86672a9a3fa6618
   branch: master
   specs:
     evoasm-scrapers (0.1.0)
