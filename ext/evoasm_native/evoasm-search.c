@@ -160,12 +160,12 @@ evoasm_population_init(evoasm_population *pop, evoasm_search *search) {
   uint32_t pop_size = search->params.pop_size;
   unsigned i;
 
-  size_t body_buf_size = (size_t) (search->params.max_program_size * search->arch->cls->max_inst_len);
+  size_t body_buf_size = (size_t) (search->params.max_program_size * search->params.max_kernel_size * search->arch->cls->max_inst_len);
   size_t buf_size = EVOASM_PROGRAM_INPUT_N(&search->params.program_input) * (body_buf_size + EVOASM_SEARCH_PROLOG_EPILOG_SIZE);
 
   static evoasm_population zero_pop = {0};
   *pop = zero_pop;
-
+  
   size_t program_size = _EVOASM_PROGRAM_SIZE(search->params.max_program_size, search->params.max_kernel_size);
 
   pop->programs = evoasm_calloc(3 * pop_size, program_size);
@@ -348,8 +348,6 @@ evoasm_search_seed_program(evoasm_search *search, unsigned char *programs, unsig
 
   assert(program_size > 0);
   program_params->size = program_size;
-  
-  fprintf(stderr, "seeding %p %p %d\n", programs, program_params, program_index);
   
   for(i = 0; i < program_size; i++) {
     evoasm_kernel_params *kernel_params = _EVOASM_PROGRAM_PARAMS_KERNEL_PARAMS(program_params, search->params.max_kernel_size, i);
@@ -726,6 +724,7 @@ evoasm_program_x64_emit_kernel(evoasm_program *program, evoasm_kernel *kernel, e
 
   kernel->start = (uint16_t) buf->pos;
 
+  assert(kernel_params->size > 0);
   for(i = 0; i < kernel_params->size; i++) {
     evoasm_inst *inst = kernel_params->params[i].inst;
     evoasm_x64_inst *x64_inst = (evoasm_x64_inst *) inst;
@@ -759,6 +758,7 @@ evoasm_program_x64_emit_program_body(evoasm_program *program) {
 
   evoasm_buf_reset(buf);
 
+  assert(size > 0);
   for(i = 0; i < size; i++) {
     kernel = &program->kernels[i];
     if(i > 0) {
@@ -1144,7 +1144,7 @@ evoasm_program_load_output(evoasm_program *program,
   unsigned height = output->arity;
   unsigned n_examples = EVOASM_PROGRAM_INPUT_N(input);
 
-  loaded_output->len = (uint16_t)(EVOASM_PROGRAM_INPUT_N(input) * output->arity);
+  loaded_output->len = (uint16_t)(EVOASM_PROGRAM_INPUT_N(input) * height);
   loaded_output->vals = evoasm_malloc((size_t) loaded_output->len * sizeof(evoasm_example_val));
 
   for(i = 0; i < n_examples; i++) {
@@ -1470,6 +1470,7 @@ evoasm_search_eval_population(evoasm_search *search, unsigned char *programs,
     }
 
     if(EVOASM_UNLIKELY(fitness / n_examples <= min_fitness)) {
+      evoasm_info("program %d has best fitness %lf", i, fitness);
       program._output = search->params.program_output;
       program._input = search->params.program_input;
       program._matching = search->pop.matching;
@@ -1659,7 +1660,6 @@ evoasm_search_combine_parents(evoasm_search *search, unsigned char *programs, ui
 
   for(i = 0; i < search->params.pop_size; i += 2) {
     evoasm_program_params *parent_a = _EVOASM_SEARCH_PROGRAM_PARAMS(search, programs, parents[i]);
-    fprintf(stderr, "parent %p %p %d (%d)\n", programs, parent_a, parents[i], i);
     assert(parent_a->size > 0);
     evoasm_program_params *parent_b = _EVOASM_SEARCH_PROGRAM_PARAMS(search, programs, parents[i + 1]);
     evoasm_program_params *child_a = _EVOASM_SEARCH_PROGRAM_PARAMS(search, search->pop.programs_swap, i);

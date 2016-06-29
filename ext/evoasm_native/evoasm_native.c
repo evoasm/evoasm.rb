@@ -352,6 +352,14 @@ rb_program_buffer(int argc, VALUE *argv, VALUE self) {
   return buffer;
 }
 
+static VALUE
+rb_program_kernels(VALUE self) {
+  rb_evoasm_program *program;
+  TypedData_Get_Struct(self, rb_evoasm_program, &rb_program_type, program);
+
+  return program->kernels;
+}
+
 static void
 rb_examples_to_c(VALUE rb_examples, VALUE rb_arity, evoasm_program_io *examples) {
   unsigned i;
@@ -768,7 +776,6 @@ rb_search_initialize(int argc, VALUE* argv, VALUE self) {
     &rb_mutation_rate,
     &rb_seed,
     &rb_domains,
-
   };
 
   if(argc != EVOASM_ARY_LEN(args)) {
@@ -860,9 +867,13 @@ rb_search_initialize(int argc, VALUE* argv, VALUE self) {
     rb_hash_foreach(rb_domains, set_domain, (VALUE) &user_data);
   }
 
-  evoasm_search_init(search, arch, &search_params);
+  EVOASM_TRY(raise, evoasm_search_init, search, arch, &search_params);
 
   return self;
+  
+raise:
+  evoasm_raise_last_error();
+  return Qnil;
 }
 
 static const rb_data_type_t rb_op_type = {
@@ -1005,9 +1016,11 @@ result_func(VALUE user_data) {
   VALUE rb_body_buffer = rb_buffer_alloc(cBuffer);
   VALUE rb_kernels = rb_ary_new2(tmp_program.params->size);
 
+  assert(data->program->body_buf->pos > 0);
+
   {
     evoasm_buf *buf;
-    TypedData_Get_Struct(rb_buffer, evoasm_buf, &rb_buf_type, buf);
+    TypedData_Get_Struct(rb_buffer, evoasm_buf, &rb_buf_type, buf);    
     EVOASM_TRY(raise, evoasm_buf_clone, data->program->buf, buf);
     tmp_program.buf = buf;
   }
@@ -1067,6 +1080,8 @@ result_func(VALUE user_data) {
     program->body_buffer = rb_body_buffer;
     program->arch = (VALUE) data->program->arch->user_data;
     program->program = tmp_program;
+    
+    assert(program->program.body_buf->pos > 0);
   }
 
   {
@@ -1679,6 +1694,7 @@ void Init_evoasm_native() {
 
   rb_define_alloc_func(cProgram, rb_program_alloc);
   rb_define_method(cProgram, "buffer", rb_program_buffer, -1);
+  rb_define_method(cProgram, "kernels", rb_program_kernels, 0);
   rb_define_private_method(cProgram, "__run__", rb_program_run, 2);
   rb_define_method(cProgram, "eliminate_introns!", rb_program_eliminate_introns_bang, 0);
   rb_define_method(cProgram, "output_registers", rb_program_output_registers, 0);

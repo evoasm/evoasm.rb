@@ -110,7 +110,10 @@ evoasm_buf_log(evoasm_buf *buf, evoasm_log_level log_level) {
 
 size_t
 evoasm_buf_append(evoasm_buf * restrict dst, evoasm_buf * restrict src) {
-  if(src->pos > dst->capa - dst->pos) {
+  size_t free = dst->capa - dst->pos;
+  if(src->pos > free) {
+    evoasm_set_error(EVOASM_ERROR_TYPE_ARGUMENT, EVOASM_ERROR_CODE_NONE,
+      NULL, "buffer does not fit (need %zu bytes but only %zu free)", src->pos, free);
     return src->pos - (dst->capa - dst->pos);
   }
   memcpy(dst->data + dst->pos, src->data, src->pos);
@@ -123,6 +126,5 @@ evoasm_buf_clone(evoasm_buf * restrict buf, evoasm_buf * restrict cloned_buf) {
   if(!evoasm_buf_init(cloned_buf, buf->type, buf->capa)) {
     return false;
   }
-  evoasm_buf_append(cloned_buf, buf);
-  return true;
+  return evoasm_buf_append(cloned_buf, buf) == 0;
 }
