@@ -579,7 +579,7 @@ module Evoasm
             if vex.include? '66'
               0b01
             elsif vex.include? 'F3'
-              0x10
+              0b10
             elsif vex.include? 'F2'
               0b11
             else

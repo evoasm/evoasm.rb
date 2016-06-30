@@ -1,6 +1,6 @@
 instructions:
   reg_types: [xmm]
-  grep: (add|mul|sqrt).*?sd
+  grep: ()(add|mul|sqrt).*?sd)|test|cmp
 # sqrt(x**3 + 2 * x)
 examples:
   0.0: 0.0
@@ -15,11 +15,12 @@ examples:
   4.5: 10.00624804809475
   5.0: 11.61895003862225
 kernel_size: 5..15
-program_size: 1
+program_size: 2
 population_size: 1600
 min_fitness: 0.0
-parameters: [reg0, reg1, reg2]
+parameters: [reg0, reg1, reg2, reg3]
 domains:
   reg0: &regs [XMM0, XMM1, XMM2, XMM3]
   reg1: *regs
   reg2: *regs
+  reg3: *regs

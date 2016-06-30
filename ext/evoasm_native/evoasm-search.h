@@ -59,6 +59,7 @@ typedef struct {
    * Kernel terminates if EVOASM_KERNEL_SIZE_MAX 
    */
   evoasm_kernel_size next;
+  uint8_t jmp;
   evoasm_kernel_param params[];
 } evoasm_kernel_params;
 
@@ -109,6 +110,8 @@ typedef struct {
   evoasm_example_val *output_vals;
 
   evoasm_kernel kernels[EVOASM_PROGRAM_MAX_SIZE];
+  uint32_t recur_counters[EVOASM_PROGRAM_MAX_SIZE];
+  uint32_t max_recur;
   evoasm_program_params *params;
   
   evoasm_program_input _input;

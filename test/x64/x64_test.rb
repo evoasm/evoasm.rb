@@ -62,20 +62,26 @@ class X64Test < Minitest::Test
   end
 
   def test_vex
-    assert_assembles_to "\xC5\xF5\xEC\xC2", :vpaddsb_ymm1_ymm2_ymm3m256,
+    assert_assembles_to "\xC5\xF5\xEC\xC2", :vpaddsb_ymm_ymm_ymmm256,
       reg0: :XMM0, reg1: :XMM1, reg2: :XMM2, force_long_vex?: false
-    assert_assembles_to "\xC4\xE1u\xEC\xC2", :vpaddsb_ymm1_ymm2_ymm3m256,
+    assert_assembles_to "\xC4\xE1u\xEC\xC2", :vpaddsb_ymm_ymm_ymmm256,
       reg0: :XMM0, reg1: :XMM1, reg2: :XMM2, force_long_vex?: true
-    assert_disassembles_to 'vpaddsb ymm0, ymm1, ymm2', :vpaddsb_ymm1_ymm2_ymm3m256,
+    assert_disassembles_to 'vpaddsb ymm0, ymm1, ymm2', :vpaddsb_ymm_ymm_ymmm256,
       reg0: :XMM0, reg1: :XMM1, reg2: :XMM2
-    assert_disassembles_to 'vpaddsb ymm0, ymm1, ymm2', :vpaddsb_ymm1_ymm2_ymm3m256,
+    assert_disassembles_to 'vpaddsb ymm0, ymm1, ymm2', :vpaddsb_ymm_ymm_ymmm256,
       reg0: :XMM0, reg1: :XMM1, reg2: :XMM2, force_long_vex?: true
 
-    assert_assembles_to "\xC5\xF1\xDC\xC2", :vpaddsb_ymm1_ymm2_ymm3m256,
+    assert_assembles_to "\xC5\xF5\xEC\xC2", :vpaddsb_ymm_ymm_ymmm256,
       reg0: :XMM0, reg1: :XMM1, reg2: :XMM2
-    assert_disassembles_to 'vpaddusb xmm0, xmm1, xmm2', :vpaddusb_xmm1_xmm2_xmm3m128,
+    assert_disassembles_to 'vpaddusb xmm0, xmm1, xmm2', :vpaddusb_xmm_xmm_xmmm128,
       reg0: :XMM0, reg1: :XMM1, reg2: :XMM2
+    assert_assembles_to "\xC5\xF8\x5A\xCA", :vcvtps2pd_xmm_xmmm64,
+      reg0: :XMM1, reg1: :XMM2
+    assert_assembles_to "\xC5\xEA\x5A\xCB", :vcvtss2sd_xmm_xmm_xmmm32,
+      reg0: :XMM1, reg1: :XMM2, reg2: :XMM3
 
+    assert_assembles_to "\xC4\xE3\x79\x1D\xD1\x00", :vcvtps2ph_xmmm64_xmm_imm8,
+      reg0: :XMM1, reg1: :XMM2, imm0: 0x0
   end
 
 end
