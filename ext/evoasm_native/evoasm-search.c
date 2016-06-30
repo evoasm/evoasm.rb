@@ -433,7 +433,7 @@ evoasm_program_x64_prepare_kernel(evoasm_program *program, evoasm_kernel *kernel
 
   kernel->n_input_regs = 0;
   kernel->n_output_regs = 0;
-  
+   
   /* NOTE: output register are register that are written to
    *       input registers are register that are read from without
    *       a previous write 
@@ -620,10 +620,11 @@ enc_failed:
 static evoasm_success
 evoasm_program_x64_emit_kernel_epilog(evoasm_program *program,
                                       evoasm_kernel *kernel,
-                                      evoasm_kernel *next_kernel) {
+                                      evoasm_kernel *next_kernel,
+                                      evoasm_buf *buf) {
 
-  if(next_kernel == NULL || true) return true;
-  
+  if(next_kernel == NULL) return true;
+ 
   evoasm_arch *arch = program->arch;
   evoasm_x64 *x64 = (evoasm_x64 *) arch;
   unsigned i, reg_idx;
@@ -652,7 +653,7 @@ evoasm_program_x64_emit_kernel_epilog(evoasm_program *program,
         EVOASM_X64_SET(EVOASM_X64_PARAM_REG0, input_reg_id);
         EVOASM_X64_SET(EVOASM_X64_PARAM_REG1, output_reg_id);
         EVOASM_X64_ENC(mov_r64_rm64);
-        evoasm_arch_save(program->arch, program->buf);
+        evoasm_arch_save(program->arch, buf);
       }
       else if(output_reg_type == EVOASM_X64_REG_TYPE_XMM &&
                 input_reg_type == EVOASM_X64_REG_TYPE_XMM) {
@@ -664,7 +665,7 @@ evoasm_program_x64_emit_kernel_epilog(evoasm_program *program,
         else {
           EVOASM_X64_ENC(movdqa_xmm_xmmm128);
         }
-        evoasm_arch_save(program->arch, program->buf);
+        evoasm_arch_save(program->arch, buf);
       }
       else if(output_reg_type == EVOASM_X64_REG_TYPE_GP &&
               input_reg_type == EVOASM_X64_REG_TYPE_XMM) {
@@ -675,7 +676,7 @@ evoasm_program_x64_emit_kernel_epilog(evoasm_program *program,
         } else {
           EVOASM_X64_ENC(movq_xmm_rm64);
         }
-        evoasm_arch_save(program->arch, program->buf);
+        evoasm_arch_save(program->arch, buf);
       }
       else if(output_reg_type == EVOASM_X64_REG_TYPE_XMM &&
               input_reg_type == EVOASM_X64_REG_TYPE_GP) {
@@ -687,7 +688,7 @@ evoasm_program_x64_emit_kernel_epilog(evoasm_program *program,
         else {
           EVOASM_X64_ENC(movq_rm64_xmm);
         }
-        evoasm_arch_save(program->arch, program->buf);
+        evoasm_arch_save(program->arch, buf);
       } 
       else {
         evoasm_assert_not_reached();
@@ -769,6 +770,8 @@ evoasm_program_x64_emit_kernel_epilog(evoasm_program *program,
     }
   #endif 
 
+  evoasm_buf_log(buf, EVOASM_LOG_LEVEL_INFO);
+
     if(jmp_insts_len > 0) {
       evoasm_inst_id jmp_inst_id = jmp_insts[kernel->params->jmp % jmp_insts_len];
       evoasm_inst *jmp_inst = (evoasm_inst *) evoasm_x64_get_inst(x64, jmp_inst_id, false);
@@ -780,28 +783,28 @@ evoasm_program_x64_emit_kernel_epilog(evoasm_program *program,
       EVOASM_X64_SET(EVOASM_X64_PARAM_REG0, EVOASM_SEARCH_X64_REG_TMP);
       EVOASM_X64_SET(EVOASM_X64_PARAM_IMM0, (evoasm_arch_param_val) addr_imm);
       EVOASM_X64_ENC(mov_r64_imm64);
-      evoasm_arch_save(arch, program->buf);
+      evoasm_arch_save(arch, buf);
       
       EVOASM_X64_SET(EVOASM_X64_PARAM_REG_BASE, EVOASM_SEARCH_X64_REG_TMP);
       EVOASM_X64_SET(EVOASM_X64_PARAM_IMM0, program->max_recur);
       EVOASM_X64_ENC(cmp_rm32_imm32);
-      evoasm_arch_save(arch, program->buf);
-      
-      EVOASM_X64_ENC(jge_jnl_rel32);
+      evoasm_arch_save(arch, buf);
+
       EVOASM_X64_SET(EVOASM_X64_PARAM_REL, 0xdeadbeef);
-      evoasm_arch_save(arch, program->buf);
-      jmp_target = (uint32_t *)(program->buf->data + program->buf->pos - 4);
+      EVOASM_X64_ENC(jge_jnl_rel32);
+      evoasm_arch_save(arch, buf);
+      jmp_target = (uint32_t *)(buf->data + buf->pos - 4);
       assert(*jmp_target == 0xdeadbeef);
       
       EVOASM_X64_SET(EVOASM_X64_PARAM_IMM0, program->max_recur);
       EVOASM_TRY(enc_failed, evoasm_inst_encode, jmp_inst, arch, params.vals, (evoasm_bitmap *) &params.set);
-      evoasm_arch_save(arch, program->buf);
+      evoasm_arch_save(arch, buf);
       
-      //*jmp_target = (uint32_t) ((program->buf->data + program->buf->pos) - (uint8_t *)jmp_target);
+      *jmp_target = (uint32_t) ((buf->data + buf->pos) - ((uint8_t *)jmp_target + 4));
     }
   }
   
-  evoasm_buf_log(program->buf, EVOASM_LOG_LEVEL_INFO);
+  evoasm_buf_log(buf, EVOASM_LOG_LEVEL_INFO);
  
   return true;
 
@@ -860,7 +863,7 @@ evoasm_program_x64_emit_program_body(evoasm_program *program) {
       next_kernel = NULL;
     }
     
-    EVOASM_TRY(error, evoasm_program_x64_emit_kernel_epilog, program, kernel, next_kernel);
+    EVOASM_TRY(error, evoasm_program_x64_emit_kernel_epilog, program, kernel, next_kernel, buf);
   }
   
   program->body_end = (uint16_t) buf->pos;
@@ -901,13 +904,14 @@ error:
 static evoasm_success
 evoasm_program_x64_emit(evoasm_program *program,
                        evoasm_program_input *input,
-                       bool setup, bool body, bool sandbox) {
+                       bool prepare, bool body, bool sandbox) {
+                         
+  if(prepare) {
+    evoasm_program_x64_prepare(program);
+  }
+                         
   if(body) {
     EVOASM_TRY(error, evoasm_program_x64_emit_program_body, program);
-  }
-
-  if(setup) {
-    evoasm_program_x64_prepare(program);
   }
 
   if(sandbox) {
