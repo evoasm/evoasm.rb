@@ -1,6 +1,6 @@
 instructions:
   reg_types: [xmm]
-  grep: (add|mul|sqrt).*?sd)
+  grep: (add|mul|sqrt).*?sd
 # sqrt(x**3 + 2 * x)
 examples:
   0.0: 0.0
