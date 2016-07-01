@@ -58,7 +58,7 @@ typedef struct {
   /* kernel executed next (jumped to)
    * Kernel terminates if EVOASM_KERNEL_SIZE_MAX 
    */
-  evoasm_kernel_size next;
+  evoasm_kernel_size branch_kernel_idx;
   uint8_t jmp;
   evoasm_kernel_param params[];
 } evoasm_kernel_params;
@@ -89,7 +89,6 @@ typedef struct {
   uint_fast8_t n_input_regs;
   uint_fast8_t n_output_regs;
   uint8_t idx;
-  uint16_t start;
 } evoasm_kernel;
 
 typedef struct {
@@ -105,7 +104,6 @@ typedef struct {
 
   uint8_t in_arity;
   uint8_t out_arity;
-  uint16_t body_end;
   evoasm_example_type types[EVOASM_PROGRAM_OUTPUT_MAX_ARITY];
   evoasm_example_val *output_vals;
 

@@ -323,7 +323,8 @@ evoasm_search_seed_kernel_param(evoasm_search *search, evoasm_kernel_param *kern
 
 
 static void
-evoasm_search_seed_kernel(evoasm_search *search, evoasm_kernel_params *kernel_params) {
+evoasm_search_seed_kernel(evoasm_search *search, evoasm_kernel_params *kernel_params,
+                          evoasm_program_size program_size) {
   unsigned i;
 
   evoasm_kernel_size kernel_size = (evoasm_kernel_size) evoasm_prng32_rand_between(&search->pop.prng32,
@@ -332,6 +333,8 @@ evoasm_search_seed_kernel(evoasm_search *search, evoasm_kernel_params *kernel_pa
   assert(kernel_size > 0);
   kernel_params->size = kernel_size;
   kernel_params->jmp = (uint8_t) evoasm_prng32_rand_between(&search->pop.prng32, 0, UINT8_MAX);
+  kernel_params->branch_kernel_idx = (evoasm_kernel_size) 
+    evoasm_prng32_rand_between(&search->pop.prng32, 0, program_size - 1);
 
   for(i = 0; i < kernel_size; i++) {
     evoasm_search_seed_kernel_param(search, &kernel_params->params[i]);
@@ -352,7 +355,7 @@ evoasm_search_seed_program(evoasm_search *search, unsigned char *programs, unsig
   
   for(i = 0; i < program_size; i++) {
     evoasm_kernel_params *kernel_params = _EVOASM_PROGRAM_PARAMS_KERNEL_PARAMS(program_params, search->params.max_kernel_size, i);
-    evoasm_search_seed_kernel(search, kernel_params);
+    evoasm_search_seed_kernel(search, kernel_params, program_size);
   }
 
 }
@@ -618,13 +621,11 @@ enc_failed:
 }
 
 static evoasm_success
-evoasm_program_x64_emit_kernel_epilog(evoasm_program *program,
-                                      evoasm_kernel *kernel,
-                                      evoasm_kernel *next_kernel,
-                                      evoasm_buf *buf) {
+evoasm_program_x64_emit_kernel_transition(evoasm_program *program,
+                                          evoasm_kernel *kernel,
+                                          evoasm_kernel *target_kernel,
+                                          evoasm_buf *buf) {
 
-  if(next_kernel == NULL) return true;
- 
   evoasm_arch *arch = program->arch;
   evoasm_x64 *x64 = (evoasm_x64 *) arch;
   unsigned i, reg_idx;
@@ -636,9 +637,9 @@ evoasm_program_x64_emit_kernel_epilog(evoasm_program *program,
   }
 
   for(i = 0, reg_idx = 0; i < EVOASM_X64_N_REGS; i++) {
-    if(!next_kernel->reg_info.x64[i].input) continue;
+    if(!target_kernel->reg_info.x64[i].input) continue;
 
-    unsigned output_reg_idx = reg_idx % next_kernel->n_input_regs;
+    unsigned output_reg_idx = reg_idx % target_kernel->n_input_regs;
     evoasm_x64_reg_id input_reg_id = i;
     enum evoasm_x64_reg_type input_reg_type = evoasm_x64_reg_type(input_reg_id);
 
@@ -697,94 +698,122 @@ evoasm_program_x64_emit_kernel_epilog(evoasm_program *program,
     reg_idx++;
   }
   
-  {
-    unsigned jmp_insts_len = 0;
-    evoasm_inst_id jmp_insts[32];
-    bool jbe = false;
-    bool jle = false;
-    evoasm_x64_params params = {0};
+  return true;
+  
+enc_failed:
+    return false;  
+}
 
-    if(kernel->reg_info.x64[EVOASM_X64_REG_OF].written) {
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JO_REL32;
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JNO_REL32;
-    }
+#define _EVOASM_BUF_PHI_GET(buf) ((uint32_t *)((buf)->data + (buf)->pos - 4))
+#define _EVOASM_BUF_PHI_SET(label, val) \
+do { (*(label) = (uint32_t)((uint8_t *)(val) - ((uint8_t *)(label) + 4)));} while(0);
+#define _EVOASM_BUF_POS_ADDR(buf) (buf->data + buf->pos)
+
+static evoasm_success
+evoasm_program_x64_emit_kernel_epilog(evoasm_program *program,
+                                      evoasm_kernel *kernel,
+                                      evoasm_kernel *next_kernel,
+                                      evoasm_kernel *branch_kernel,
+                                      evoasm_buf *buf,
+                                      uint32_t **branch_kernel_phi) {
+
+  evoasm_arch *arch = program->arch;
+  evoasm_x64 *x64 = (evoasm_x64 *) arch;
+  unsigned jmp_insts_len = 0;
+  evoasm_inst_id jmp_insts[32];
+  bool jbe = false;
+  bool jle = false;
+  evoasm_x64_params params = {0};
+  uint32_t *branch_phi = NULL;
+  uint32_t *counter_phi = NULL;
+
+  if(kernel->reg_info.x64[EVOASM_X64_REG_OF].written) {
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JO_REL32;
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JNO_REL32;
+  }
+  
+  if(kernel->reg_info.x64[EVOASM_X64_REG_SF].written) {
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JS_REL32;
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JNS_REL32;
+  }
+  
+  if(kernel->reg_info.x64[EVOASM_X64_REG_ZF].written) {
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JE_JZ_REL32;
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JNS_REL32;
+
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JBE_JNA_REL32;
+    jbe = true;
+
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JLE_JNG_REL32;
+    jle = true;
+  }  
+  
+  if(kernel->reg_info.x64[EVOASM_X64_REG_CF].written) {
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JB_JC_JNAE_REL32;
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JAE_JNB_JNC_REL32;
     
-    if(kernel->reg_info.x64[EVOASM_X64_REG_SF].written) {
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JS_REL32;
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JNS_REL32;
+    if(!jbe) {
+      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JBE_JNA_REL32;
+    }
+  }
+  
+  if(kernel->reg_info.x64[EVOASM_X64_REG_ZF].written &&
+     kernel->reg_info.x64[EVOASM_X64_REG_CF].written) {
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JA_JNBE_REL32;    
+  }
+  
+  if(kernel->reg_info.x64[EVOASM_X64_REG_SF].written &&
+     kernel->reg_info.x64[EVOASM_X64_REG_OF].written) {
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JL_JNGE_REL32;
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JGE_JNL_REL32;
+    
+    if(!jle) {
+      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JLE_JNG_REL32;
     }
     
     if(kernel->reg_info.x64[EVOASM_X64_REG_ZF].written) {
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JE_JZ_REL32;
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JNS_REL32;
-
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JBE_JNA_REL32;
-      jbe = true;
-
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JLE_JNG_REL32;
-      jle = true;
-    }  
-    
-    if(kernel->reg_info.x64[EVOASM_X64_REG_CF].written) {
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JB_JC_JNAE_REL32;
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JAE_JNB_JNC_REL32;
-      
-      if(!jbe) {
-        jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JBE_JNA_REL32;
-      }
+      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JG_JNLE_REL32;
     }
-    
-    if(kernel->reg_info.x64[EVOASM_X64_REG_ZF].written &&
-       kernel->reg_info.x64[EVOASM_X64_REG_CF].written) {
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JA_JNBE_REL32;    
-    }
-    
-    if(kernel->reg_info.x64[EVOASM_X64_REG_SF].written &&
-       kernel->reg_info.x64[EVOASM_X64_REG_OF].written) {
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JL_JNGE_REL32;
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JGE_JNL_REL32;
-      
-      if(!jle) {
-        jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JLE_JNG_REL32;
-      }
-      
-      if(kernel->reg_info.x64[EVOASM_X64_REG_ZF].written) {
-        jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JG_JNLE_REL32;
-      }
-    }  
-    
-    if(kernel->reg_info.x64[EVOASM_X64_REG_CF].written) {
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JB_JC_JNAE_REL32;
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JAE_JNB_JNC_REL32;
-    }  
-    
-    if(kernel->reg_info.x64[EVOASM_X64_REG_PF].written) {
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JP_JPE_REL32;
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JNP_JPO_REL32;
-    } 
+  }  
+  
+  if(kernel->reg_info.x64[EVOASM_X64_REG_CF].written) {
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JB_JC_JNAE_REL32;
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JAE_JNB_JNC_REL32;
+  }  
+  
+  if(kernel->reg_info.x64[EVOASM_X64_REG_PF].written) {
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JP_JPE_REL32;
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JNP_JPO_REL32;
+  } 
 
-  #if 0 
-    /*FIXME: only 8bit possible, check and activate if feasable*/
-    if(kernel->reg_info.x64[EVOASM_X64_REG_C].written) {
-      jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JECXZ_JRCXZ_REL8;
-    }
-  #endif 
+#if 0 
+  /*FIXME: only 8bit possible, check and activate if feasable*/
+  if(kernel->reg_info.x64[EVOASM_X64_REG_C].written) {
+    jmp_insts[jmp_insts_len++] = EVOASM_X64_INST_JECXZ_JRCXZ_REL8;
+  }
+#endif 
 
-  evoasm_buf_log(buf, EVOASM_LOG_LEVEL_INFO);
+  if(jmp_insts_len > 0) {
+    evoasm_inst_id jmp_inst_id = jmp_insts[kernel->params->jmp % jmp_insts_len];
+    evoasm_inst *jmp_inst = (evoasm_inst *) evoasm_x64_get_inst(x64, jmp_inst_id, false);
 
-    if(jmp_insts_len > 0) {
-      evoasm_inst_id jmp_inst_id = jmp_insts[kernel->params->jmp % jmp_insts_len];
-      evoasm_inst *jmp_inst = (evoasm_inst *) evoasm_x64_get_inst(x64, jmp_inst_id, false);
-      
+    EVOASM_X64_SET(EVOASM_X64_PARAM_REL, 0xdeadbeef);
+    EVOASM_TRY(error, evoasm_inst_encode, jmp_inst, arch, params.vals, (evoasm_bitmap *) &params.set);
+    evoasm_arch_save(arch, buf);
+    branch_phi = _EVOASM_BUF_PHI_GET(buf);
+    assert(*branch_phi == 0xdeadbeef);
+  
+    if(branch_kernel->idx <= kernel->idx) {
+      /* back jump, guard with counter */
+    
       uint32_t *counter = &program->recur_counters[kernel->idx];
       uintptr_t addr_imm = (uintptr_t) counter;
-      uint32_t *jmp_target;
-  
+
       EVOASM_X64_SET(EVOASM_X64_PARAM_REG0, EVOASM_SEARCH_X64_REG_TMP);
       EVOASM_X64_SET(EVOASM_X64_PARAM_IMM0, (evoasm_arch_param_val) addr_imm);
       EVOASM_X64_ENC(mov_r64_imm64);
       evoasm_arch_save(arch, buf);
-      
+    
       EVOASM_X64_SET(EVOASM_X64_PARAM_REG_BASE, EVOASM_SEARCH_X64_REG_TMP);
       EVOASM_X64_SET(EVOASM_X64_PARAM_IMM0, program->max_recur);
       EVOASM_X64_ENC(cmp_rm32_imm32);
@@ -793,15 +822,34 @@ evoasm_program_x64_emit_kernel_epilog(evoasm_program *program,
       EVOASM_X64_SET(EVOASM_X64_PARAM_REL, 0xdeadbeef);
       EVOASM_X64_ENC(jge_jnl_rel32);
       evoasm_arch_save(arch, buf);
-      jmp_target = (uint32_t *)(buf->data + buf->pos - 4);
-      assert(*jmp_target == 0xdeadbeef);
+      counter_phi = _EVOASM_BUF_PHI_GET(buf);
+      assert(*counter_phi == 0xdeadbeef);
       
-      EVOASM_X64_SET(EVOASM_X64_PARAM_IMM0, program->max_recur);
-      EVOASM_TRY(enc_failed, evoasm_inst_encode, jmp_inst, arch, params.vals, (evoasm_bitmap *) &params.set);
+      EVOASM_X64_ENC(inc_rm32);
       evoasm_arch_save(arch, buf);
-      
-      *jmp_target = (uint32_t) ((buf->data + buf->pos) - ((uint8_t *)jmp_target + 4));
     }
+    
+    EVOASM_TRY(error, evoasm_program_x64_emit_kernel_transition, program,
+               kernel, branch_kernel, buf);
+               
+    EVOASM_X64_SET(EVOASM_X64_PARAM_REL, 0xdeadbeef);
+    EVOASM_X64_ENC(jmp_rel32);
+    evoasm_arch_save(arch, buf);
+    *branch_kernel_phi = _EVOASM_BUF_PHI_GET(buf);
+    assert(**branch_kernel_phi == 0xdeadbeef);
+  }
+
+  if(branch_phi != NULL) {
+    _EVOASM_BUF_PHI_SET(branch_phi, _EVOASM_BUF_POS_ADDR(buf));
+  }
+  
+  if(counter_phi != NULL) {
+    _EVOASM_BUF_PHI_SET(counter_phi, _EVOASM_BUF_POS_ADDR(buf));
+  }
+  
+  if(next_kernel != NULL) {
+    EVOASM_TRY(error, evoasm_program_x64_emit_kernel_transition, program,
+              kernel, next_kernel, buf);
   }
   
   evoasm_buf_log(buf, EVOASM_LOG_LEVEL_INFO);
@@ -819,8 +867,6 @@ evoasm_program_x64_emit_kernel(evoasm_program *program, evoasm_kernel *kernel, e
   unsigned i;
   evoasm_arch *arch = program->arch;
   evoasm_kernel_params *kernel_params = kernel->params;
-
-  kernel->start = (uint16_t) buf->pos;
 
   assert(kernel_params->size > 0);
   for(i = 0; i < kernel_params->size; i++) {
@@ -846,8 +892,10 @@ evoasm_program_x64_emit_program_body(evoasm_program *program) {
   unsigned i;
   evoasm_buf *buf = program->body_buf;
   evoasm_program_params *program_params = program->params;
-  evoasm_kernel *kernel, *next_kernel;
+  evoasm_kernel *kernel, *next_kernel, *branch_kernel;
   unsigned size = program_params->size;
+  uint32_t *branch_phis[EVOASM_PROGRAM_MAX_SIZE] = {0};
+  uint8_t *kernel_addrs[EVOASM_PROGRAM_MAX_SIZE];
 
   evoasm_buf_reset(buf);
 
@@ -855,6 +903,7 @@ evoasm_program_x64_emit_program_body(evoasm_program *program) {
   for(i = 0; i < size; i++) {
     kernel = &program->kernels[i];
     
+    kernel_addrs[i] = buf->data + buf->pos;
     EVOASM_TRY(error, evoasm_program_x64_emit_kernel, program, kernel, buf);
 
     if(i < size - 1) {
@@ -863,10 +912,22 @@ evoasm_program_x64_emit_program_body(evoasm_program *program) {
       next_kernel = NULL;
     }
     
-    EVOASM_TRY(error, evoasm_program_x64_emit_kernel_epilog, program, kernel, next_kernel, buf);
+    assert(kernel->params->branch_kernel_idx < program->params->size);
+    branch_kernel = &program->kernels[kernel->params->branch_kernel_idx];
+    
+    EVOASM_TRY(error, evoasm_program_x64_emit_kernel_epilog, program, kernel,
+      next_kernel, branch_kernel, buf, &branch_phis[i]);      
   }
   
-  program->body_end = (uint16_t) buf->pos;
+  for(i = 0; i < size; i++) {
+    uint32_t *branch_phi = branch_phis[i];
+    if(branch_phi != NULL) {
+      kernel = &program->kernels[i];
+      uint8_t *branch_kernel_addr = kernel_addrs[kernel->params->branch_kernel_idx];
+      assert(*branch_phi == 0xdeadbeef);
+      _EVOASM_BUF_PHI_SET(branch_phi, branch_kernel_addr);
+    }
+  }
 
   return true;
 error:
@@ -917,6 +978,9 @@ evoasm_program_x64_emit(evoasm_program *program,
   if(sandbox) {
     EVOASM_TRY(error, evoasm_program_x64_emit_sandbox, program, input);
   }
+  
+  evoasm_buf_log(program->buf, EVOASM_LOG_LEVEL_INFO);
+
 
   return true;
 
@@ -949,11 +1013,11 @@ typedef enum {
 static inline void
 evoasm_program_update_dist_mat(evoasm_program *program,
                                evoasm_kernel *kernel,
-                              evoasm_program_output *output,
-                              unsigned height,
-                              unsigned example_index,
-                              double *matrix,
-                              evoasm_metric metric) {
+                               evoasm_program_output *output,
+                               unsigned height,
+                               unsigned example_index,
+                               double *matrix,
+                               evoasm_metric metric) {
   unsigned i, j;
   unsigned width = kernel->n_output_regs;
   evoasm_example_val *example_vals = output->vals + example_index * output->arity;
