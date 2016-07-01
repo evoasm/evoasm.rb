@@ -625,7 +625,6 @@ evoasm_program_x64_emit_kernel_transition(evoasm_program *program,
                                           evoasm_kernel *kernel,
                                           evoasm_kernel *target_kernel,
                                           evoasm_buf *buf) {
-
   evoasm_arch *arch = program->arch;
   evoasm_x64 *x64 = (evoasm_x64 *) arch;
   unsigned i, reg_idx;
