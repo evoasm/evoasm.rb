@@ -746,7 +746,7 @@ static VALUE
 rb_search_initialize(int argc, VALUE* argv, VALUE self) {
   VALUE rb_arch, rb_pop_size, rb_kernel_size, rb_program_size, rb_insts, rb_input, rb_output;
   VALUE rb_input_arity, rb_output_arity, rb_params, rb_mutation_rate;
-  VALUE rb_seed, rb_domains;
+  VALUE rb_seed, rb_domains, rb_recur_limit;
 
   evoasm_search *search;
   evoasm_arch *arch;
@@ -758,6 +758,7 @@ rb_search_initialize(int argc, VALUE* argv, VALUE self) {
   long params_len;
   uint32_t pop_size;
   uint32_t mutation_rate;
+  uint32_t recur_limit;
   
   evoasm_program_input input;
   evoasm_program_input output;
@@ -776,6 +777,7 @@ rb_search_initialize(int argc, VALUE* argv, VALUE self) {
     &rb_mutation_rate,
     &rb_seed,
     &rb_domains,
+    &rb_recur_limit
   };
 
   if(argc != EVOASM_ARY_LEN(args)) {
@@ -799,6 +801,8 @@ rb_search_initialize(int argc, VALUE* argv, VALUE self) {
   params_len = RARRAY_LEN(rb_params);
   pop_size = (uint32_t) FIX2UINT(rb_pop_size);
   mutation_rate = (uint32_t)(UINT32_MAX * NUM2DBL(rb_mutation_rate));
+  recur_limit = (uint32_t)(FIX2UINT(rb_recur_limit));
+  
 
   if(RARRAY_LEN(rb_seed) < 64) {
     rb_raise(rb_eArgError, "seed must be an array of size at least 64");
@@ -848,7 +852,8 @@ rb_search_initialize(int argc, VALUE* argv, VALUE self) {
     .insts_len = (uint16_t) insts_len,
     .params = params,
     .params_len = (uint8_t) params_len,
-    .mutation_rate = mutation_rate
+    .mutation_rate = mutation_rate,
+    .recur_limit = recur_limit
   };
 
   for(i = 0; i < EVOASM_ARY_LEN(search_params.seed32.data); i++) {

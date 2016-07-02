@@ -59,7 +59,7 @@ typedef struct {
    * Kernel terminates if EVOASM_KERNEL_SIZE_MAX 
    */
   evoasm_kernel_size branch_kernel_idx;
-  uint8_t jmp;
+  uint8_t jmp_selector;
   evoasm_kernel_param params[];
 } evoasm_kernel_params;
 
@@ -89,7 +89,29 @@ typedef struct {
   uint_fast8_t n_input_regs;
   uint_fast8_t n_output_regs;
   uint8_t idx;
+  evoasm_x64_reg_id output_regs[EVOASM_X64_N_REGS];
 } evoasm_kernel;
+
+typedef struct {
+  evoasm_inst **insts;
+  evoasm_program_size min_program_size;
+  evoasm_program_size max_program_size;
+  evoasm_kernel_size min_kernel_size;
+  evoasm_kernel_size max_kernel_size;
+  uint32_t recur_limit;
+  uint16_t insts_len;
+  uint8_t params_len;
+  uint32_t pop_size;
+  uint32_t mutation_rate;
+  evoasm_program_input program_input;
+  evoasm_program_output program_output;
+  evoasm_arch_param_id *params;
+  evoasm_prng64_seed seed64;
+  evoasm_prng32_seed seed32;
+  evoasm_domain *domains[EVOASM_ARCH_MAX_PARAMS];
+
+} evoasm_search_params;
+
 
 typedef struct {
   evoasm_arch *arch;
@@ -109,13 +131,13 @@ typedef struct {
 
   evoasm_kernel kernels[EVOASM_PROGRAM_MAX_SIZE];
   uint32_t recur_counters[EVOASM_PROGRAM_MAX_SIZE];
-  uint32_t max_recur;
   evoasm_program_params *params;
   
   evoasm_program_input _input;
   evoasm_program_output _output;
   uint_fast8_t *_matching;
-  evoasm_program_size max_kernel_size;
+  
+  evoasm_search_params *search_params;
 } evoasm_program;
 
 #define EVOASM_SEARCH_ELITE_SIZE 4
@@ -146,26 +168,6 @@ typedef struct {
   uint8_t in_arity;
   uint8_t out_arity;
 } evoasm_examples;
-
-typedef struct {
-  evoasm_inst **insts;
-  evoasm_program_size min_program_size;
-  evoasm_program_size max_program_size;
-  evoasm_kernel_size min_kernel_size;
-  evoasm_kernel_size max_kernel_size;
-  
-  uint16_t insts_len;
-  uint8_t params_len;
-  uint32_t pop_size;
-  uint32_t mutation_rate;
-  evoasm_program_input program_input;
-  evoasm_program_output program_output;
-  evoasm_arch_param_id *params;
-  evoasm_prng64_seed seed64;
-  evoasm_prng32_seed seed32;
-  evoasm_domain *domains[EVOASM_ARCH_MAX_PARAMS];
-
-} evoasm_search_params;
 
 typedef struct {
   evoasm_arch *arch;

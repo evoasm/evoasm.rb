@@ -24,6 +24,11 @@ typedef struct {
   uint64_t data[8];
 } evoasm_bitmap512;
 
+typedef struct {
+  uint64_t data[16];
+} evoasm_bitmap1024;
+
+
 typedef uint64_t evoasm_bitmap;
 
 static inline void
@@ -62,6 +67,16 @@ evoasm_bitmap_get(evoasm_bitmap *bitmap, unsigned idx) {
     }\
   }
 
+#define _EVOASM_BITMAP_DECL_EQL(width) \
+  static inline bool evoasm_bitmap ## width ## _ ## eql (evoasm_bitmap##width *bitmap1, evoasm_bitmap##width *bitmap2) { \
+    unsigned i;\
+    for(i = 0; i < width / 64; i++) {\
+      if(bitmap1->data[i] != bitmap2->data[i]) return false;\
+    } \
+    return true;\
+  }
+
+
 #ifdef __GNUC__
 #  define _EVOASM_BITMAP_DECL_POPCOUNT(width) \
     static inline unsigned evoasm_bitmap ## width ## _ ## popcount (evoasm_bitmap##width *bitmap) { \
@@ -88,8 +103,13 @@ _EVOASM_BITMAP_DECL_BINOP(and, 128, &)
 _EVOASM_BITMAP_DECL_BINOP(or, 128, |)
 _EVOASM_BITMAP_DECL_BINOP(andn, 128, &~)
 _EVOASM_BITMAP_DECL_POPCOUNT(128)
+_EVOASM_BITMAP_DECL_EQL(128)
 
 _EVOASM_BITMAP_DECL_UNOP(not, 64, ~)
 _EVOASM_BITMAP_DECL_BINOP(and, 64, &)
 _EVOASM_BITMAP_DECL_BINOP(or, 64, |)
 _EVOASM_BITMAP_DECL_POPCOUNT(64)
+_EVOASM_BITMAP_DECL_EQL(64)
+
+
+_EVOASM_BITMAP_DECL_EQL(1024)

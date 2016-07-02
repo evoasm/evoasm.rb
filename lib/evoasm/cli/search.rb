@@ -28,6 +28,7 @@ module Evoasm
         kernel_size = parse_range params['kernel_size']
         program_counter = 0
         max_programs = params['max_programs']
+        recur_limit = params['recur_limit'] || 0
 
         domains = convert_domains_hash params['domains']
         parameters = (params['parameters'] || %i(reg0 reg1 reg2 imm0 imm1)).map(&:to_sym)
@@ -41,7 +42,8 @@ module Evoasm
                    program_size: program_size,
                    population_size: params['population_size'],
                    parameters: parameters,
-                   domains: domains
+                   domains: domains,
+                   recur_limit: recur_limit
 
         search.start!(params['min_fitness'] || 0.0) do |program, fitness|
           ts = Time.now
