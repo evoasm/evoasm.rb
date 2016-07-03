@@ -28,7 +28,6 @@ typedef struct {
   uint64_t data[16];
 } evoasm_bitmap1024;
 
-
 typedef uint64_t evoasm_bitmap;
 
 static inline void

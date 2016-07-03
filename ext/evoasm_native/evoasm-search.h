@@ -70,6 +70,8 @@ typedef struct {
 #define EVOASM_KERNEL_MAX_INPUT_REGS 254
 #define EVOASM_PROGRAM_MAX_SIZE 64
 
+#define EVOASM_KERNEL_REG_INFO_N_TRANS_REGS 2
+
 typedef struct {
   bool l8 : 1;
   bool h8 : 1;
@@ -78,7 +80,7 @@ typedef struct {
   bool output : 1;
   unsigned mask : EVOASM_X64_BIT_MASK_BITSIZE;
   unsigned size: EVOASM_OPERAND_SIZE_BITSIZE_WITH_N;
-  evoasm_x64_reg_id transition_regs[2];
+  evoasm_x64_reg_id trans_regs[EVOASM_KERNEL_REG_INFO_N_TRANS_REGS];
 } evoasm_kernel_x64_reg_info;
 
 typedef struct {
@@ -88,7 +90,7 @@ typedef struct {
   } reg_info;
   
   union {
-    evoasm_x64_reg_id x64[EVOASM_X64_N_REGS];
+    evoasm_x64_reg_id x64[EVOASM_KERNEL_MAX_OUTPUT_REGS];
   } output_regs;
 
   uint_fast8_t n_input_regs;
