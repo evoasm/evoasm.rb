@@ -24,6 +24,8 @@ if enable_config('debug')
   $warnflags << ' -Werror -Wno-error=unused-function -Wno-error=pedantic'\
              ' -Wno-error=implicit-function-declaration'
   $defs.push('-DEVOASM_MIN_LOG_LEVEL=EVOASM_LOG_LEVEL_DEBUG')
+  $CFLAGS.gsub!(/-O\d/, '')
+  $CFLAGS << ' -O0 -g3'
 end
 
 create_makefile('evoasm_native')

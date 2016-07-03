@@ -2,8 +2,6 @@
 
 #include <stdlib.h>
 #include <errno.h>
-#  include <sys/mman.h>
-
 
 void *
 evoasm_malloc(size_t size) {

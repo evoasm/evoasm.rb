@@ -35,7 +35,6 @@ typedef struct {
   uint16_t len;
   evoasm_example_val *vals;
   evoasm_example_type types[EVOASM_PROGRAM_IO_MAX_ARITY];
-  evoasm_reg_id regs[EVOASM_PROGRAM_IO_MAX_ARITY];
 } evoasm_program_io;
 
 #define EVOASM_PROGRAM_OUTPUT_MAX_ARITY EVOASM_PROGRAM_IO_MAX_ARITY
@@ -79,6 +78,7 @@ typedef struct {
   bool output : 1;
   unsigned mask : EVOASM_X64_BIT_MASK_BITSIZE;
   unsigned size: EVOASM_OPERAND_SIZE_BITSIZE_WITH_N;
+  evoasm_x64_reg_id transition_regs[2];
 } evoasm_kernel_x64_reg_info;
 
 typedef struct {
@@ -86,10 +86,14 @@ typedef struct {
   union {
     evoasm_kernel_x64_reg_info x64[EVOASM_X64_N_REGS];  
   } reg_info;
+  
+  union {
+    evoasm_x64_reg_id x64[EVOASM_X64_N_REGS];
+  } output_regs;
+
   uint_fast8_t n_input_regs;
   uint_fast8_t n_output_regs;
   uint8_t idx;
-  evoasm_x64_reg_id output_regs[EVOASM_X64_N_REGS];
 } evoasm_kernel;
 
 typedef struct {
@@ -118,26 +122,27 @@ typedef struct {
   evoasm_buf *buf;
   evoasm_buf *body_buf;
   uint32_t index;
-  bool reset_rflags : 1;
-  bool need_emit    : 1;
-
-  void *_signal_ctx;
-  uint32_t exception_mask;
-
   uint8_t in_arity;
   uint8_t out_arity;
+  bool reset_rflags : 1;
+  bool need_emit    : 1;
+  void *_signal_ctx;
+  uint32_t exception_mask;
   evoasm_example_type types[EVOASM_PROGRAM_OUTPUT_MAX_ARITY];
   evoasm_example_val *output_vals;
-
   evoasm_kernel kernels[EVOASM_PROGRAM_MAX_SIZE];
   uint32_t recur_counters[EVOASM_PROGRAM_MAX_SIZE];
   evoasm_program_params *params;
-  
   evoasm_program_input _input;
   evoasm_program_output _output;
-  uint_fast8_t *_matching;
-  
   evoasm_search_params *search_params;
+  evoasm_reg_id output_regs[EVOASM_PROGRAM_IO_MAX_ARITY];
+  
+  union {
+    /* register at index i has input i % input_arity */
+    uint8_t x64[EVOASM_X64_N_REGS];
+  } reg_inputs;
+
 } evoasm_program;
 
 #define EVOASM_SEARCH_ELITE_SIZE 4

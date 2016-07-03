@@ -12,6 +12,12 @@
 #endif
 
 #include <string.h>
+#include <alloca.h>
+
+#if defined(_WIN32)
+#  include <malloc.h>
+#endif
+
 #include "evoasm-error.h"
 
 #ifdef __GNUC__
@@ -46,3 +52,11 @@ evoasm_success evoasm_munmap(void *p, size_t size);
 evoasm_success evoasm_mprot(void *p, size_t size, int mode);
 long evoasm_page_size();
 
+static inline void *
+evoasm_alloca(size_t size) {
+#if defined(_WIN32)
+  return _malloca(size);
+#else
+  return alloca(size);
+#endif
+}

@@ -261,7 +261,6 @@ static void
 program_free(void *p) {
   rb_evoasm_program *program = (rb_evoasm_program *)p;
   xfree(program->program.params);
-  xfree(program->program._matching);
   xfree(p);
 }
 
@@ -1060,7 +1059,6 @@ result_func(VALUE user_data) {
 
   {    
     size_t params_size = sizeof(evoasm_program_params);
-    size_t matching_size = tmp_program._output.arity * sizeof(uint_fast8_t);
 
     tmp_program.index = 0;
     tmp_program._signal_ctx = NULL;
@@ -1068,9 +1066,6 @@ result_func(VALUE user_data) {
     tmp_program._input.vals = NULL;
     tmp_program._output.vals = NULL;
     tmp_program.output_vals = NULL;
-
-    tmp_program._matching = xmalloc(matching_size);
-    memcpy(tmp_program._matching, data->program->_matching, matching_size);
 
     tmp_program.params = xmalloc(params_size);
     memcpy(tmp_program.params, data->program->params, params_size);
