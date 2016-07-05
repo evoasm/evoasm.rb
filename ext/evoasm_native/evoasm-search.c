@@ -58,7 +58,7 @@ _Thread_local volatile struct evoasm_signal_context *_evoasm_signal_ctx;
 
 static void
 _evoasm_signal_handler(int sig, siginfo_t *siginfo, void *ctx) {
-  bool jmp = false;
+  bool handle = false;
 
   atomic_signal_fence(memory_order_acquire);
 
@@ -68,7 +68,7 @@ _evoasm_signal_handler(int sig, siginfo_t *siginfo, void *ctx) {
         case SIGFPE: {
           bool catch_div_by_zero = siginfo->si_code == FPE_INTDIV &&
             _EVOASM_SEARCH_EXCEPTION_SET_P(EVOASM_X64_EXCEPTION_DE);
-          jmp = catch_div_by_zero;
+          handle = catch_div_by_zero;
           break;
         }
         default:
@@ -79,7 +79,7 @@ _evoasm_signal_handler(int sig, siginfo_t *siginfo, void *ctx) {
     default: evoasm_assert_not_reached();
   }
 
-  if(jmp) {
+  if(handle) {
     siglongjmp(*((jmp_buf *)&_evoasm_signal_ctx->env), 1);
   } else {
     raise(sig);
@@ -398,12 +398,84 @@ evoasm_op_x64_reg_id(evoasm_x64_operand *op, evoasm_kernel_param *param) {
   }
 }
 
+typedef struct {
+  bool l8 : 1;
+  unsigned mask;
+  unsigned size;
+} evoasm_kernel_x64_ext_reg_info;
+
+static void
+evoasm_program_unprepare_kernel(evoasm_program *program, evoasm_kernel *kernel) {  
+  kernel->n_input_regs = 0;
+  kernel->n_output_regs = 0;
+  
+  static evoasm_kernel_reg_info zero_reg_info = {0};
+  kernel->reg_info = zero_reg_info;
+}
+
+static void
+evoasm_program_unprepare(evoasm_program *program) { 
+  unsigned i;
+  for(i = 0; i < program->params->size; i++) {
+    evoasm_program_unprepare_kernel(program, &program->kernels[i]);
+  }
+}
+
+static bool
+evoasm_kernel_param_x64_l8(evoasm_kernel_param *param) {
+  return param->param_vals[EVOASM_X64_PARAM_REX_B] ||
+         param->param_vals[EVOASM_X64_PARAM_REX_R] ||
+         param->param_vals[EVOASM_X64_PARAM_REX_W] ||
+         param->param_vals[EVOASM_X64_PARAM_REX_X]; 
+}
+
+static void
+evoasm_x64_reg_info_update(evoasm_kernel_x64_ext_reg_info *ext_reg_info,
+                           evoasm_x64_operand *op, evoasm_kernel_param *param) {
+  ext_reg_info->size = EVOASM_MAX(ext_reg_info->size, op->size);
+  ext_reg_info->mask |= op->acc_w_mask;
+  ext_reg_info->l8 |= evoasm_kernel_param_x64_l8(param);
+}
+
+
+static bool
+evoasm_x64_reg_info_uncovered_access(evoasm_kernel_x64_ext_reg_info *ext_reg_info, evoasm_x64_operand *op,
+                                     evoasm_kernel_param *param) {
+  bool uncovered_acc;
+  bool l8 = evoasm_kernel_param_x64_l8(param);
+  
+  if(op->reg_type == EVOASM_X64_REG_TYPE_GP) {
+    if(op->size == EVOASM_OPERAND_SIZE_8) {
+      uncovered_acc = l8 != ext_reg_info->l8;
+    } else if(op->size == EVOASM_OPERAND_SIZE_16) {
+      uncovered_acc = ext_reg_info->size < EVOASM_OPERAND_SIZE_16;
+    } else {
+      uncovered_acc = false;
+    }
+  }
+  else if(op->reg_type == EVOASM_X64_REG_TYPE_XMM) {
+    unsigned mask;
+    if(op->size == EVOASM_OPERAND_SIZE_128) {
+      mask = EVOASM_X64_BIT_MASK_0_127;
+    } else {
+      mask = EVOASM_X64_BIT_MASK_ALL;
+    }
+    uncovered_acc = ((mask & (~ext_reg_info->mask)) != 0);
+  } else {
+    uncovered_acc = false;
+  }
+  
+  return uncovered_acc;
+}
+
+
+
 static void
 evoasm_program_x64_prepare_kernel(evoasm_program *program, evoasm_kernel *kernel) {
   unsigned i, j;
 
-  kernel->n_input_regs = 0;
-  kernel->n_output_regs = 0;
+  //kernel->n_input_regs = 0;
+  //kernel->n_output_regs = 0;
    
   /* NOTE: output register are register that are written to
    *       input registers are register that are read from without
@@ -411,15 +483,11 @@ evoasm_program_x64_prepare_kernel(evoasm_program *program, evoasm_kernel *kernel
    */
   evoasm_kernel_params *kernel_params = kernel->params;
 
+  evoasm_kernel_x64_ext_reg_info ext_reg_infos[EVOASM_X64_N_REGS] = {0};
+
   for(i = 0; i < kernel_params->size; i++) {
     evoasm_kernel_param *param = &kernel_params->params[i];
     evoasm_x64_inst *x64_inst = (evoasm_x64_inst *) param->inst;
-    bool l8 = param->param_vals[EVOASM_X64_PARAM_REX_B] ||
-              param->param_vals[EVOASM_X64_PARAM_REX_R] ||
-              param->param_vals[EVOASM_X64_PARAM_REX_W] ||
-              param->param_vals[EVOASM_X64_PARAM_REX_X];
-    bool h8 = !l8;
-    
 
     for(j = 0; j < x64_inst->n_operands; j++) {
       evoasm_x64_operand *op = &x64_inst->operands[j];
@@ -438,7 +506,7 @@ evoasm_program_x64_prepare_kernel(evoasm_program *program, evoasm_kernel *kernel
         else {
           reg_id = evoasm_op_x64_reg_id(op, param);
           evoasm_kernel_x64_reg_info *reg_info = &kernel->reg_info.x64[reg_id];
-
+          evoasm_kernel_x64_ext_reg_info *ext_reg_info = &ext_reg_infos[reg_id];
 
           /*
            * Conditional writes (acc_c) might or might not do the write.
@@ -452,25 +520,7 @@ evoasm_program_x64_prepare_kernel(evoasm_program *program, evoasm_kernel *kernel
               if(!reg_info->written) {
                 dirty_read = true;
               } else {
-                if(op->reg_type == EVOASM_X64_REG_TYPE_GP) {
-                  if(op->size == EVOASM_OPERAND_SIZE_8) {
-                    dirty_read = reg_info->l8 != l8 && reg_info->h8 != h8;
-                  } else if(op->size == EVOASM_OPERAND_SIZE_16) {
-                    dirty_read = reg_info->size < EVOASM_OPERAND_SIZE_16;
-                  } else {
-                    dirty_read = false;
-                  }
-                } else if(op->reg_type == EVOASM_X64_REG_TYPE_XMM) {
-                  int mask;
-                  if(op->size == EVOASM_OPERAND_SIZE_128) {
-                    mask = EVOASM_X64_BIT_MASK_0_127;
-                  } else {
-                    mask = EVOASM_X64_BIT_MASK_ALL;
-                  }
-                  dirty_read = (mask & (~reg_info->mask)) != 0;
-                } else {
-                  dirty_read = false;
-                }
+                dirty_read = evoasm_x64_reg_info_uncovered_access(ext_reg_info, op, param);
               }
 
               if(dirty_read) {
@@ -488,15 +538,11 @@ evoasm_program_x64_prepare_kernel(evoasm_program *program, evoasm_kernel *kernel
             if(!reg_info->written) {
               reg_info->written = true;
               reg_info->output = true;
-              reg_info->size = op->size;
               kernel->output_regs.x64[kernel->n_output_regs] = reg_id;
               kernel->n_output_regs++;
-            } else {
-              reg_info->size = (unsigned) EVOASM_MAX(reg_info->size, op->size);
             }
-            reg_info->mask |= op->acc_w_mask;
-            reg_info->l8 |= l8;
-            reg_info->h8 |= h8;
+            
+            evoasm_x64_reg_info_update(ext_reg_info, op, param);
           }
         }
       }
@@ -532,6 +578,9 @@ evoasm_program_x64_emit_input_load(evoasm_program *program,
   evoasm_x64_reg_id input_reg_id;
   unsigned input_reg_idx;
 
+  evoasm_info("n input regs %d", kernel->n_input_regs);
+
+
   for(input_reg_id = 0, input_reg_idx = 0; input_reg_idx < kernel->n_input_regs; input_reg_id++) {
     if(!kernel->reg_info.x64[input_reg_id].input) continue;
 
@@ -548,7 +597,7 @@ evoasm_program_x64_emit_input_load(evoasm_program *program,
     evoasm_x64_params params = {0};
     enum evoasm_x64_reg_type reg_type = evoasm_x64_reg_type(input_reg_id);
 
-    evoasm_debug("emitting input register initialization of register %d to value %" PRId64, input_reg_id, example->i64);
+    evoasm_info("emitting input register initialization of register %d to value %" PRId64, input_reg_id, example->i64);
 
     switch(reg_type) {
       case EVOASM_X64_REG_TYPE_GP: {
@@ -924,12 +973,10 @@ evoasm_program_x64_emit_io_load_store(evoasm_program *program,
   unsigned n_examples = EVOASM_PROGRAM_INPUT_N(input);
 
   evoasm_buf_reset(program->buf);
-
   EVOASM_TRY(error, evoasm_x64_func_prolog, (evoasm_x64 *) program->arch, program->buf, EVOASM_X64_ABI_SYSV);
 
   for(i = 0; i < n_examples; i++) {
     evoasm_example_val *input_vals = input->vals + i * input->arity;
-    evoasm_debug("emitting program %d for example %d", program->index, i);
     EVOASM_TRY(error, evoasm_program_x64_emit_input_load, program, input_vals, input->types, input->arity, io_mapping);
     {
       size_t r = evoasm_buf_append(program->buf, program->body_buf);
@@ -1440,7 +1487,7 @@ evoasm_search_eval_program(evoasm_search *search,
 }
 
 static bool
-evoasm_kernel_param_x64_writes_p(evoasm_kernel_param *param, evoasm_reg_id reg_id) {
+evoasm_kernel_param_x64_writes_p(evoasm_kernel_param *param, evoasm_reg_id reg_id, evoasm_kernel_x64_ext_reg_info *reg_info) {
   evoasm_x64_inst *x64_inst = (evoasm_x64_inst *) param->inst;
   unsigned i;
 
@@ -1448,7 +1495,8 @@ evoasm_kernel_param_x64_writes_p(evoasm_kernel_param *param, evoasm_reg_id reg_i
     evoasm_x64_operand *op = &x64_inst->operands[i];
     evoasm_x64_reg_id op_reg_id = evoasm_op_x64_reg_id(op, param);
 
-    if(op->acc_w && op_reg_id == reg_id) {
+    if(op->acc_w && op_reg_id == reg_id && evoasm_x64_reg_info_uncovered_access(reg_info, op, param)) {
+      evoasm_x64_reg_info_update(reg_info, op, param);
       return true;
     }
   }
@@ -1456,72 +1504,88 @@ evoasm_kernel_param_x64_writes_p(evoasm_kernel_param *param, evoasm_reg_id reg_i
 }
 
 static unsigned
-evoasm_program_x64_find_writers(evoasm_program *program, evoasm_kernel *kernel, evoasm_reg_id reg_id, unsigned index, unsigned *writers) {
-  int i;
+evoasm_program_x64_find_writers_(evoasm_program *program, evoasm_kernel *kernel, evoasm_reg_id reg_id,
+                                 unsigned index, unsigned *writers) {
   unsigned len = 0;
-  evoasm_x64_bit_mask acc_mask = 0;
+  unsigned i, j;
   
-  for(i = (int) index; i >= 0; i--) {
-    evoasm_kernel_param *param = &kernel->params->params[i];
-    evoasm_x64_bit_mask mask = kernel->reg_info.x64[reg_id].mask;
+  for(i = 0; i <= index; i++) {
+    j = index - i;
     
-    if(acc_mask | mask != acc_mask) {
-      if(evoasm_kernel_param_x64_writes_p(param, reg_id)) {
-        writers[len++] = i;
-      }
-      acc_mask |= mask;
+    evoasm_kernel_param *param = &kernel->params->params[j];
+    evoasm_kernel_x64_ext_reg_info reg_info = {0};
+        
+    if(evoasm_kernel_param_x64_writes_p(param, reg_id, &reg_info)) {
+      writers[len++] = j;
     }
   }
   return len;
 }
 
+static unsigned
+evoasm_program_x64_find_writers(evoasm_program *program, evoasm_kernel *kernel,
+                                evoasm_reg_id reg_id, unsigned index, unsigned *writers) {
+
+  return evoasm_program_x64_find_writers_(program, kernel, reg_id, index, writers);
+}
+
+
 typedef evoasm_bitmap1024 evoasm_mark_bitmap;
 
 typedef struct {
   bool change;  
-  uint16_t inst_bitmap_offs[EVOASM_PROGRAM_MAX_SIZE];
-  evoasm_bitmap1024 inst_bitmap;
-  evoasm_bitmap256 output_reg_bitmaps[];
+  evoasm_bitmap512 inst_bitmaps[EVOASM_PROGRAM_MAX_SIZE];
+  evoasm_bitmap256 output_reg_bitmaps[EVOASM_PROGRAM_MAX_SIZE];
 } _evoasm_program_intron_elimination_ctx;
 
 static void
-evoasm_program_x64_mark_kernel(evoasm_program *program, evoasm_kernel *kernel,
-                               evoasm_reg_id reg_id, unsigned index, _evoasm_program_intron_elimination_ctx *ctx) {
+evoasm_program_x64_mark_writers(evoasm_program *program, evoasm_kernel *kernel,
+                                evoasm_reg_id reg_id, unsigned index, _evoasm_program_intron_elimination_ctx *ctx) {
   unsigned i, j, k, l;
   unsigned writers[16];
-  evoasm_kernel_param *param = &kernel->params->params[index];
-  evoasm_x64_inst *x64_inst = (evoasm_x64_inst *) param->inst;
 
   unsigned writers_len = evoasm_program_x64_find_writers(program, kernel, reg_id, index, writers);
+
+  fprintf(stderr, "found %d writers\n", writers_len);
 
   if(writers_len > 0) {
     for(i = 0; i < writers_len; i++) {
       unsigned writer_idx = writers[i];
-      evoasm_bitmap *inst_bitmap = (evoasm_bitmap *) &ctx->inst_bitmap;
-      unsigned inst_idx = ctx->inst_bitmap_offs[kernel->idx] + writer_idx;
-      if(!evoasm_bitmap_get(inst_bitmap, inst_idx)) {
-        evoasm_bitmap_set(inst_bitmap, inst_idx);
-        ctx->change = true;
-      }
+      evoasm_bitmap *inst_bitmap = (evoasm_bitmap *) &ctx->inst_bitmaps[kernel->idx];
+      if(evoasm_bitmap_get(inst_bitmap, writer_idx)) continue;
 
+      fprintf(stderr, "marking writer %d\n", writer_idx);
+      evoasm_kernel_param *param = &kernel->params->params[writer_idx];
+      evoasm_x64_inst *x64_inst = (evoasm_x64_inst *) param->inst;
+      evoasm_bitmap_set(inst_bitmap, writer_idx);
+      ctx->change = true;
+
+      fprintf(stderr, "checking writer operands %d\n", x64_inst->n_operands);
+        
       for(j = 0; j < x64_inst->n_operands; j++) {
         evoasm_x64_operand *op = &x64_inst->operands[j];
         evoasm_x64_reg_id op_reg_id = evoasm_op_x64_reg_id(op, param);
 
         if(op->acc_r) {
+          fprintf(stderr, "found r op\n");
+          if(writer_idx > 0) {
+            evoasm_program_x64_mark_writers(program, kernel, op_reg_id, writer_idx - 1, ctx);
+          }
+
           if(kernel->reg_info.x64[op_reg_id].input) {
-            unsigned trans_kernels_idcs[] = {kernel->idx + 1,
+            fprintf(stderr, "marking input reg %d\n", op_reg_id);
+            unsigned trans_kernels_idcs[] = {(unsigned)(kernel->idx + 1),
                                              kernel->params->branch_kernel_idx};
             for(k = 0; k < EVOASM_ARY_LEN(trans_kernels_idcs); k++) {
-              evoasm_kernel *trans_kernel = &program->kernels[trans_kernels_idcs[k]];
+              //evoasm_kernel *trans_kernel = &program->kernels[trans_kernels_idcs[k]];
               for(l = 0; l < EVOASM_X64_N_REGS; l++) {
                 if(kernel->reg_info.x64[l].trans_regs[k] == op_reg_id) {
                   evoasm_bitmap_set((evoasm_bitmap *) &ctx->output_reg_bitmaps[trans_kernels_idcs[k]], l);
                 }
               }
             }
-          } else {
-            evoasm_program_x64_mark_kernel(program, kernel, op_reg_id, writer_idx - 1, ctx);
+           } else {
+            fprintf(stderr, "marking reg %d\n", op_reg_id);
           }
         }
       }
@@ -1530,11 +1594,11 @@ evoasm_program_x64_mark_kernel(evoasm_program *program, evoasm_kernel *kernel,
 }
 
 static void
-evoasm_program_mark_kernel(evoasm_program *program, evoasm_kernel *kernel,
+evoasm_program_mark_writers(evoasm_program *program, evoasm_kernel *kernel,
                            evoasm_reg_id reg_id, unsigned index, _evoasm_program_intron_elimination_ctx *ctx) {
   switch(program->arch->cls->id) {
     case EVOASM_ARCH_X64: {
-      evoasm_program_x64_mark_kernel(program, kernel, reg_id, index, ctx);
+      evoasm_program_x64_mark_writers(program, kernel, reg_id, index, ctx);
       break;
     }
     default:
@@ -1543,23 +1607,16 @@ evoasm_program_mark_kernel(evoasm_program *program, evoasm_kernel *kernel,
 }
 
 static evoasm_success
-evoasm_program_eliminate_introns_(evoasm_program *program, evoasm_kernel *kernel, _evoasm_program_intron_elimination_ctx *ctx) {
-  unsigned i, j;
+evoasm_program_mark_kernel(evoasm_program *program, evoasm_kernel *kernel, _evoasm_program_intron_elimination_ctx *ctx) {
+  unsigned i;
 
   for(i = 0; i < EVOASM_X64_N_REGS; i++) {
-    if(evoasm_bitmap_get((evoasm_bitmap *)&ctx->output_reg_bitmaps[kernel->idx], i)) {
-      evoasm_program_mark_kernel(program, kernel, (evoasm_reg_id) i, kernel->params->size - 1, ctx);
+    evoasm_bitmap *bitmap = (evoasm_bitmap *)&ctx->output_reg_bitmaps[kernel->idx];
+    if(evoasm_bitmap_get(bitmap, i)) {
+      fprintf(stderr, "marking bit %d of %d\n", i, kernel->idx);
+      evoasm_program_mark_writers(program, kernel, (evoasm_reg_id) i, (unsigned)(kernel->params->size - 1), ctx);
     }
   }
-
-  /* sweep */
-  for(j = 0, i = 0; i < kernel->params->size; i++) {
-    if(evoasm_bitmap_get((evoasm_bitmap *) &marked, i)) {
-      kernel->params->params[j++] = kernel->params->params[i];
-    }
-  }
-  program->params->size = (evoasm_program_size) j;
-     
 
   return true;
 }
@@ -1567,54 +1624,51 @@ evoasm_program_eliminate_introns_(evoasm_program *program, evoasm_kernel *kernel
 evoasm_success
 evoasm_program_eliminate_introns(evoasm_program *program) {
   unsigned i, j;
-  unsigned last_kernel_idx = program->params->size - 1;
-  evoasm_kernel *last_kernel = &program->kernels[last_kernel_idx];
+  unsigned last_kernel_idx = (unsigned) (program->params->size - 1);
+  //evoasm_kernel *last_kernel = &program->kernels[last_kernel_idx];
   
-  size_t ctx_size = sizeof(_evoasm_program_intron_elimination_ctx) + program->params->size * sizeof(evoasm_bitmap128);
-  _evoasm_program_intron_elimination_ctx *ctx = evoasm_alloca(ctx_size);
-  memset(ctx, 0, ctx_size);
+  _evoasm_program_intron_elimination_ctx ctx = {0};
 
   {
-    uint16_t off = 0;
-    for(i = 0; i < program->params->size; i++) {
-      ctx.inst_bitmap_offs[i] = off;
-      off += program->kernels[i]->params->size;
-    }
-  }
-
-  {
-    evoasm_bitmap *output_bitmap = (evoasm_bitmap *)&ctx.output_reg_bitmaps[last_kernel_idx]
+    evoasm_bitmap *output_bitmap = (evoasm_bitmap *)&ctx.output_reg_bitmaps[last_kernel_idx];
     for(i = 0; i < program->_output.arity; i++) {
       evoasm_bitmap_set(output_bitmap, program->output_regs[i]);
     }
   }
   
-  ctx.change = true;
-  while(ctx.change) {
+  do {
+    i = last_kernel_idx;
     ctx.change = false;
-    for(i = last_kernel_idx; i >= 0; i--) {
-      EVOASM_TRY(error, evoasm_program_eliminate_introns_, program,
-        &program->kernels[i], &ctx);
+    for(i = 0; i <= last_kernel_idx; i++) {
+      j = last_kernel_idx - i;
+      EVOASM_TRY(error, evoasm_program_mark_kernel, program,
+        &program->kernels[j], &ctx);
     }
-  }
-
-  /*reemit, invalidates previous matching 
-   * since referred indices into output_regs might have changed */
-  if(!evoasm_program_emit(program, NULL, true, true, true, false)) {
-    return false;
-  }
-
-  /* reestablish matching finding new indices */
+  } while(ctx.change);
   
-  for(i = 0; i < program->_output.arity; i++) {
-    for(j = 0; j < last_kernel->output_regs; j++) {
-      if(last_kernel->output_regs[j] == result_regs[i]) {
-        program->_matching[i] = (uint_fast8_t) j;
-        goto next;
+  /* sweep */
+  for(i = 0; i <= last_kernel_idx; i++) {
+    evoasm_kernel *kernel = &program->kernels[i];
+    unsigned k;
+    evoasm_bitmap *inst_bitmap = (evoasm_bitmap *) &ctx.inst_bitmaps[i];
+
+    for(k = 0, j = 0; j < kernel->params->size; j++) {
+      if(evoasm_bitmap_get(inst_bitmap, j)) {
+        kernel->params->params[k++] = kernel->params->params[j];
       }
     }
-    evoasm_assert_not_reached();
-  next:;
+    fprintf(stderr, "kernel %d has now size %d\n", i, k);
+    kernel->params->size = (evoasm_program_size) k;
+  }
+  
+
+  
+  /* program is already prepared, must be reset before doing it again */
+  evoasm_program_unprepare(program);
+  
+  /* reemit, but keep previous mappings */
+  if(!evoasm_program_emit(program, NULL, true, true, false, false)) {
+    return false;
   }
 
   return true;

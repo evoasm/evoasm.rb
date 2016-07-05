@@ -73,21 +73,20 @@ typedef struct {
 #define EVOASM_KERNEL_REG_INFO_N_TRANS_REGS 2
 
 typedef struct {
-  bool l8 : 1;
-  bool h8 : 1;
   bool input : 1;
   bool written : 1;
   bool output : 1;
-  unsigned mask : EVOASM_X64_BIT_MASK_BITSIZE;
-  unsigned size: EVOASM_OPERAND_SIZE_BITSIZE_WITH_N;
   evoasm_x64_reg_id trans_regs[EVOASM_KERNEL_REG_INFO_N_TRANS_REGS];
 } evoasm_kernel_x64_reg_info;
 
+typedef union {
+  evoasm_kernel_x64_reg_info x64[EVOASM_X64_N_REGS];  
+} evoasm_kernel_reg_info;
+
+
 typedef struct {
   evoasm_kernel_params *params;
-  union {
-    evoasm_kernel_x64_reg_info x64[EVOASM_X64_N_REGS];  
-  } reg_info;
+  evoasm_kernel_reg_info reg_info;
   
   union {
     evoasm_x64_reg_id x64[EVOASM_KERNEL_MAX_OUTPUT_REGS];

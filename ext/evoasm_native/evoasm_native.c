@@ -432,17 +432,14 @@ static VALUE
 rb_program_output_registers(VALUE self) {
   rb_evoasm_program *program;
   VALUE ary = rb_ary_new();
-  size_t len, i;
-  evoasm_reg_id output_regs[EVOASM_REG_ID_MAX];
+  size_t i;
   
   TypedData_Get_Struct(self, rb_evoasm_program, &rb_program_type, program);
 
-  evoasm_program_output_regs(&program->program, output_regs, &len);
-  
-  for(i = 0; i < len; i++) {
+  for(i = 0; i < program->program._output.arity; i++) {
     switch(program->program.arch->cls->id) {
         case EVOASM_ARCH_X64:
-          rb_ary_push(ary, ID2SYM(rb_x64_reg_ids[output_regs[i]]));
+          rb_ary_push(ary, ID2SYM(rb_x64_reg_ids[program->program.output_regs[i]]));
           break;
         default: evoasm_assert_not_reached();
     }

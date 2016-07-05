@@ -11,7 +11,9 @@ module Evoasm
     def run_all(*input_examples)
       input_examples, input_arity = flatten_examples input_examples
       p input_examples, input_arity
-      __run__ input_examples, input_arity
+      a = __run__ input_examples, input_arity
+      p a
+      a
     end
 
     def disassemble(*args)
