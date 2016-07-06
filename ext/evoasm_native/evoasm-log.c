@@ -16,6 +16,7 @@
 #endif
 
 #include "evoasm-log.h"
+#include "evoasm-alloc.h"
 
 evoasm_log_level evoasm_min_log_level = EVOASM_LOG_LEVEL_WARN;
 FILE *          evoasm_log_file;
@@ -42,6 +43,7 @@ static const char *const log_colors[EVOASM_N_LOG_LEVELS] = {
 void
 evoasm_log(evoasm_log_level level, const char *tag, const char *format, ...)
 {
+  if(level < evoasm_min_log_level) return;
 
   va_list args;
 
@@ -62,8 +64,11 @@ evoasm_log(evoasm_log_level level, const char *tag, const char *format, ...)
   const char *format_ = format + (print_prefix ? 0 : 1);
   size_t format_len = strlen(format_);
   bool print_new_line = format_[format_len - 1] != ' ';
-  char *full_format = alloca(prefix_len
+  if(!print_new_line) format_len--;
+  char *full_format = evoasm_alloca(prefix_len
+                             + color_len
                              + level_len
+                             + color_reset_len
                              + sep1_len
                              + tag_len
                              + sep2_len
@@ -71,9 +76,7 @@ evoasm_log(evoasm_log_level level, const char *tag, const char *format, ...)
                              + 2);
   size_t i = 0;
 
-  if(level < evoasm_min_log_level) return;
 
-  if(!print_new_line) format_len--;
 
 #define __CPY(s, l) \
   memcpy(full_format + i, (s), (l)); i+= (l);

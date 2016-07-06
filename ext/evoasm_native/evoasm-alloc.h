@@ -52,11 +52,8 @@ evoasm_success evoasm_munmap(void *p, size_t size);
 evoasm_success evoasm_mprot(void *p, size_t size, int mode);
 long evoasm_page_size();
 
-static inline void *
-evoasm_alloca(size_t size) {
 #if defined(_WIN32)
-  return _malloca(size);
+  #define evoasm_alloca(s) _malloca(s);
 #else
-  return alloca(size);
+  #define evoasm_alloca(s) alloca(s);
 #endif
-}

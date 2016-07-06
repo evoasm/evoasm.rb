@@ -1087,7 +1087,7 @@ static void
 evoasm_program_log_program_output(evoasm_program *program,
                                   evoasm_kernel *kernel,
                                   evoasm_program_output *output,
-                                  uint_fast8_t *matching,
+                                  uint_fast8_t * const matching,
                                   evoasm_log_level log_level) {
 
   unsigned n_examples = EVOASM_PROGRAM_OUTPUT_N(output);
@@ -1096,6 +1096,7 @@ evoasm_program_log_program_output(evoasm_program *program,
   unsigned i, j, k;
 
   evoasm_log(log_level, EVOASM_LOG_TAG, "OUTPUT MATRICES:\n");
+
   for(i = 0; i < n_examples; i++) {
     for(j = 0; j < height; j++) {
       for(k = 0; k < width; k++) {
@@ -1372,6 +1373,7 @@ next:;
   memcpy(loaded_output->types, output->types, EVOASM_ARY_LEN(output->types));
 
 //#if EVOASM_MIN_LOG_LEVEL <= EVOASM_LOG_LEVEL_INFO
+
   evoasm_program_log_program_output(program,
                                     kernel,
                                     loaded_output,
