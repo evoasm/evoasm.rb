@@ -137,7 +137,7 @@ _evoasm_population_destroy(evoasm_population *pop, bool free_buf, bool free_body
   evoasm_prng64_destroy(&pop->prng64);
   evoasm_prng32_destroy(&pop->prng32);
   evoasm_free(pop->programs);
-  evoasm_free(pop->fitnesses);
+  evoasm_free(pop->losses);
   evoasm_free(pop->output_vals);
   evoasm_free(pop->matching);
 
@@ -176,12 +176,12 @@ evoasm_population_init(evoasm_population *pop, evoasm_search *search) {
   pop->output_vals = evoasm_malloc(EVOASM_PROGRAM_OUTPUT_VALS_SIZE(&search->params.program_input));
   pop->matching = evoasm_malloc(search->params.program_output.arity * sizeof(uint_fast8_t));
 
-  pop->fitnesses = (evoasm_fitness *) evoasm_calloc(pop_size, sizeof(evoasm_fitness));
+  pop->losses = (evoasm_loss *) evoasm_calloc(pop_size, sizeof(evoasm_loss));
   for(i = 0; i < EVOASM_SEARCH_ELITE_SIZE; i++) {
     pop->elite[i] = UINT32_MAX;
   }
   pop->elite_pos = 0;
-  pop->best_fitness = INFINITY;
+  pop->best_loss = INFINITY;
 
   evoasm_prng64_init(&pop->prng64, &search->params.seed64);
   evoasm_prng32_init(&pop->prng32, &search->params.seed32);
@@ -1252,8 +1252,8 @@ evoasm_program_calc_stable_matching(evoasm_program *program,
 }
 
 
-static inline evoasm_fitness
-evoasm_program_calc_fitness(evoasm_program *program,
+static inline evoasm_loss
+evoasm_program_calc_loss(evoasm_program *program,
                             evoasm_kernel *kernel,
                            unsigned height,
                            double *dist_mat,
@@ -1261,16 +1261,16 @@ evoasm_program_calc_fitness(evoasm_program *program,
   unsigned i;
   unsigned width = kernel->n_output_regs;
   double scale = 1.0 / width;
-  evoasm_fitness fitness = 0.0;
+  evoasm_loss loss = 0.0;
 
   for(i = 0; i < height; i++) {
-    fitness += scale * dist_mat[i * width + matching[i]];
+    loss += scale * dist_mat[i * width + matching[i]];
   }
 
-  return fitness;
+  return loss;
 }
 
-static evoasm_fitness
+static evoasm_loss
 evoasm_program_assess(evoasm_program *program,
                      evoasm_program_output *output) {
 
@@ -1282,7 +1282,7 @@ evoasm_program_assess(evoasm_program *program,
   size_t dist_mat_len = (size_t)(width * height);
   double *dist_mat = evoasm_alloca(dist_mat_len * sizeof(double));
   uint_fast8_t *matching = evoasm_alloca(height * sizeof(uint_fast8_t));
-  evoasm_fitness fitness;
+  evoasm_loss loss;
 
   for(i = 0; i < dist_mat_len; i++) {
     dist_mat[i] = 0.0;
@@ -1295,9 +1295,9 @@ evoasm_program_assess(evoasm_program *program,
     }
 
     if(evoasm_program_match(program, width, dist_mat, matching)) {
-      fitness = evoasm_program_calc_fitness(program, kernel, 1, dist_mat, matching);
+      loss = evoasm_program_calc_loss(program, kernel, 1, dist_mat, matching);
     } else {
-      fitness = INFINITY;
+      loss = INFINITY;
     }
   }
   else {
@@ -1306,13 +1306,13 @@ evoasm_program_assess(evoasm_program *program,
     }
 
     evoasm_program_calc_stable_matching(program, kernel, height, dist_mat, matching);
-    fitness = evoasm_program_calc_fitness(program, kernel, height, dist_mat, matching);
+    loss = evoasm_program_calc_loss(program, kernel, height, dist_mat, matching);
   }
   
   
 
 #if EVOASM_MIN_LOG_LEVEL <= EVOASM_LOG_LEVEL_DEBUG
-  if(fitness == 0.0) {
+  if(loss == 0.0) {
     evoasm_program_log_program_output(program,
                                       kernel,
                                       output,
@@ -1332,7 +1332,7 @@ evoasm_program_assess(evoasm_program *program,
     }
   }
 
-  return fitness;
+  return loss;
 }
 
 static void
@@ -1458,17 +1458,17 @@ evoasm_program_run(evoasm_program *program,
 static evoasm_success
 evoasm_search_eval_program(evoasm_search *search,
                           evoasm_program *program,
-                          evoasm_fitness *fitness) {
+                          evoasm_loss *loss) {
 
   evoasm_kernel *kernel = &program->kernels[program->params->size - 1];
 
   if(!evoasm_program_emit(program, &search->params.program_input, true, true, true, true)) {
-    *fitness = INFINITY;
+    *loss = INFINITY;
     return false;
   }
 
   if(EVOASM_UNLIKELY(kernel->n_output_regs == 0)) {
-    *fitness = INFINITY;
+    *loss = INFINITY;
     return true;
   }
 
@@ -1479,10 +1479,10 @@ evoasm_search_eval_program(evoasm_search *search,
 
     if(_EVOASM_SIGNAL_CONTEXT_TRY((struct evoasm_signal_context *)program->_signal_ctx)) {
       evoasm_buf_exec(program->buf);
-      *fitness = evoasm_program_assess(program, &search->params.program_output);
+      *loss = evoasm_program_assess(program, &search->params.program_output);
     } else {
       evoasm_debug("program %d signaled", program->index);
-      *fitness = INFINITY;
+      *loss = INFINITY;
     }
   }
   return true;
@@ -1680,7 +1680,7 @@ error:
 
 static evoasm_success
 evoasm_search_eval_population(evoasm_search *search, unsigned char *programs,
-                             evoasm_fitness min_fitness, evoasm_search_result_func result_func,
+                             evoasm_loss max_loss, evoasm_search_result_func result_func,
                              void *user_data) {
   unsigned i, j;
   struct evoasm_signal_context signal_ctx = {0};
@@ -1691,7 +1691,7 @@ evoasm_search_eval_population(evoasm_search *search, unsigned char *programs,
   evoasm_signal_context_install(&signal_ctx, search->arch);
 
   for(i = 0; i < search->params.pop_size; i++) {
-    evoasm_fitness fitness;
+    evoasm_loss loss;
     evoasm_program_params *program_params = _EVOASM_SEARCH_PROGRAM_PARAMS(search, programs, i);
     
     /* encode solution */
@@ -1713,27 +1713,27 @@ evoasm_search_eval_population(evoasm_search *search, unsigned char *programs,
       kernel->idx = (evoasm_program_size) j;
     }
 
-    if(!evoasm_search_eval_program(search, &program, &fitness)) {
+    if(!evoasm_search_eval_program(search, &program, &loss)) {
       retval = false;
       goto done;
     }
 
-    pop->fitnesses[i] = fitness;
+    pop->losses[i] = loss;
 
-    evoasm_debug("program %d has fitness %lf", i, fitness);
+    evoasm_debug("program %d has loss %lf", i, loss);
 
-    if(fitness <= pop->best_fitness) {
+    if(loss <= pop->best_loss) {
       pop->elite[pop->elite_pos++ % EVOASM_SEARCH_ELITE_SIZE] = i;
-      pop->best_fitness = fitness;
-      evoasm_debug("program %d has best fitness %lf", i, fitness);
+      pop->best_loss = loss;
+      evoasm_debug("program %d has best loss %lf", i, loss);
     }
 
-    if(EVOASM_UNLIKELY(fitness / n_examples <= min_fitness)) {
-      evoasm_info("program %d has best fitness %lf", i, fitness);
+    if(EVOASM_UNLIKELY(loss / n_examples <= max_loss)) {
+      evoasm_info("program %d has best loss %lf", i, loss);
       program._output = search->params.program_output;
       program._input = search->params.program_input;
 
-      if(!result_func(&program, fitness, user_data)) {
+      if(!result_func(&program, loss, user_data)) {
         retval = false;
         goto done;
       }
@@ -1768,14 +1768,14 @@ evoasm_search_select_parents(evoasm_search *search, uint32_t *parents) {
     for(i = 0; i < search->params.pop_size; i++) {
       uint32_t r = evoasm_prng32_rand(&search->pop.prng32);
       if(n >= search->params.pop_size) goto done;
-      if(r < UINT32_MAX * ((search->pop.best_fitness + 1.0) / (search->pop.fitnesses[i] + 1.0))) {
+      if(r < UINT32_MAX * ((search->pop.best_loss + 1.0) / (search->pop.losses[i] + 1.0))) {
         parents[n++] = i;
-        //evoasm_info("selecting fitness %f", search->pop.fitnesses[i]);
+        //evoasm_info("selecting loss %f", search->pop.losses[i]);
       } else if(r < UINT32_MAX / 32) {
         parents[n++] = search->pop.elite[j++ % EVOASM_SEARCH_ELITE_SIZE];
-        //evoasm_info("selecting elite fitness %f", search->pop.fitnesses[parents[n - 1]]);
+        //evoasm_info("selecting elite loss %f", search->pop.losses[parents[n - 1]]);
       } else {
-        //evoasm_info("discarding fitness %f", search->pop.fitnesses[i]);
+        //evoasm_info("discarding loss %f", search->pop.losses[i]);
       }
     }
   }
@@ -1938,23 +1938,23 @@ evoasm_population_swap(evoasm_population *pop, unsigned char **programs) {
   *programs = programs_tmp;
 }
 
-static evoasm_fitness
-evoasm_search_population_fitness(evoasm_search *search, unsigned *n_inf) {
+static evoasm_loss
+evoasm_search_population_loss(evoasm_search *search, unsigned *n_inf) {
   unsigned i;
   double scale = 1.0 / search->params.pop_size;
-  double pop_fitness = 0.0;
+  double pop_loss = 0.0;
   *n_inf = 0;
   for(i = 0; i < search->params.pop_size; i++) {
-    double fitness = search->pop.fitnesses[i];
-    if(fitness != INFINITY) {
-      pop_fitness += scale * fitness;
+    double loss = search->pop.losses[i];
+    if(loss != INFINITY) {
+      pop_loss += scale * loss;
     }
     else {
       (*n_inf)++;
     }
   }
 
-  return pop_fitness;
+  return pop_loss;
 }
 
 static void
@@ -1965,19 +1965,19 @@ evoasm_search_new_generation(evoasm_search *search, unsigned char **programs) {
 #if 0
   {
     double scale = 1.0 / search->params.pop_size;
-    double pop_fitness = 0.0;
+    double pop_loss = 0.0;
     unsigned n_inf = 0;
     for(i = 0; i < search->params.pop_size; i++) {
-      double fitness = search->pop.fitnesses[parents[i]];
-      if(fitness != INFINITY) {
-        pop_fitness += scale * fitness;
+      double loss = search->pop.losses[parents[i]];
+      if(loss != INFINITY) {
+        pop_loss += scale * loss;
       }
       else {
         n_inf++;
       }
     }
 
-    evoasm_info("population selected fitness: %g/%u", pop_fitness, n_inf);
+    evoasm_info("population selected loss: %g/%u", pop_loss, n_inf);
   }
 
   unsigned i;
@@ -1995,29 +1995,29 @@ evoasm_search_new_generation(evoasm_search *search, unsigned char **programs) {
 
 static evoasm_success
 evoasm_search_start_(evoasm_search *search, unsigned char **programs,
-                    evoasm_fitness min_fitness, evoasm_search_result_func result_func,
+                    evoasm_loss max_loss, evoasm_search_result_func result_func,
                     void *user_data) {
   unsigned gen;
-  evoasm_fitness last_fitness = 0.0;
+  evoasm_loss last_loss = 0.0;
   unsigned ups = 0;
 
   for(gen = 0;;gen++) {
-    if(!evoasm_search_eval_population(search, *programs, min_fitness, result_func, user_data)) {
+    if(!evoasm_search_eval_population(search, *programs, max_loss, result_func, user_data)) {
       return true;
     }
 
     if(gen % 256 == 0) {
       unsigned n_inf;
-      evoasm_fitness fitness = evoasm_search_population_fitness(search, &n_inf);
-      evoasm_info("population fitness: %g/%u\n\n", fitness, n_inf);
+      evoasm_loss loss = evoasm_search_population_loss(search, &n_inf);
+      evoasm_info("population loss: %g/%u\n\n", loss, n_inf);
 
       if(gen > 0) {
-        if(last_fitness <= fitness) {
+        if(last_loss <= loss) {
           ups++;
         }
       }
 
-      last_fitness = fitness;
+      last_loss = loss;
 
       if(ups >= 3) {
         evoasm_info("reached convergence\n");
@@ -2046,17 +2046,17 @@ evoasm_search_merge(evoasm_search *search) {
 }
 
 void
-evoasm_search_start(evoasm_search *search, evoasm_fitness min_fitness, evoasm_search_result_func result_func, void *user_data) {
+evoasm_search_start(evoasm_search *search, evoasm_loss max_loss, evoasm_search_result_func result_func, void *user_data) {
 
   unsigned kalpa;
 
   evoasm_search_seed(search, search->pop.programs_main);
 
   for(kalpa = 0;;kalpa++) {
-    if(!evoasm_search_start_(search, &search->pop.programs_main, min_fitness, result_func, user_data)) {
+    if(!evoasm_search_start_(search, &search->pop.programs_main, max_loss, result_func, user_data)) {
       evoasm_search_seed(search, search->pop.programs_aux);
       evoasm_info("starting aux search");
-      if(!evoasm_search_start_(search, &search->pop.programs_aux, min_fitness, result_func, user_data)) {
+      if(!evoasm_search_start_(search, &search->pop.programs_aux, max_loss, result_func, user_data)) {
         evoasm_search_merge(search);
       }
       else {

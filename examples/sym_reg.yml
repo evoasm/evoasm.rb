@@ -17,7 +17,7 @@ examples:
 kernel_size: 5..15
 program_size: 1
 population_size: 1600
-min_fitness: 0.0
+max_loss: 0.0
 parameters: [reg0, reg1, reg2, reg3]
 domains:
   reg0: &regs [XMM0, XMM1, XMM2, XMM3]

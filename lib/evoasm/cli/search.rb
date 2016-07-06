@@ -45,7 +45,7 @@ module Evoasm
                    domains: domains,
                    recur_limit: recur_limit
 
-        search.start!(params['min_fitness'] || 0.0) do |program, fitness|
+        search.start!(params['max_loss'] || 0.0) do |program, loss|
           ts = Time.now
           puts pastel.bold "Program #{program_counter}, #{ts.strftime '%H:%M:%S'} (found after #{(ts - start_ts).to_i} seconds)"
 

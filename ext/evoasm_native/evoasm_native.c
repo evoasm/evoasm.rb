@@ -997,7 +997,7 @@ static ID error_code_missing_feature;
 
 struct result_func_data {
   evoasm_program *program;
-  evoasm_fitness fitness;
+  evoasm_loss loss;
   evoasm_search *search;
   int tag;
   VALUE block;
@@ -1008,7 +1008,7 @@ result_func(VALUE user_data) {
 
   struct result_func_data *data = (struct result_func_data *) user_data;
 
-  evoasm_fitness fitness = data->fitness;
+  evoasm_loss loss = data->loss;
   evoasm_program tmp_program = *data->program;
 
   /*VALUE proc = (VALUE) user_data;*/
@@ -1082,7 +1082,7 @@ result_func(VALUE user_data) {
   }
 
   {
-    VALUE yield_vals[] = {rb_program, rb_float_new(fitness)};
+    VALUE yield_vals[] = {rb_program, rb_float_new(loss)};
     return rb_proc_call(data->block, rb_ary_new_from_values(2, yield_vals));
   }
 
@@ -1093,11 +1093,11 @@ raise:
 
 
 static bool
-_result_func(evoasm_program *program, evoasm_fitness fitness, void *user_data) {
+_result_func(evoasm_program *program, evoasm_loss loss, void *user_data) {
   struct result_func_data *result_data = (struct result_func_data *) user_data;
   VALUE retval;
 
-  result_data->fitness = fitness;
+  result_data->loss = loss;
   result_data->program = program;
   result_data->tag = 0;
 
@@ -1112,7 +1112,7 @@ _result_func(evoasm_program *program, evoasm_fitness fitness, void *user_data) {
 
 
 static VALUE
-rb_search_start(VALUE self, VALUE rb_min_fitness) {
+rb_search_start(VALUE self, VALUE rb_max_loss) {
   evoasm_search *search;
   VALUE block;
   struct result_func_data result_data;
@@ -1124,7 +1124,7 @@ rb_search_start(VALUE self, VALUE rb_min_fitness) {
   result_data.block = block;
   result_data.search = search;
 
-  evoasm_search_start(search, (evoasm_fitness) NUM2DBL(rb_min_fitness), _result_func, &result_data);
+  evoasm_search_start(search, (evoasm_loss) NUM2DBL(rb_max_loss), _result_func, &result_data);
   if(result_data.tag) {
     rb_jump_tag(result_data.tag);
   }

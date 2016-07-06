@@ -7,7 +7,7 @@
 #include "evoasm-buf.h"
 #include "evoasm-x64.h"
 
-typedef double evoasm_fitness;
+typedef double evoasm_loss;
 typedef uint8_t evoasm_program_size;
 
 #define EVOASM_KERNEL_SIZE_MAX UINT8_MAX
@@ -151,7 +151,7 @@ typedef struct {
 typedef struct {
   evoasm_prng64 prng64;
   evoasm_prng32 prng32;
-  evoasm_fitness best_fitness;
+  evoasm_loss best_loss;
   evoasm_buf buf;
   evoasm_buf body_buf;
 
@@ -159,7 +159,7 @@ typedef struct {
   uint8_t elite_pos;
   uint_fast8_t *matching;
   evoasm_example_val *output_vals;
-  evoasm_fitness *fitnesses;
+  evoasm_loss *losses;
   unsigned char *programs;
   unsigned char *programs_main;
   unsigned char *programs_swap;
@@ -190,10 +190,10 @@ bool
 evoasm_search_destroy(evoasm_search *search);
 
 typedef bool (*evoasm_search_result_func)(evoasm_program *program,
-                                         evoasm_fitness fitness, void *user_data);
+                                         evoasm_loss loss, void *user_data);
 
 void
-evoasm_search_start(evoasm_search *search, evoasm_fitness min_fitness,
+evoasm_search_start(evoasm_search *search, evoasm_loss max_loss,
                    evoasm_search_result_func func, void *user_data);
 
 bool
