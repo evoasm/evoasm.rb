@@ -12,7 +12,7 @@ module Evoasm
 end
 
 begin
-  require 'evoasm_native'
+  require 'evoasm_ext'
 rescue LoadError => e
   p e
 end

@@ -6,7 +6,7 @@ require 'rake/extensiontask'
 require 'evoasm/tasks/gen_task'
 require 'evoasm/tasks/template_task'
 
-Rake::ExtensionTask.new('evoasm_native')
+Rake::ExtensionTask.new('evoasm_ext')
 
 Rake::TestTask.new do |t|
   t.libs.push 'lib'

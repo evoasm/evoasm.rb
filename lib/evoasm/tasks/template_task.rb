@@ -37,7 +37,7 @@ module Evoasm
       end
 
       def ext_dir
-        File.join Evoasm.root, 'ext', 'evoasm_native'
+        File.join Evoasm.root, 'ext', 'evoasm_ext'
       end
 
       def ext_path(filename)

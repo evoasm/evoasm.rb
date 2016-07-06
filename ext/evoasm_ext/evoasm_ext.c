@@ -1632,7 +1632,7 @@ rb_evoasm_log_level_set(VALUE self, VALUE level) {
 
 extern const uint16_t evoasm_n_domains;
 
-void Init_evoasm_native() {
+void Init_evoasm_ext() {
   mEvoasm = rb_define_module("Evoasm");
 
   cArchitecture = rb_define_class_under(mEvoasm, "Architecture", rb_cData);

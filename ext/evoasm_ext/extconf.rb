@@ -28,4 +28,4 @@ if enable_config('debug')
   $CFLAGS << ' -O0 -g3 -fno-omit-frame-pointer'
 end
 
-create_makefile('evoasm_native')
+create_makefile('evoasm_ext')
