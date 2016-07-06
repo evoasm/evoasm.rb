@@ -55,17 +55,22 @@ typedef struct {
 
 <%= operand_types.to_c %>
 
+<%= bit_masks.to_c %>
+#define <%= bit_mask_to_c 0..63 %> (<%= bit_mask_to_c 0..31 %> | <%= bit_mask_to_c 32..63 %>)
+#define <%= bit_mask_to_c 0..127 %> (<%= bit_mask_to_c 0..63 %> | <%= bit_mask_to_c 64..127 %>)
+
 typedef struct {
-  unsigned type: 3;
   unsigned acc_r: 1;
   unsigned acc_w: 1;
   unsigned acc_u: 1;
   unsigned acc_c: 1;
   unsigned implicit: 1;
-  unsigned reg_type: 3;
-  unsigned reg_id: 7;
   unsigned param_idx: 5;
-  unsigned size: 4;
+  unsigned type: EVOASM_X64_OPERAND_TYPE_BITSIZE;
+  unsigned size: EVOASM_OPERAND_SIZE_BITSIZE_WITH_N;
+  unsigned reg_id: EVOASM_X64_REG_BITSIZE_WITH_N;
+  unsigned reg_type: EVOASM_X64_REG_TYPE_BITSIZE_WITH_N;
+  unsigned acc_w_mask: EVOASM_X64_BIT_MASK_BITSIZE;
 } evoasm_x64_operand;
 
 typedef struct {

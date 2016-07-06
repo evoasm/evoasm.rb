@@ -55,6 +55,15 @@ module Evoasm
         const_name_to_c size, :operand_size
       end
 
+      def bit_mask_to_c(mask)
+        name =
+          case mask
+          when Range then"#{mask.min}_#{mask.max}"
+          else mask.to_s
+          end
+        const_name_to_c name, arch_prefix(:bit_mask)
+      end
+
       def feature_name_to_c(name)
         const_name_to_c name, arch_prefix(:feature)
       end

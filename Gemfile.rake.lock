@@ -1,6 +1,6 @@
 GIT
   remote: https://bitbucket.org/furunkel/evoasm-scrapers
-  revision: d6a34bf32816539eb97da8d9c1de0c8ae7b89dd6
+  revision: 2e2f0dc33e8c2d0e86c5a85f86cdc6680bbf21ef
   branch: master
   specs:
     evoasm-scrapers (0.1.0)
@@ -9,7 +9,7 @@ GIT
 PATH
   remote: .
   specs:
-    evoasm (0.0.2.pre4)
+    evoasm (0.0.2.pre6)
       pastel (~> 0.6)
       pry (~> 0.10)
 
@@ -39,10 +39,10 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  evoasm!
-  evoasm-scrapers!
   bundler (~> 1.7)
   erubis (~> 2.6)
+  evoasm!
+  evoasm-scrapers!
   minitest (~> 5.8)
   rake (~> 10.0)
   rake-compiler (~> 0.9)

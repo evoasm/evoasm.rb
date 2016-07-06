@@ -25,8 +25,10 @@ module Evoasm
         pastel = Pastel.new
 
         program_size = parse_range params['program_size']
+        kernel_size = parse_range params['kernel_size']
         program_counter = 0
         max_programs = params['max_programs']
+        recur_limit = params['recur_limit'] || 0
 
         domains = convert_domains_hash params['domains']
         parameters = (params['parameters'] || %i(reg0 reg1 reg2 imm0 imm1)).map(&:to_sym)
@@ -36,12 +38,14 @@ module Evoasm
         search = Evoasm::Search.new x64,
                    examples: params['examples'],
                    instructions: insts,
+                   kernel_size: kernel_size,
                    program_size: program_size,
                    population_size: params['population_size'],
                    parameters: parameters,
-                   domains: domains
+                   domains: domains,
+                   recur_limit: recur_limit
 
-        search.start!(params['min_fitness'] || 0.0) do |program, fitness|
+        search.start!(params['max_loss'] || 0.0) do |program, loss|
           ts = Time.now
           puts pastel.bold "Program #{program_counter}, #{ts.strftime '%H:%M:%S'} (found after #{(ts - start_ts).to_i} seconds)"
 
@@ -109,7 +113,10 @@ module Evoasm
       end
 
       def parse_range(str)
-        if str =~ /\(?(\d+)\.\.(\.?)(\d+)\)?/
+        case str
+        when Integer
+          str
+        when /^\(?(\d+)\.\.(\.?)(\d+)\)?$/
           Range.new($1.to_i, $3.to_i, !$2.empty?)
         else
           raise ArgumentError, "invalid range '#{str}'"

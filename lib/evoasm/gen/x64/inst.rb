@@ -25,13 +25,12 @@ module Evoasm
         MEM_OP_REGEXP = /^m(\d*)$/
         MOFFS_OP_REGEXP = /^moffs(\d+)$/
         VSIB_OP_REGEXP = /^vm(\d+)(?:x|y)$/
-        RM_OP_REGEXP = %r{^(r\d*|xmm|ymm|zmm|mm)(?:\d)?/m(\d+)$}
-        REG_OP_REGEXP = /^(r|xmm|ymm|zmm|mm)(?:(\d+)(?:a|b)?)?$/
-
+        RM_OP_REGEXP = %r{^(r\d*|xmm|ymm|zmm|mm)?/m(\d+)$}
+        REG_OP_REGEXP = /^(r|xmm|ymm|zmm|mm)(8|16|32|64)?$/
 
         Operand = Struct.new :name, :param, :type, :size, :access,
                              :encoded, :mnem, :reg, :implicit,
-                             :reg_type do
+                             :reg_type, :accessed_bits do
           alias_method :encoded?, :encoded
           alias_method :mnem?, :mnem
           alias_method :implicit?, :implicit
@@ -222,7 +221,7 @@ module Evoasm
         IGNORED_OPERAND_NAMES = X64::IGNORED_RFLAGS + X64::IGNORED_MXCSR
         def load_operands(row)
           ops = row[COL_OPS].split('; ').map do |op|
-            op =~ /(.*?):([a-z]+)/ || fail
+            op =~ /(.*?):([a-z]+(?:\[\d+\.\.\d+\])?)/ || fail
             [$1, $2]
           end
 
@@ -246,6 +245,10 @@ module Evoasm
           Operand.new.tap do |operand|
             operand.name = op_name
             operand.access = flags.gsub(/[^crwu]/, '').each_char.map(&:to_sym)
+            operand.accessed_bits = {}
+            flags.scan(/([crwu])\[(\d+)\.\.(\d+)\]/) do |acc, from, to|
+              operand.accessed_bits[acc.to_sym] = (from.to_i..to.to_i)
+            end
             operand.encoded = flags.include? 'e'
             # mnem operand
             operand.mnem = flags.include? 'm'
@@ -283,7 +286,7 @@ module Evoasm
             operand.type = :vsib
             operand.size = $1.to_i
           else
-            raise
+            raise "unexpected operand '#{op_name}'"
           end
 
           if (operand.type == :rm || operand.type == :reg)
@@ -314,7 +317,7 @@ module Evoasm
           when 'mm'
             [:mm, 64]
           else
-            fail "unexpected reg type '#{reg_op.match}' (#{reg_op})"
+            fail "unexpected reg type '#{type_match}/#{size_match}'"
           end
         end
 
@@ -576,7 +579,7 @@ module Evoasm
             if vex.include? '66'
               0b01
             elsif vex.include? 'F3'
-              0x10
+              0b10
             elsif vex.include? 'F2'
               0b11
             else

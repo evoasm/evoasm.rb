@@ -50,8 +50,32 @@ module Evoasm
         io.write '}'
         io.write " #{type_name}" if typedef
         io.puts ';'
+        io.puts "#define #{bitsize_to_c} #{bitsize}"
+        unless flags?
+          io.puts "#define #{bitsize_to_c true} #{bitsize true}"
+        else
+          io.puts "#define #{all_to_c} #{all_value}"
+        end
 
         io.string
+      end
+
+      def bitsize(with_n = false)
+        if flags?
+          @map.size
+        else
+          Math.log2(max + 1 + (with_n ? 1 : 0)).ceil.to_i
+        end
+      end
+
+      def max
+        @map.each_with_index.inject(0) do |acc, (index, (k, v))|
+          if v
+            [v + 1, acc + 1].max
+          else
+            acc + 1
+          end
+        end - 1
       end
 
       def c_type(typedef = false)
@@ -60,6 +84,18 @@ module Evoasm
 
       def c_type_name
         name_to_c name, @prefix
+      end
+
+      def all_to_c
+        name_to_c "#{prefix_name}_all", @prefix, const: true
+      end
+
+      def all_value
+        (2**@map.size) - 1
+      end
+
+      def bitsize_to_c(with_n = false)
+        name_to_c "#{prefix_name}_bitsize#{with_n ? '_WITH_N' : ''}", @prefix, const: true
       end
 
       def n_elem_to_c

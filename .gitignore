@@ -11,5 +11,6 @@
 *.so
 *.o
 *.a
+*.project
 mkmf.log
 /ext/awasm_native/lexer.[ch]

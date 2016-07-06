@@ -2,6 +2,7 @@
 
 #include "evoasm-x64.h"
 #include "evoasm-error.h"
+#include "evoasm-alloc.h"
 
 static const char *_evoasm_log_tag = "x64";
 
@@ -171,7 +172,7 @@ evoasm_x64_load_cpuid(evoasm_x64 *x64) {
 
   /*evoasm_buf_dump(&buf, stderr);*/
 
-  EVOASM_TRY(enc_failed, evoasm_buf_protect, &buf, EVOASM_BUF_PROT_X);
+  EVOASM_TRY(enc_failed, evoasm_buf_protect, &buf, EVOASM_MPROT_RX);
   evoasm_buf_exec(&buf);
 
 <%= io.string %>

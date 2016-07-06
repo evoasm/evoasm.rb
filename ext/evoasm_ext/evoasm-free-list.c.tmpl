@@ -1,0 +1,121 @@
+#include <assert.h>
+#include <errno.h>
+
+#include "$-s.h"
+#include "evoasm-alloc.h"
+
+$includes
+
+void
+$s_clear($s *free_list, $s_index start, $s_index end) {
+  for($s_index i = start; i < end - 1; i++) {
+    $S_DATA(free_list)[i].free = true;
+    $S_DATA(free_list)[i].next_free = i + 1;
+  }
+  $S_DATA(free_list)[end - 1].next_free = $S_NULL_IDX;
+  $S_DATA(free_list)[end - 1].free = true;
+
+  free_list->last_free = end - 1;
+}
+
+
+$e *
+$s_data($s *free_list) {
+ return $S_DATA(free_list);
+}
+
+evoasm_success
+$s_init($s *free_list, $s_index capa) {
+
+#if $embed > 0
+  free_list->data = NULL;
+  free_list->capa = EVOASM_SEQ_EMBED_N;
+#else
+  size_t size = sizeof($e) * capa;
+  free_list->data = evoasm_malloc(size);
+  if(free_list->data == NULL) {
+    evoasm_set_error(EVOASM_ERROR_TYPE_MEMORY, EVOASM_ERROR_CODE_NONE,
+        NULL, "Allocationg buffer of size %zu failed: %s", size, strerror(errno));
+    return false;
+  }
+  free_list->capa = capa;
+#endif
+
+  free_list->first_free = 0;
+  free_list->len = 0;
+
+  $s_clear(free_list, 0, free_list->capa);
+  return true;
+}
+
+evoasm_success
+_$s_grow($s *free_list) {
+  $s_index new_capa = free_list->capa + free_list->capa / 2;
+
+#if $embed > 0
+  if(free_list->data == NULL) {
+    free_list->data = malloc(sizeof($e) * new_capa);
+    memcpy(free_list->data, free_list->_data, sizeof($e) * free_list->capa);
+    goto update;
+  }
+#endif
+
+  {
+    size_t size = sizeof($e) * new_capa;
+    $e *new_data = evoasm_realloc(free_list->data, size);
+
+    if(EVOASM_UNLIKELY(new_data == NULL)) {
+      evoasm_set_error(EVOASM_ERROR_TYPE_MEMORY, EVOASM_ERROR_CODE_NONE,
+          NULL, "Reallocationg buffer of size %zu failed: %s", size, strerror(errno));
+      return false;
+    }
+  }
+update:
+  free_list->first_free = free_list->capa;
+  $s_clear(free_list, free_list->capa, new_capa);
+  free_list->capa = new_capa;
+  return true;
+}
+
+$e *
+$s_delete($s *free_list, $e *e) {
+  $s_index idx = $s_index(free_list, e);
+
+  e->next_free = free_list->first_free;
+  e->free = true;
+
+  // only free slot
+  if(free_list->last_free == $S_NULL_IDX) {
+    free_list->last_free = idx;
+  }
+
+  free_list->first_free = idx;
+  free_list->len--;
+  return e;
+}
+
+bool
+$s_eql($s *a, $s *b) {
+  $eql
+}
+
+bool
+$s_find($s *free_list, $e *value, $s_index *index) {
+
+  if(free_list->len == 0) return false;
+
+  for($s_index i = 0; i < free_list->capa; i++) {
+    if(!$S_DATA(free_list)[i].free) {
+      if($s_cmp(value, &$S_DATA(free_list)[i])) {
+        if(index != NULL) *index = i;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void
+$s_destroy($s *free_list) {
+  evoasm_free(free_list->data);
+}
