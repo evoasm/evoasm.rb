@@ -1,5 +1,5 @@
 require 'evoasm/gen/state_dsl'
-require 'evoasm/gen/x64/funcs'
+require 'evoasm/gen/x64/enc'
 require 'evoasm/core_ext/array'
 require 'evoasm/core_ext/integer'
 
