@@ -95,6 +95,8 @@ typedef struct {
   uint_fast8_t n_input_regs;
   uint_fast8_t n_output_regs;
   uint8_t idx;
+  uint16_t buf_start;
+  uint16_t buf_end;
 } evoasm_kernel;
 
 typedef struct {

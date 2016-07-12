@@ -935,6 +935,8 @@ evoasm_program_x64_emit_program_kernels(evoasm_program *program, bool set_io_map
     kernel = &program->kernels[i];
     
     kernel_addrs[i] = buf->data + buf->pos;
+    kernel->buf_start = buf->pos;
+
     EVOASM_TRY(error, evoasm_program_x64_emit_kernel, program, kernel, buf);
 
     if(i < size - 1) {
@@ -948,6 +950,8 @@ evoasm_program_x64_emit_program_kernels(evoasm_program *program, bool set_io_map
        
     EVOASM_TRY(error, evoasm_program_x64_emit_kernel_transitions, program, kernel,
       next_kernel, branch_kernel, buf, &branch_phis[i], set_io_mapping);      
+      
+    kernel->buf_end = buf->pos;
   }
   
   for(i = 0; i < size; i++) {

@@ -50,7 +50,7 @@ module Evoasm
           puts pastel.bold "Program #{program_counter}, #{ts.strftime '%H:%M:%S'} (found after #{(ts - start_ts).to_i} seconds)"
 
           if program.buffer.respond_to? :disassemble
-            puts program.buffer.disassemble.join "\n"
+            puts program.buffer.disassemble.map { |l| l.join "\t" }.join "\n"
           else
             puts program.instructions.map(&:name)
           end

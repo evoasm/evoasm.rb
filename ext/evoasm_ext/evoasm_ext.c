@@ -104,58 +104,6 @@ failed:
   return Qnil;
 }
 
-#ifdef HAVE_CAPSTONE_CAPSTONE_H
-#include <capstone/capstone.h>
-
-static VALUE
-x64_disassemble(unsigned char *data, size_t len, bool addr) {
-  csh handle;
-  cs_insn *insn;
-  size_t count;
-  VALUE rb_result;
-
-  /* FIXME: check arch */
-  if(cs_open(CS_ARCH_X86, CS_MODE_64, &handle) != CS_ERR_OK) {
-    return Qnil;
-  }
-
-  count = cs_disasm(handle, data, len, (uintptr_t) data, 0, &insn);
-  rb_result = rb_ary_new2((long) count);
-  if(count > 0) {
-    size_t j;
-
-    for(j = 0; j < count; j++) {
-      VALUE line;
-      if(addr) {
-        line = rb_sprintf("0x%"PRIx64":  %s   %s", insn[j].address, insn[j].mnemonic, insn[j].op_str);
-      } else {
-        line = rb_sprintf("%s %s", insn[j].mnemonic, insn[j].op_str);
-      }
-      rb_ary_push(rb_result, line);
-    }
-    cs_free(insn, count);
-  }
-
-  cs_close(&handle);
-  return rb_result;
-}
-
-static VALUE
-rb_buffer_disassemble(VALUE self) {
-  evoasm_buf *buf;
-  TypedData_Get_Struct(self, evoasm_buf, &rb_buf_type, buf);
-
-  return x64_disassemble(buf->data, buf->pos, true);
-}
-
-static VALUE
-rb_x64_s_disassemble(VALUE self, VALUE as_str) {
-  unsigned char *data = (unsigned char *) RSTRING_PTR(as_str);
-  size_t len = (size_t)RSTRING_LEN(as_str);
-
-  return x64_disassemble(data, len, false);
-}
-#endif
 
 static VALUE
 rb_buffer_size(VALUE self) {
@@ -574,6 +522,45 @@ rb_kernel_instructions(VALUE self) {
   }
 
   return kernel->insts;
+}
+
+static VALUE
+rb_kernel_index(VALUE self) {
+  rb_evoasm_kernel *kernel;
+
+  TypedData_Get_Struct(self, rb_evoasm_kernel, &rb_kernel_type, kernel);
+
+  return INT2FIX(kernel->kernel.idx);
+}
+
+static VALUE
+rb_kernel_size(VALUE self) {
+  rb_evoasm_kernel *kernel;
+
+  TypedData_Get_Struct(self, rb_evoasm_kernel, &rb_kernel_type, kernel);
+
+  return INT2FIX(kernel->kernel.params->size);
+}
+
+
+static VALUE
+rb_kernel_successors(VALUE self) {
+  rb_evoasm_kernel *kernel;
+  rb_evoasm_program *program;
+  VALUE rb_result = rb_ary_new();
+
+  TypedData_Get_Struct(self, rb_evoasm_kernel, &rb_kernel_type, kernel);
+  TypedData_Get_Struct(kernel->program, rb_evoasm_program, &rb_program_type, program);
+  
+  if(kernel->kernel.idx + 1 < RARRAY_LEN(program->kernels)) {
+    rb_ary_push(rb_result, RARRAY_AREF(program->kernels, kernel->kernel.idx + 1));
+  }
+  
+  if(kernel->kernel.params->branch_kernel_idx < RARRAY_LEN(program->kernels)) {
+    rb_ary_push(rb_result, RARRAY_AREF(program->kernels, kernel->kernel.params->branch_kernel_idx));
+  }
+  
+  return rb_result;
 }
 
 static VALUE
@@ -1044,11 +1031,12 @@ result_func(VALUE user_data) {
       TypedData_Get_Struct(rb_kernel, rb_evoasm_kernel, &rb_kernel_type, kernel);
 
       params_size = sizeof(evoasm_kernel_params) + orig_kernel->params->size * sizeof(evoasm_kernel_param);
+      kernel->kernel = *orig_kernel;
       kernel->kernel.params = xmalloc(params_size);
       kernel->params = Qnil;
       kernel->insts = Qnil;
       kernel->program = rb_program;
-      memcpy(kernel->kernel.params, data->program->params, params_size);
+      memcpy(kernel->kernel.params, orig_kernel->params, params_size);
       
       rb_ary_push(rb_kernels, rb_kernel);
     }
@@ -1632,6 +1620,81 @@ rb_evoasm_log_level_set(VALUE self, VALUE level) {
 
 extern const uint16_t evoasm_n_domains;
 
+#ifdef HAVE_CAPSTONE_CAPSTONE_H
+#include <capstone/capstone.h>
+
+static VALUE
+x64_disassemble(unsigned char *data, size_t start, size_t len, bool addr) {
+  csh handle;
+  cs_insn *insn;
+  size_t count;
+  VALUE rb_result;
+
+  /* FIXME: check arch */
+  if(cs_open(CS_ARCH_X86, CS_MODE_64, &handle) != CS_ERR_OK) {
+    return Qnil;
+  }
+
+  count = cs_disasm(handle, data + start, len, (uintptr_t) (data + start), 0, &insn);
+  rb_result = rb_ary_new2((long) count);
+  if(count > 0) {
+    size_t j;
+    for(j = 0; j < count; j++) {
+      VALUE line = rb_ary_new();
+      if(addr) {
+        rb_ary_push(line, ULL2NUM(insn[j].address));
+      }
+      rb_ary_push(line, rb_str_new2(insn[j].mnemonic));
+      rb_ary_push(line, rb_str_new2(insn[j].op_str));
+      rb_ary_push(rb_result, line);
+    }
+    cs_free(insn, count);
+  }
+
+  cs_close(&handle);
+  return rb_result;
+}
+
+static VALUE
+rb_buffer_disassemble(VALUE self) {
+  evoasm_buf *buf;
+  TypedData_Get_Struct(self, evoasm_buf, &rb_buf_type, buf);
+
+  return x64_disassemble(buf->data, 0, buf->pos, true);
+}
+
+static VALUE
+rb_x64_s_disassemble(VALUE self, VALUE as_str) {
+  unsigned char *data = (unsigned char *) RSTRING_PTR(as_str);
+  size_t len = (size_t)RSTRING_LEN(as_str);
+
+  return x64_disassemble(data, 0, len, false);
+}
+
+static VALUE
+rb_program_disassemble(VALUE self) {
+  rb_evoasm_program *program;
+  TypedData_Get_Struct(self, rb_evoasm_program, &rb_program_type, program);
+
+  return x64_disassemble(program->program.buf->data, 0, program->program.buf->pos, true);
+}
+
+static VALUE
+rb_kernel_disassemble(VALUE self) {
+  rb_evoasm_kernel *kernel;
+  rb_evoasm_program *program;
+  
+  TypedData_Get_Struct(self, rb_evoasm_kernel, &rb_kernel_type, kernel);
+  TypedData_Get_Struct(kernel->program, rb_evoasm_program, &rb_program_type, program);
+  
+  //fprintf(stderr, "kernel %d from %d to %d\n", i, kernel->buf_start, kernel->buf_end);
+
+  return x64_disassemble(program->program.body_buf->data, kernel->kernel.buf_start, kernel->kernel.buf_end - kernel->kernel.buf_start, true);
+}
+
+#endif
+
+
 void Init_evoasm_ext() {
   mEvoasm = rb_define_module("Evoasm");
 
@@ -1676,9 +1739,7 @@ void Init_evoasm_ext() {
   rb_define_method(cBuffer, "size", RUBY_METHOD_FUNC(rb_buffer_size), 0);
   rb_define_method(cBuffer, "reset!", RUBY_METHOD_FUNC(rb_buffer_reset), 0);
   rb_define_method(cBuffer, "to_s", RUBY_METHOD_FUNC(rb_buffer_to_s), 0);
-#ifdef HAVE_CAPSTONE_CAPSTONE_H
-  rb_define_method(cBuffer, "disassemble", rb_buffer_disassemble, 0);
-#endif
+
 
   rb_define_alloc_func(cSearch, rb_search_alloc);
   rb_define_private_method(cSearch, "__initialize__", rb_search_initialize, -1);
@@ -1699,6 +1760,16 @@ void Init_evoasm_ext() {
   rb_define_alloc_func(cKernel, rb_kernel_alloc);
   rb_define_method(cKernel, "parameters", rb_kernel_parameters, 0);
   rb_define_method(cKernel, "instructions", rb_kernel_instructions, 0);
+  rb_define_method(cKernel, "size", rb_kernel_size, 0);
+  rb_define_method(cKernel, "successors", rb_kernel_successors, 0);
+  rb_define_method(cKernel, "index", rb_kernel_index, 0);
+  
+
+#ifdef HAVE_CAPSTONE_CAPSTONE_H
+  rb_define_method(cBuffer,  "disassemble", rb_buffer_disassemble, 0);
+  rb_define_method(cProgram, "disassemble", rb_program_disassemble, 0);
+  rb_define_method(cKernel,  "disassemble", rb_kernel_disassemble, 0);    
+#endif
 
   rb_define_method(cParameter, "domain", rb_parameter_domain, 0);
   rb_define_method(cParameter, "name", rb_parameter_name, 0);
