@@ -203,6 +203,13 @@ evoasm_program_run(evoasm_program *program,
                   evoasm_program_input *input,
                   evoasm_program_output *output);
 
+
+evoasm_program *
+evoasm_program_clone(evoasm_program *program);
+
+evoasm_success
+evoasm_program_destroy(evoasm_program *program);
+
 void
 evoasm_program_io_destroy(evoasm_program_io *program_io);
 

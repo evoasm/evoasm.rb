@@ -935,7 +935,7 @@ evoasm_program_x64_emit_program_kernels(evoasm_program *program, bool set_io_map
     kernel = &program->kernels[i];
     
     kernel_addrs[i] = buf->data + buf->pos;
-    kernel->buf_start = buf->pos;
+    kernel->buf_start = (uint16_t) buf->pos;
 
     EVOASM_TRY(error, evoasm_program_x64_emit_kernel, program, kernel, buf);
 
@@ -951,7 +951,7 @@ evoasm_program_x64_emit_program_kernels(evoasm_program *program, bool set_io_map
     EVOASM_TRY(error, evoasm_program_x64_emit_kernel_transitions, program, kernel,
       next_kernel, branch_kernel, buf, &branch_phis[i], set_io_mapping);      
       
-    kernel->buf_end = buf->pos;
+    kernel->buf_end = (uint16_t) buf->pos;
   }
   
   for(i = 0; i < size; i++) {
@@ -2146,4 +2146,97 @@ evoasm_search_destroy(evoasm_search *search) {
   return true;
 error:
   return false;
+}
+
+static evoasm_success
+evoasm_program_destroy_(evoasm_program *program, bool free_buf, bool free_body_buf,
+                        bool free_params, unsigned free_n_kernels) {
+                          
+  unsigned i;
+  bool retval = true;
+  
+  for(i = 0; i < program->params->size; i++) {
+    if(i < free_n_kernels) {
+      evoasm_free(program->kernels[i].params);
+    }
+  }
+  
+  if(free_params) {
+    evoasm_free(program->params);
+  }
+  
+  if(free_buf) {
+    if(!evoasm_buf_destroy(program->buf)) {
+      retval = false;
+    }
+  }
+  
+  if(free_body_buf) {
+    if(!evoasm_buf_destroy(program->body_buf)) {
+      retval = false;
+    }
+  }
+  evoasm_free(program);
+  
+  return retval;
+}
+
+evoasm_program *
+evoasm_program_clone(evoasm_program *program) {
+
+  unsigned i = 0;
+  bool free_buf = false, free_body_buf = false, free_params = false;
+
+  evoasm_program *cloned_program = evoasm_malloc(sizeof(evoasm_program));
+
+  *cloned_program = *program;
+  cloned_program->index = 0;
+  cloned_program->_signal_ctx = NULL;
+  cloned_program->reset_rflags = false;
+  cloned_program->_input.vals = NULL;
+  cloned_program->_output.vals = NULL;
+  cloned_program->output_vals = NULL;
+
+  EVOASM_TRY(error, evoasm_buf_clone, program->buf, cloned_program->buf);
+  EVOASM_TRY(error_free_buf, evoasm_buf_clone, program->body_buf, cloned_program->body_buf);
+
+  size_t program_params_size = sizeof(evoasm_program_params);
+  cloned_program->params = evoasm_malloc(program_params_size);
+  
+  if(!cloned_program->params) {
+    goto error_free_body_buf;
+  }
+  
+  memcpy(cloned_program->params, program->params, program_params_size);
+
+  for(; i < program->params->size; i++) {
+    evoasm_kernel *orig_kernel = &program->kernels[i];
+    evoasm_kernel *cloned_kernel = &cloned_program->kernels[i];
+    *cloned_kernel = *orig_kernel;
+
+    size_t params_size = sizeof(evoasm_kernel_params) + orig_kernel->params->size * sizeof(evoasm_kernel_param);
+    cloned_kernel->params = evoasm_malloc(params_size);
+    if(!cloned_kernel->params) {
+      goto error_free_params;
+    }
+    memcpy(cloned_kernel->params, orig_kernel->params, params_size);
+  }
+
+  return cloned_program;
+  
+error_free_params:
+  free_params = true;
+error_free_body_buf:
+  free_body_buf = true;
+error_free_buf:
+  free_buf = true;  
+error:
+  (void) evoasm_program_destroy_(cloned_program, free_buf, free_body_buf, free_params, i);
+  return NULL;
+}
+
+
+evoasm_success
+evoasm_program_destroy(evoasm_program *program) {
+  return evoasm_program_destroy_(program, true, true, true, UINT_MAX);
 }
