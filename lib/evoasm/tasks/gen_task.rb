@@ -16,7 +16,7 @@ module Evoasm
       attr_reader :name, :archs
 
       ALL_ARCHS = %i(x64)
-      X64_TABLE_FILENAME = File.join(Evoasm.data, 'tables', 'x64.csv')
+      X64_TABLE_FILENAME = File.join(Evoasm.data_dir, 'tables', 'x64.csv')
       ARCH_TABLES = {
         x64: X64_TABLE_FILENAME
       }
@@ -58,7 +58,7 @@ module Evoasm
       end
 
       def gen_path(filename)
-        File.join Evoasm.root, 'ext', 'evoasm_ext', filename
+        File.join Evoasm.root_dir, 'ext', 'evoasm_ext', filename
       end
 
       def load_insts(arch)

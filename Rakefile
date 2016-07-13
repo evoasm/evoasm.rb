@@ -126,3 +126,5 @@ end
 =end
 
 task 'evoasm:templates' => Evoasm::Tasks::TemplateTask.all
+
+task :default => :test

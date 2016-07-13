@@ -16,12 +16,11 @@ module Evoasm
         end
       end
 
-      def start!
+      def start!(&block)
         x64 = X64.new
         params = YAML.load(File.read filename)
         insts = filter_insts x64.instructions, params['instructions']
 
-        p insts.map(&:name)
         pastel = Pastel.new
 
         program_size = parse_range params['program_size']
@@ -45,7 +44,7 @@ module Evoasm
                    domains: domains,
                    recur_limit: recur_limit
 
-        search.start!(params['max_loss'] || 0.0) do |program, loss|
+        block ||= proc do |program, loss|
           ts = Time.now
           puts pastel.bold "Program #{program_counter}, #{ts.strftime '%H:%M:%S'} (found after #{(ts - start_ts).to_i} seconds)"
 
@@ -68,6 +67,8 @@ module Evoasm
             return false
           end
         end
+
+        search.start!(params['max_loss'] || 0.0, &block)
       end
 
       private

@@ -17,7 +17,6 @@ module Evoasm
       require 'gv'
 
       graph = GV::Graph.open 'g'
-      graph[:ratio] = '2'
 
       disasms = []
       addrs = []
@@ -59,22 +58,22 @@ module Evoasm
         label << '</TABLE>'
 
         node = graph.node addr.to_s,
-           shape: :none,
-           label: graph.html(label)
+                          shape: :none,
+                          label: graph.html(label)
 
         kernel.successors.each do |successor|
           succ_addr = addrs[successor.index]
-          attrs =
+          tail_port =
             if jmp_addrs.include? succ_addr
               # Remove, in case we the same
               # successor multiple times
               # only one of which goes through the jump
               jmp_addrs.delete succ_addr
-              {tailport: succ_addr}
+              succ_addr.to_s
             else
-              {}
+              's'
             end
-          graph.edge 'e', node, graph.node(succ_addr.to_s), attrs
+          graph.edge 'e', node, graph.node(succ_addr.to_s), tailport: tail_port, headport: 'n'
         end
       end
 

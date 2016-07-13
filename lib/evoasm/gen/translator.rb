@@ -690,7 +690,7 @@ module Evoasm
       end
 
       def self.template_path(arch, header: false)
-        File.join Evoasm.data, 'templates', "#{target_filename(arch, header: header)}.erb"
+        File.join Evoasm.data_dir, 'templates', "#{target_filename(arch, header: header)}.erb"
       end
 
       def translate!(&block)
