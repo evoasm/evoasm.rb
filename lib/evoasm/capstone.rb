@@ -65,7 +65,18 @@ module Evoasm
         raise Error, cs_strerror(err);
       end
 
-      handle = handle_ptr.read_ulong
+      handle =
+        case FFI.find_type :size_t
+        when FFI::Type::Builtin::ULONG_LONG
+          handle_ptr.read_ulong_long
+        when FFI::Type::Builtin::ULONG
+          handle_ptr.read_ulong
+        when FFI::Type::Builtin::UINT
+          handle_ptr.read_uint
+        else
+          raise
+        end
+
       insns_ptr = FFI::MemoryPointer.new :pointer
       count = LibCapstone.cs_disasm(handle, asm, asm.bytesize, addr, 0, insns_ptr)
       insns = insns_ptr.read_pointer
