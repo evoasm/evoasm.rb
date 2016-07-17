@@ -1,4 +1,5 @@
 require_relative '../test_helper'
+require 'evoasm/x64'
 
 module MiniTest::Assertions
   include Evoasm

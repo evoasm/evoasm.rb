@@ -4,6 +4,8 @@ module Evoasm
   module Libevoasm
     extend FFI::Library
 
+    ffi_lib File.join(Evoasm.ext_dir, 'evoasm_ext', FFI.map_library_name('evoasm'))
+
     enum :example_type, [
       :i64,
       :u64,
@@ -31,6 +33,7 @@ module Evoasm
     typedef :uint8, :program_size
     typedef :uint8, :kernel_size
     typedef :double, :loss
+    typedef :uint64, :params_bitmap
 
     class Architecture
       MAX_PARAMS = 64
@@ -55,7 +58,7 @@ module Evoasm
     class SearchParameters < FFI::Struct
       layout :insts, :pointer,
              :params, :pointer,
-             :domains, [Domain.by_ref, Architrecture::MAX_PARAMS],
+             :domains, [Domain.by_ref, Architecture::MAX_PARAMS],
              :min_program_size, :program_size,
              :max_program_size, :program_size,
              :min_kernel_size, :kernel_size,
@@ -72,14 +75,14 @@ module Evoasm
     end
 
     def self.attach_evoasm_function(name, args, ret)
-      attach_function name, :"#{evoasm}_#{name}", args, ret
+      attach_function name, :"evoasm_#{name}", args, ret
     end
 
-    attach_variable :struct_sizes, :evoasm_struct_sizes, [:size_t, 3]
+    attach_evoasm_function :struct_size, [:int], :size_t
 
     %i(search program x64).each_with_index do |struct, index|
       define_singleton_method :"sizeof_#{struct}" do
-        struct_sizes[index]
+        struct_size(index)
       end
     end
 
@@ -93,8 +96,12 @@ module Evoasm
     attach_evoasm_function :program_destroy, [:pointer], :bool
     attach_evoasm_function :program_run, [:pointer, ProgramInput.by_ref, ProgramOutput.by_ref], :bool
 
-    attach_evoasm_function :arch_insts, [:pointer, :pointer], :uint16
+    attach_evoasm_function :x64_init, [:pointer], :bool
+    attach_evoasm_function :x64_destroy, [:pointer], :void
 
-    init(0, FFI::Pointer::NULL, FFI::Pointer::NULL)
+    attach_evoasm_function :arch_insts, [:pointer, :pointer], :uint16
+    attach_evoasm_function :arch_enc, [:pointer, :inst_id, :pointer, :pointer], :bool
   end
 end
+
+require 'evoasm/libevoasm/x64_enums'

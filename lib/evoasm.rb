@@ -1,5 +1,4 @@
 require 'evoasm/version'
-require 'evoasm/core_ext'
 
 module Evoasm
   def self.root_dir
@@ -10,17 +9,16 @@ module Evoasm
     File.join root_dir, 'data'
   end
 
+  def self.ext_dir
+    File.join root_dir, 'ext'
+  end
+
   def self.examples_dir
     File.join root_dir, 'examples'
   end
 end
 
-begin
-  require 'evoasm_ext'
-rescue LoadError => e
-  p e
-end
-
-require 'evoasm/search'
-require 'evoasm/program'
+require 'evoasm/libevoasm'
 require 'evoasm/error'
+
+Evoasm::Libevoasm.init(0, FFI::Pointer::NULL, FFI::Pointer::NULL)
