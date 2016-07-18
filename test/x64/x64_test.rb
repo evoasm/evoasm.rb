@@ -9,6 +9,8 @@ class X64Test < Minitest::Test
     insts = @x64.instructions
     assert_kind_of Array, insts
     refute_empty insts
+    assert insts.all? {|i| i.is_a? Symbol}
+    assert insts.include? :jmp_rel32
   end
 
   def test_rm_reg_reg

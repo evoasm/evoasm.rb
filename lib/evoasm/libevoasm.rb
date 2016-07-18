@@ -74,33 +74,49 @@ module Evoasm
              :seed32, [:uint32, 4]
     end
 
+    enum FFI::Type::UINT16, :error_type, [
+      :invalid,
+      :argument,
+      :memory,
+      :arch,
+    ]
+
+    class Error < FFI::Struct
+      layout :type, :error_type,
+             :code, :uint16,
+             :line, :uint32,
+             :filename, [:char, 128],
+             :msg, [:char, 128],
+             :data, [:uint8, 64]
+    end
+
     def self.attach_evoasm_function(name, args, ret)
       attach_function name, :"evoasm_#{name}", args, ret
     end
 
-    attach_evoasm_function :struct_size, [:int], :size_t
 
-    %i(search program x64).each_with_index do |struct, index|
-      define_singleton_method :"sizeof_#{struct}" do
-        struct_size(index)
-      end
-    end
-
-    callback :result_func, [:pointer, :loss, :pointer], :bool
     attach_evoasm_function :init, [:int, :pointer, :pointer], :void
+    attach_evoasm_function :last_error, [], Error.by_ref
+
+    attach_evoasm_function :search_alloc, [], :pointer
+    attach_evoasm_function :search_free, [:pointer], :void
     attach_evoasm_function :search_init, [:pointer, :pointer, SearchParameters.by_ref], :void
     attach_evoasm_function :search_destroy, [:pointer], :void
+    callback :result_func, [:pointer, :loss, :pointer], :bool
     attach_evoasm_function :search_start, [:pointer, :loss, :result_func, :pointer], :void
 
     attach_evoasm_function :program_clone, [:pointer, :pointer], :bool
     attach_evoasm_function :program_destroy, [:pointer], :bool
     attach_evoasm_function :program_run, [:pointer, ProgramInput.by_ref, ProgramOutput.by_ref], :bool
 
+    attach_evoasm_function :x64_alloc, [], :pointer
+    attach_evoasm_function :x64_free, [:pointer], :void
     attach_evoasm_function :x64_init, [:pointer], :bool
     attach_evoasm_function :x64_destroy, [:pointer], :void
 
     attach_evoasm_function :arch_insts, [:pointer, :pointer], :uint16
     attach_evoasm_function :arch_enc, [:pointer, :inst_id, :pointer, :pointer], :bool
+    attach_evoasm_function :arch_save2, [:pointer, :pointer], :size_t
   end
 end
 

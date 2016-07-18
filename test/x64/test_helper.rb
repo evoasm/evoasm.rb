@@ -10,6 +10,7 @@ module MiniTest::Assertions
   end
 
   def assert_assembles_to(asm, inst_name, **params)
+    asm.force_encoding('ASCII-8BIT')
     assert_equal asm, @x64.encode(inst_name, params)
   end
 end

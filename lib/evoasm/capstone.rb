@@ -56,7 +56,7 @@ module Evoasm
       attach_function :cs_errno, [:csh], :cs_err
     end
 
-    def self.disassemble_x64(asm, addr = 0)
+    def self.disassemble_x64(asm, addr = nil)
       result = []
       handle_ptr = FFI::MemoryPointer.new(:size_t, 1)
 
@@ -78,13 +78,16 @@ module Evoasm
         end
 
       insns_ptr = FFI::MemoryPointer.new :pointer
-      count = LibCapstone.cs_disasm(handle, asm, asm.bytesize, addr, 0, insns_ptr)
+      count = LibCapstone.cs_disasm(handle, asm, asm.bytesize, addr ? addr : 0, 0, insns_ptr)
       insns = insns_ptr.read_pointer
       if count > 0
         count.times do |c|
           insn_ptr = insns + c * LibCapstone::Insn.size
           insn = LibCapstone::Insn.new insn_ptr
-          result << [insn[:address], insn[:mnemonic].to_s, insn[:op_str].to_s]
+          line = []
+          line << insn[:address] if addr
+          line << insn[:mnemonic].to_s << insn[:op_str].to_s
+          result << line
         end
         err = nil
       else

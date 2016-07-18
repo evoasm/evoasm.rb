@@ -1,5 +1,10 @@
 module Evoasm
   class Search
+
+    Parameters = Struct.new : do
+    end
+  end
+
     module Util
       def flatten_examples(examples)
         arity = check_arity examples

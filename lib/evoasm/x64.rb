@@ -3,12 +3,31 @@ require 'evoasm/capstone'
 
 module Evoasm
   class X64 < FFI::AutoPointer
+    class Error < StandardError
+      attr_reader :type, :line, :filename
+
+      def self.last
+        self.new(Libevoasm.last_error)
+      end
+
+      def initialize(error)
+        super(error.msg)
+        @line = error.line
+        @type = error.type
+        @filename = error.filename
+      end
+
+      def to_s
+        "#{@filename}:#{@line}: #{message}"
+      end
+    end
+
+
     def self.disassemble(asm)
       Evoasm::Capstone.disassemble_x64 asm
     end
 
     def encode(inst_id, params)
-      return
       params_enum = Libevoasm.enum_type(:x64_param_id)
 
       n_params = params_enum[:n_params]
@@ -25,7 +44,6 @@ module Evoasm
         acc | (1 << param_id)
       end
 
-      p params
       param_vals = Array.new(n_params) do |index|
         value = params[index]
         case value
@@ -48,35 +66,38 @@ module Evoasm
         end
       end
 
-      p param_vals
-
       params_ary.write_array_of_int64 param_vals
       bitmap_ptr.write_uint64 bitmap
 
-      p bitmap
-
-
-      Libevoasm.arch_enc @ptr, inst_id, params_ary, bitmap_ptr
+      success = Libevoasm.arch_enc self, inst_id, params_ary, bitmap_ptr
+      if success
+        buf = FFI::MemoryPointer.new :uint8, 255
+        len = Libevoasm.arch_save2 self, buf
+        buf.read_string len
+      else
+        raise Error.last
+      end
     end
 
     def initialize
-      @ptr = FFI::MemoryPointer.new :uchar, Libevoasm.sizeof_x64
-      Libevoasm.x64_init @ptr
-      super(@ptr)
+      ptr = Libevoasm.x64_alloc
+      Libevoasm.x64_init ptr
+      super(ptr)
     end
 
     def instructions
-      n_insts = Libevoasm.enum_value :n_insts
-      array = FFI::MemoryPointer.new :uint16, n_insts
-      len = Libevoasm.arch_insts(@ptr, array)
-      p len
-      insts = array.read_array_of_type(:int, :get_int, len)
+      insts_enum = Libevoasm.enum_type(:x64_inst_id)
+      n_insts = insts_enum[:n_insts]
+      array = FFI::MemoryPointer.new :int, n_insts
+      len = Libevoasm.arch_insts(self, array)
+      insts = array.read_array_of_type(:int, :read_int, len)
 
-      raise insts.inspect
+      insts.map { |e| insts_enum[e] }
     end
 
     def self.release(ptr)
       Libevoasm.x64_destroy(ptr)
+      Libevoasm.x64_free(ptr)
     end
   end
 end
