@@ -4,6 +4,8 @@ module Evoasm
   module Libevoasm
     extend FFI::Library
 
+    INT32_MAX = 0x7fffffff
+
     ffi_lib File.join(Evoasm.ext_dir, 'evoasm_ext', FFI.map_library_name('evoasm'))
 
     enum :example_type, [
@@ -12,7 +14,7 @@ module Evoasm
       :f64
     ]
 
-    class ExampleValue < FFI::Union
+    class ExampleVal < FFI::Union
       layout :i64, :int64,
              :u64, :uint64,
              :f64, :double
@@ -35,7 +37,7 @@ module Evoasm
     typedef :double, :loss
     typedef :uint64, :params_bitmap
 
-    class Architecture
+    class Arch
       MAX_PARAMS = 64
     end
 
@@ -45,7 +47,7 @@ module Evoasm
              :max, :int64
     end
 
-    class Enumeration < FFI::Struct
+    class Enum < FFI::Struct
       layout :type, :uint8,
              :len, :uint16,
              :vals, [:int64, 32]
@@ -55,10 +57,10 @@ module Evoasm
       layout :type, :uint8
     end
 
-    class SearchParameters < FFI::Struct
+    class SearchParams < FFI::Struct
       layout :insts, :pointer,
              :params, :pointer,
-             :domains, [Domain.by_ref, Architecture::MAX_PARAMS],
+             :domains, [Domain.by_ref, Arch::MAX_PARAMS],
              :min_program_size, :program_size,
              :max_program_size, :program_size,
              :min_kernel_size, :kernel_size,
@@ -94,13 +96,12 @@ module Evoasm
       attach_function name, :"evoasm_#{name}", args, ret
     end
 
-
     attach_evoasm_function :init, [:int, :pointer, :pointer], :void
     attach_evoasm_function :last_error, [], Error.by_ref
 
     attach_evoasm_function :search_alloc, [], :pointer
     attach_evoasm_function :search_free, [:pointer], :void
-    attach_evoasm_function :search_init, [:pointer, :pointer, SearchParameters.by_ref], :void
+    attach_evoasm_function :search_init, [:pointer, :pointer, SearchParams.by_ref], :void
     attach_evoasm_function :search_destroy, [:pointer], :void
     callback :result_func, [:pointer, :loss, :pointer], :bool
     attach_evoasm_function :search_start, [:pointer, :loss, :result_func, :pointer], :void

@@ -9,7 +9,7 @@ module Evoasm
     end
 
     def run_all(*input_examples)
-      input_examples, input_arity = flatten_examples input_examples
+      input_examples, input_arity = convert_examples input_examples
       __run__ input_examples, input_arity
     end
 

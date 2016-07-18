@@ -13,7 +13,7 @@ task :default => :test
 
 require 'evoasm/gen'
 Evoasm::Gen::GenTask.new 'lib/evoasm/libevoasm' do |t|
-  t.output_formats = %i(ruby_ffi)
+  t.file_types = %i(ruby_ffi)
 end
 
 begin
