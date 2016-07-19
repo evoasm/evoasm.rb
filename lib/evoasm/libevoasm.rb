@@ -1,5 +1,16 @@
 require 'ffi'
 
+
+class FFI::Enum
+  def flags(flags)
+    flags.inject(0) do |acc, flag|
+      flag_value = self[flag]
+      raise ArgumentError, "invalid flag '#{flag}'" if flag_value.nil?
+      acc | flag_value
+    end
+  end
+end
+
 module Evoasm
   module Libevoasm
     extend FFI::Library
@@ -83,6 +94,16 @@ module Evoasm
       :arch,
     ]
 
+    typedef :int, :insts_flags
+    insts_flags = [:search, 1 << 0]
+
+    enum :x64_insts_flags, [
+      *insts_flags,
+      :rflags, 1 << 1,
+      :gp, 1 << 2,
+      :xmm, 1 << 3
+    ]
+
     class Error < FFI::Struct
       layout :type, :error_type,
              :code, :uint16,
@@ -115,7 +136,7 @@ module Evoasm
     attach_evoasm_function :x64_init, [:pointer], :bool
     attach_evoasm_function :x64_destroy, [:pointer], :void
 
-    attach_evoasm_function :arch_insts, [:pointer, :pointer], :uint16
+    attach_evoasm_function :arch_insts, [:pointer, :pointer, :insts_flags], :uint16
     attach_evoasm_function :arch_enc, [:pointer, :inst_id, :pointer, :pointer], :bool
     attach_evoasm_function :arch_save2, [:pointer, :pointer], :size_t
   end

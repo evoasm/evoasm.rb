@@ -6,11 +6,28 @@ class X64Test < Minitest::Test
   end
 
   def test_instructions
-    insts = @x64.instructions
-    assert_kind_of Array, insts
-    refute_empty insts
-    assert insts.all? {|i| i.is_a? Symbol}
-    assert insts.include? :jmp_rel32
+    all_insts = @x64.instructions
+    refute_empty all_insts
+    assert all_insts.all? {|i| i.is_a? Symbol}
+    assert_includes all_insts, :jmp_rel32
+    assert_includes all_insts, :vfmadd213pd_xmm_xmm_xmmm128
+
+    search_insts = @x64.instructions :search
+    refute_empty search_insts
+    refute_includes search_insts, :jmp_rel32
+    refute_includes search_insts, :call_rm32
+
+    gp_insts = @x64.instructions :gp, :rflags
+    refute_empty gp_insts
+    assert_includes gp_insts, :xor_rax_imm32
+    refute_includes gp_insts, :vfmadd213pd_xmm_xmm_xmmm128
+
+    xmm_insts = @x64.instructions :xmm, :rflags
+    refute_empty xmm_insts
+    refute_includes xmm_insts, :jmp_rel32
+    refute_includes xmm_insts, :xor_rax_imm32
+    assert_includes xmm_insts, :vfmadd213pd_xmm_xmm_xmmm128
+
   end
 
   def test_rm_reg_reg

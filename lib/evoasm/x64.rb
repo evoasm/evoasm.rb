@@ -85,11 +85,13 @@ module Evoasm
       super(ptr)
     end
 
-    def instructions
+    def instructions(*flags)
       insts_enum = Libevoasm.enum_type(:x64_inst_id)
+      insts_flags_enum = Libevoasm.enum_type(:x64_insts_flags)
+
       n_insts = insts_enum[:n_insts]
       array = FFI::MemoryPointer.new :int, n_insts
-      len = Libevoasm.arch_insts(self, array)
+      len = Libevoasm.arch_insts(self, array, insts_flags_enum.flags(flags))
       insts = array.read_array_of_type(:int, :read_int, len)
 
       insts.map { |e| insts_enum[e] }
