@@ -2,11 +2,20 @@ require 'ffi'
 
 
 class FFI::Enum
-  def flags(flags)
+  def flags(flags, shift: false)
     flags.inject(0) do |acc, flag|
       flag_value = self[flag]
-      raise ArgumentError, "invalid flag '#{flag}'" if flag_value.nil?
+      raise ArgumentError, "unknown flag '#{flag}'" if flag_value.nil?
+      flag_value = 1 << flag_value if shift
       acc | flag_value
+    end
+  end
+
+  def values(keys)
+    keys.map do |key|
+      enum_value = self[key]
+      raise ArgumentError, "unknown enum key '#{key}'" if enum_value.nil?
+      self[key]
     end
   end
 end
@@ -52,16 +61,33 @@ module Evoasm
       MAX_PARAMS = 64
     end
 
+    enum FFI::Type::UINT8, :domain_type, [
+      :enum,
+      :interval,
+      :interval64
+    ]
+
     class Interval < FFI::Struct
-      layout :type, :uint8,
+      layout :type, :domain_type,
              :min, :int64,
              :max, :int64
+
+      def initialize
+        super
+        self[:type] = :interval
+      end
     end
 
     class Enum < FFI::Struct
-      layout :type, :uint8,
+      MAX_SIZE = 16
+      layout :type, :domain_type,
              :len, :uint16,
-             :vals, [:int64, 32]
+             :vals, [:int64, MAX_SIZE]
+
+      def initialize
+        super
+        self[:type] = :enum
+      end
     end
 
     class Domain < FFI::Struct
@@ -71,7 +97,7 @@ module Evoasm
     class SearchParams < FFI::Struct
       layout :insts, :pointer,
              :params, :pointer,
-             :domains, [Domain.by_ref, Arch::MAX_PARAMS],
+             :domains, [:pointer, Arch::MAX_PARAMS],
              :min_program_size, :program_size,
              :max_program_size, :program_size,
              :min_kernel_size, :kernel_size,
@@ -84,7 +110,8 @@ module Evoasm
              :program_input, ProgramInput,
              :program_output, ProgramOutput,
              :seed64, [:uint64, 16],
-             :seed32, [:uint32, 4]
+             :seed32, [:uint32, 4],
+             :max_loss, :loss
     end
 
     enum FFI::Type::UINT16, :error_type, [
@@ -94,14 +121,8 @@ module Evoasm
       :arch,
     ]
 
-    typedef :int, :insts_flags
-    insts_flags = [:search, 1 << 0]
-
     enum :x64_insts_flags, [
-      *insts_flags,
-      :rflags, 1 << 1,
-      :gp, 1 << 2,
-      :xmm, 1 << 3
+      :search, 1 << 0,
     ]
 
     class Error < FFI::Struct
@@ -125,21 +146,65 @@ module Evoasm
     attach_evoasm_function :search_init, [:pointer, :pointer, SearchParams.by_ref], :void
     attach_evoasm_function :search_destroy, [:pointer], :void
     callback :result_func, [:pointer, :loss, :pointer], :bool
-    attach_evoasm_function :search_start, [:pointer, :loss, :result_func, :pointer], :void
+    attach_evoasm_function :search_start, [:pointer, :result_func, :pointer], :void
 
     attach_evoasm_function :program_clone, [:pointer, :pointer], :bool
     attach_evoasm_function :program_destroy, [:pointer], :bool
     attach_evoasm_function :program_run, [:pointer, ProgramInput.by_ref, ProgramOutput.by_ref], :bool
 
-    attach_evoasm_function :x64_alloc, [], :pointer
-    attach_evoasm_function :x64_free, [:pointer], :void
-    attach_evoasm_function :x64_init, [:pointer], :bool
-    attach_evoasm_function :x64_destroy, [:pointer], :void
-
-    attach_evoasm_function :arch_insts, [:pointer, :pointer, :insts_flags], :uint16
-    attach_evoasm_function :arch_enc, [:pointer, :inst_id, :pointer, :pointer], :bool
     attach_evoasm_function :arch_save2, [:pointer, :pointer], :size_t
+
+
+    def self.enum_hash_to_array(hash, enum, n_key,&block)
+      enum_type = Libevoasm.enum_type(enum)
+      n = enum_type[n_key]
+      keys = hash.keys
+      values = hash.values
+
+      bitmap = enum_type.flags(keys, shift: true)
+      array = Array.new(n, 0)
+
+      enum_type.values(keys).each_with_index do |enum_value, index|
+        array[enum_value] = block[values[index]]
+      end
+      [array, bitmap, n]
+    end
+
+    def self.map_parameter_value(value)
+      case value
+      when Symbol
+        enum_value = Libevoasm.enum_value value
+        if enum_value.nil?
+          raise ArgumentError, "unknown value '#{value}'"
+        end
+        enum_value
+      when Numeric
+        value
+      when nil
+        0
+      when false
+        0
+      when true
+        1
+      else
+        raise
+      end
+    end
+
   end
 end
 
 require 'evoasm/libevoasm/x64_enums'
+
+module Evoasm
+  module Libevoasm
+    attach_evoasm_function :x64_alloc, [], :pointer
+    attach_evoasm_function :x64_free, [:pointer], :void
+    attach_evoasm_function :x64_init, [:pointer], :bool
+    attach_evoasm_function :x64_destroy, [:pointer], :void
+    attach_evoasm_function :x64_insts, [:pointer, :uint64, :uint64, :uint64, :uint64, :pointer], :uint16
+    attach_evoasm_function :x64_enc, [:pointer, :x64_inst_id, :pointer, :pointer], :bool
+    attach_evoasm_function :x64_features, [:pointer], :uint64
+  end
+end
+

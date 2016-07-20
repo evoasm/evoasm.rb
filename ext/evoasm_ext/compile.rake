@@ -2,7 +2,7 @@ require 'rake/clean'
 require 'ffi'
 
 SHARED_LIB = File.join(__dir__, FFI.map_library_name('evoasm'))
-SRC_FILES = FileList[File.join __dir__, 'libevoasm/src/*.[ch]']
+SRC_FILES = FileList[File.join __dir__, 'libevoasm/src/**/*.[ch]']
 C_FILES = SRC_FILES.clone.exclude(/\.h$/)
 CC = ENV['cc'] || 'cc'
 INC_FLAGS = %w(libevoasm/src).map { |dir| "-I#{File.join __dir__, dir}"}.join ' '

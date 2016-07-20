@@ -5,24 +5,34 @@ class X64Test < Minitest::Test
     @x64 = Evoasm::X64.new
   end
 
-  def test_instructions
-    all_insts = @x64.instructions
-    refute_empty all_insts
-    assert all_insts.all? {|i| i.is_a? Symbol}
-    assert_includes all_insts, :jmp_rel32
-    assert_includes all_insts, :vfmadd213pd_xmm_xmm_xmmm128
+  def test_features
+    features = @x64.features
+    refute_empty features
+    assert features.all? {|i| i.is_a? Symbol}
+    if RUBY_PLATFORM =~ /linux/
+      cpu_info = File.read '/proc/cpuinfo'
+      [:cx8, :cmov, :mmx, :sse, :sse2, :pclmulqdq, :ssse3, :fma, :cx16, :sse4_1,
+       :sse4_2, :movbe, :popcnt, :aes, :avx, :f16c, :rdrand, :lahf_lm, :bmi1, :avx2, :bmi2].each do |feature|
+        assert_equal features.include?(feature), !!(cpu_info =~ /\b#{feature}\b/)
+      end
+    end
+  end
 
-    search_insts = @x64.instructions :search
+  def test_instructions
+    search_insts = @x64.instructions :xmm, :gp, :rflags, search: true
+    assert_equal search_insts, @x64.instructions(:xmm, :gp, :rflags, search: true, operand_types: [:reg, :imm, :rm])
     refute_empty search_insts
     refute_includes search_insts, :jmp_rel32
     refute_includes search_insts, :call_rm32
+    assert_includes search_insts, :xor_rax_imm32
+    assert_includes search_insts, :vfmadd213pd_xmm_xmm_xmmm128
 
     gp_insts = @x64.instructions :gp, :rflags
     refute_empty gp_insts
     assert_includes gp_insts, :xor_rax_imm32
     refute_includes gp_insts, :vfmadd213pd_xmm_xmm_xmmm128
 
-    xmm_insts = @x64.instructions :xmm, :rflags
+    xmm_insts = @x64.instructions :xmm
     refute_empty xmm_insts
     refute_includes xmm_insts, :jmp_rel32
     refute_includes xmm_insts, :xor_rax_imm32

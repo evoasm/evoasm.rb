@@ -188,6 +188,15 @@ module Evoasm
       :n_params
     ]
 
+    enum :x64_operand_type, [
+      :reg, 0,
+      :rm, 1,
+      :vsib, 2,
+      :mem, 3,
+      :imm, 4,
+      :n_operand_types
+    ]
+
 
     enum :x64_inst_id, [
       :adc_al_imm8, 0,

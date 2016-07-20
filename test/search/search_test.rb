@@ -1,15 +1,41 @@
 require_relative '../test_helper'
-require 'evoasm/cli'
+require 'evoasm/search'
+require 'evoasm/x64'
 
 class SearchTest < Minitest::Test
   def test_search
-
     x64 = Evoasm::X64.new
-    search = Evoasm::Search.new x64 do |params|
+    insts = x64.instructions(:xmm).grep /(add|mul|sqrt).*?sd/
 
+    search = Evoasm::Search.new x64 do |p|
+      p.instructions = insts
+      p.kernel_size = 1
+      p.program_size = (5..15)
+      p.population_size = 1600
+      p.parameters = %i(reg0 reg1 reg2 reg3)
+
+      regs = %i(xmm0 xmm1 xmm2 xmm3)
+      #p.domains = {
+      #  reg0: regs,
+      #  reg1: regs,
+      #  reg2: regs,
+      #  reg3: regs
+      #}
+
+      p.examples = {
+        0.0 => 0.0,
+        0.5 => 1.0606601717798212,
+        1.0 => 1.7320508075688772,
+        1.5 => 2.5248762345905194,
+        2.0 => 3.4641016151377544,
+        2.5 => 4.541475531146237,
+        3.0 => 5.744562646538029,
+        3.5 => 7.0622234459127675,
+        4.0 => 8.48528137423857,
+        4.5 => 10.00624804809475,
+        5.0 => 11.61895003862225
+      }
     end
-
-    search = Evoasm::Cli::Search.new File.join(Evoasm.examples_dir, 'sym_reg.yml'), %w()
 
     found_program = nil
 
@@ -17,7 +43,6 @@ class SearchTest < Minitest::Test
       if loss == 0.0
         found_program = program
       end
-
       found_program.nil?
     end
 
