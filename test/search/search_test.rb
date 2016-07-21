@@ -9,18 +9,18 @@ class SearchTest < Minitest::Test
 
     search = Evoasm::Search.new x64 do |p|
       p.instructions = insts
-      p.kernel_size = 1
-      p.program_size = (5..15)
+      p.kernel_size = (5..15)
+      p.program_size = 1
       p.population_size = 1600
       p.parameters = %i(reg0 reg1 reg2 reg3)
 
       regs = %i(xmm0 xmm1 xmm2 xmm3)
-      #p.domains = {
-      #  reg0: regs,
-      #  reg1: regs,
-      #  reg2: regs,
-      #  reg3: regs
-      #}
+      p.domains = {
+        reg0: regs,
+        reg1: regs,
+        reg2: regs,
+        reg3: regs
+      }
 
       p.examples = {
         0.0 => 0.0,
@@ -37,15 +37,17 @@ class SearchTest < Minitest::Test
       }
     end
 
-    found_program = nil
+    found_adf = nil
 
-    search.start! do |program, loss|
+    search.start! do |adf, loss|
       if loss == 0.0
-        found_program = program
+        found_adf = adf
       end
-      found_program.nil?
+      found_adf.nil?
     end
 
-    refute_nil found_program, "no solution found"
+    refute_nil found_adf, "no solution found"
+    assert_kind_of Evoasm::ADF, found_adf
+    assert_equal 31.937438845342623, found_adf.run(10.0)
   end
 end

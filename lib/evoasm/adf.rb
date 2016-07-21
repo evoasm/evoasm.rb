@@ -1,16 +1,37 @@
 require 'evoasm/search'
 
 module Evoasm
-  class Program
-    include Search::Util
+  class ADF < FFI::AutoPointer
+
+    def initialize(other_ptr)
+      ptr = Libevoasm.adf_alloc
+      unless Libevoasm.adf_clone other_ptr, ptr
+        Libevoasm.adf_free(ptr)
+        raise Libevoasm::Error.last
+      end
+      super ptr
+    end
+
+    def self.release(ptr)
+      Libevoasm.adf_destroy(ptr)
+      Libevoasm.adf_free(ptr)
+    end
 
     def run(*input_example)
       run_all(input_example).first
     end
 
     def run_all(*input_examples)
-      input_examples, input_arity = convert_examples input_examples
-      __run__ input_examples, input_arity
+      input = Libevoasm::ADFInput.new(input_examples)
+      output = Libevoasm::ADFOutput.new
+      unless Libevoasm.adf_run self, input, output
+        raise Libevoasm::Error.last
+      end
+      output_ary = output.to_a
+
+      Libevoasm.adf_io_destroy output
+
+      output_ary
     end
 
     def to_gv

@@ -29,7 +29,7 @@ module Evoasm
 
     private def convert_encode_params(params)
       Libevoasm.enum_hash_to_array(params, :x64_param_id, :n_params) do |value|
-        Libevoasm::map_parameter_value value
+        Libevoasm::ParamVal.for value
       end
     end
 
