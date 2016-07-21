@@ -15,7 +15,7 @@ module Evoasm
     ]
 
     typedef :uint16, :inst_id
-    typedef :uint8, :program_size
+    typedef :uint8, :adf_size
     typedef :uint8, :kernel_size
     typedef :double, :loss
     typedef :uint64, :params_bitmap

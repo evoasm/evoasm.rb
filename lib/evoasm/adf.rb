@@ -42,21 +42,39 @@ module Evoasm
       disasms = []
       addrs = []
 
-      self.kernels.each do |kernel|
-        disasm = kernel.disassemble
-        disasms[kernel.index] = disasm
-        addrs[kernel.index] = disasm.first.first
+      size = Libevoasm.adf_size self
+      size.times do |kernel_index|
+        code_len_ptr = FFI::MemoryPointer.new :size_t
+        code_ptr = Libevoasm.adf_code self, kernel_index, code_len_ptr
+
+        code_len =
+          case FFI.find_type :size_t
+          when FFI::Type::Builtin::ULONG_LONG
+            code_len_ptr.read_ulong_long
+          when FFI::Type::Builtin::ULONG
+            code_len_ptr.read_ulong
+          when FFI::Type::Builtin::UINT
+            code_len_ptr.read_uint
+          else
+            raise
+          end
+
+        code = code_ptr.read_string(code_len)
+
+        disasm = X64.disassemble code, code_ptr.address
+        disasms[kernel_index] = disasm
+        addrs[kernel_index] = disasm.first.first
       end
 
-      self.kernels.each do |kernel|
+      size.times do |kernel_index|
         label = '<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">'
 
         label << '<TR>'
-        label << %Q{<TD COLSPAN="3"><B>Kernel #{kernel.index}</B></TD>}
+        label << %Q{<TD COLSPAN="3"><B>Kernel #{kernel_index}</B></TD>}
         label << '</TR>'
 
-        disasm = disasms[kernel.index]
-        addr = addrs[kernel.index]
+        disasm = disasms[kernel_index]
+        addr = addrs[kernel_index]
         jmp_addrs = []
 
         disasm.each do |line|
@@ -82,7 +100,11 @@ module Evoasm
                           shape: :none,
                           label: graph.html(label)
 
-        kernel.successors.each do |successor|
+        succs = [kernel_index + 1, Libevoasm.adf_kernel_alt_succ(self, kernel_index)].select do |succ|
+          succ < size - 1
+        end
+
+        succs.each do |successor|
           succ_addr = addrs[successor.index]
           tail_port =
             if jmp_addrs.include? succ_addr

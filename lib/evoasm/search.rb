@@ -6,7 +6,7 @@ module Evoasm
 
     class Parameters
       ATTRS = %i(instructions kernel_size examples
-                 program_size population_size parameters
+                 adf_size population_size parameters
                  mutation_rate seed32 seed64 domains recur_limit)
 
       attr_accessor *ATTRS

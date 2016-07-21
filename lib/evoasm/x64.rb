@@ -23,8 +23,8 @@ module Evoasm
     end
 
 
-    def self.disassemble(asm)
-      Evoasm::Capstone.disassemble_x64 asm
+    def self.disassemble(asm, addr = nil)
+      Evoasm::Capstone.disassemble_x64 asm, addr
     end
 
     private def convert_encode_params(params)

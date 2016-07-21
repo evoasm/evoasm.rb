@@ -1,6 +1,7 @@
 require_relative '../test_helper'
 require 'evoasm/search'
 require 'evoasm/x64'
+require 'tmpdir'
 
 class SearchTest < Minitest::Test
   def test_search
@@ -10,7 +11,7 @@ class SearchTest < Minitest::Test
     search = Evoasm::Search.new x64 do |p|
       p.instructions = insts
       p.kernel_size = (5..15)
-      p.program_size = 1
+      p.adf_size = 1
       p.population_size = 1600
       p.parameters = %i(reg0 reg1 reg2 reg3)
 
@@ -48,6 +49,14 @@ class SearchTest < Minitest::Test
 
     refute_nil found_adf, "no solution found"
     assert_kind_of Evoasm::ADF, found_adf
+
+    # should generalize (i.e. give correct answer for non-training data)
     assert_equal 31.937438845342623, found_adf.run(10.0)
+    assert_equal 36.78314831549904, found_adf.run(11.0)
+    assert_equal 41.8568990729127, found_adf.run(12.0)
+
+    filename = Dir::Tmpname.create(['evoasm_gv_test', '.png']){}
+    found_adf.to_gv.save(filename)
+    assert File.exist?(filename)
   end
 end

@@ -4,8 +4,8 @@ module Evoasm
       layout :insts, :pointer,
              :params, :pointer,
              :domains, [:pointer, Arch::MAX_PARAMS],
-             :min_program_size, :program_size,
-             :max_program_size, :program_size,
+             :min_adf_size, :adf_size,
+             :max_adf_size, :adf_size,
              :min_kernel_size, :kernel_size,
              :max_kernel_size, :kernel_size,
              :recur_limit, :uint32,
@@ -13,8 +13,8 @@ module Evoasm
              :params_len, :uint8,
              :pop_size, :uint32,
              :mut_rate, :uint32,
-             :program_input, ADFInput,
-             :program_output, ADFOutput,
+             :adf_input, ADFInput,
+             :adf_output, ADFOutput,
              :seed64, [:uint64, 16],
              :seed32, [:uint32, 4],
              :max_loss, :loss
@@ -43,7 +43,7 @@ module Evoasm
         #p parameters.instructions
         #p inst_id_enum_type.values(parameters.instructions)
 
-        %i(kernel_size program_size).each do |attr|
+        %i(kernel_size adf_size).each do |attr|
           size = parameters.send attr
           min_attr_name = :"min_#{attr}"
           max_attr_name = :"max_#{attr}"
@@ -79,8 +79,8 @@ module Evoasm
         input_examples = parameters.examples.keys.map { |k| Array(k) }
         output_examples = parameters.examples.values.map { |k| Array(k) }
 
-        self[:program_input] = Libevoasm::ADFInput.new input_examples
-        self[:program_output] = Libevoasm::ADFOutput.new output_examples
+        self[:adf_input] = Libevoasm::ADFInput.new input_examples
+        self[:adf_output] = Libevoasm::ADFOutput.new output_examples
       end
 
       private
