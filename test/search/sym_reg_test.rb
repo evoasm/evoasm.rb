@@ -1,10 +1,9 @@
-require_relative '../test_helper'
-require 'evoasm/search'
-require 'evoasm/x64'
-require 'tmpdir'
+require_relative 'test_helper'
 
-class SearchTest < Minitest::Test
+class SymRegTest < SearchTest
+
   def self.setup
+    p "setup"
     x64 = Evoasm::X64.new
     insts = x64.instructions(:xmm).grep /(add|mul|sqrt).*?sd/
     @@examples = {
@@ -49,29 +48,10 @@ class SearchTest < Minitest::Test
 
   setup
 
-  def test_search
-    refute_nil @@found_adf, "no solution found"
-    assert_kind_of Evoasm::ADF, @@found_adf
-  end
-
-  def test_adf_size
-    assert_equal 1, @@found_adf.size
-  end
-
-  def test_adf_run_all
-    assert_equal @@examples.values, @@found_adf.run_all(*@@examples.keys)
-  end
-
   def test_adf_run
     # should generalize (i.e. give correct answer for non-training data)
     assert_equal 31.937438845342623, @@found_adf.run(10.0)
     assert_equal 36.78314831549904, @@found_adf.run(11.0)
     assert_equal 41.8568990729127, @@found_adf.run(12.0)
-  end
-
-  def test_adf_to_gv
-    filename = Dir::Tmpname.create(['evoasm_gv_test', '.png']) {}
-    @@found_adf.to_gv.save(filename)
-    assert File.exist?(filename)
   end
 end
