@@ -18,13 +18,12 @@ module Evoasm
         arity = self[:arity]
         len = self[:len]
         types = example_type_enum_type.keys(self[:types].to_ptr.read_array_of_int(arity))
-        p types
         n_outputs = len / arity
+        vals = FFI::Pointer.new ExampleVal, self[:vals]
 
         Array.new(n_outputs) do |index|
-          type =  types[index % arity]
-          example_val = ExampleVal.new self[:vals][index]
-          p example_val
+          type = types[index % arity]
+          example_val = ExampleVal.new vals[index]
           example_val[type]
         end
       end
@@ -33,6 +32,10 @@ module Evoasm
       def load_examples(examples)
         arity = determine_arity examples
         types = determine_types examples
+
+        if arity > ADFInput::MAX_ARITY
+          raise ArgumentError, "maximum arity exceeded (#{arity} > #{ADFInput::MAX_ARITY})"
+        end
 
         example_type_enum_type = Libevoasm.enum_type :example_type
         flat_examples = examples.flatten
@@ -43,6 +46,8 @@ module Evoasm
           example_val[type] = example
         end
 
+        p [types, arity, flat_examples.size]
+
         self[:arity] = arity
         self[:len] = flat_examples.size
         self[:types].to_ptr.write_array_of_int example_type_enum_type.values(types)
@@ -52,7 +57,7 @@ module Evoasm
       def determine_types(examples)
         types = nil
         examples.each do |example|
-          example_types = example.map do |value|
+          example_types = Array(example).map do |value|
             case value
             when Float
               :f64

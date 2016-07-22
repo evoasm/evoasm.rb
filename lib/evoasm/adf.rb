@@ -24,6 +24,7 @@ module Evoasm
     def run_all(*input_examples)
       input = Libevoasm::ADFInput.new(input_examples)
       output = Libevoasm::ADFOutput.new
+
       unless Libevoasm.adf_run self, input, output
         raise Libevoasm::Error.last
       end
