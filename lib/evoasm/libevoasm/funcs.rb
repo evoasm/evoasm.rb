@@ -30,5 +30,6 @@ module Evoasm
     attach_evoasm_function :adf_size, [:pointer], :adf_size
     attach_evoasm_function :adf_code, [:pointer, :uint, :pointer], :pointer
     attach_evoasm_function :adf_kernel_alt_succ, [:pointer, :uint], :uint
+    attach_evoasm_function :adf_eliminate_introns, [:pointer], :bool
   end
 end

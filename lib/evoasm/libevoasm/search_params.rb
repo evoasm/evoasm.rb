@@ -1,3 +1,5 @@
+require 'evoasm/core_ext/ffi'
+
 module Evoasm
   module Libevoasm
     class SearchParams < FFI::Struct
@@ -72,8 +74,8 @@ module Evoasm
 
         domains = convert_domains parameters.domains, param_id_enum_type
         domains_ary = self[:domains]
-        domains_ary.size.times do |i|
-          domains_ary[i] = domains[i]
+        domains.size.times do |i|
+          domains_ary[i] = domains[i].to_ptr
         end
 
         input_examples = parameters.examples.keys.map { |k| Array(k) }
@@ -85,7 +87,7 @@ module Evoasm
 
       private
       def convert_domains(domains, enum_type)
-        domain_values, _, _ = Libevoasm.enum_hash_to_array(domains, enum_type, :n_params) do |domain|
+        domain_values, _, _ = Libevoasm.enum_hash_to_array(domains, enum_type, :n_params, FFI::Pointer::NULL) do |domain|
           Libevoasm::Domain.for domain
         end
         domain_values

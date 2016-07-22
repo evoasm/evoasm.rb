@@ -4,10 +4,10 @@ require 'evoasm/x64'
 require 'tmpdir'
 
 class SearchTest < Minitest::Test
-  def test_search
+  def self.setup
     x64 = Evoasm::X64.new
     insts = x64.instructions(:xmm).grep /(add|mul|sqrt).*?sd/
-    examples = {
+    @@examples = {
       0.0 => 0.0,
       0.5 => 1.0606601717798212,
       1.0 => 1.7320508075688772,
@@ -21,7 +21,7 @@ class SearchTest < Minitest::Test
       5.0 => 11.61895003862225
     }
 
-    search = Evoasm::Search.new x64 do |p|
+    @@search = Evoasm::Search.new x64 do |p|
       p.instructions = insts
       p.kernel_size = (5..15)
       p.adf_size = 1
@@ -36,30 +36,42 @@ class SearchTest < Minitest::Test
         reg3: regs
       }
 
-      p.examples = examples
+      p.examples = @@examples
     end
 
-    found_adf = nil
-
-    search.start! do |adf, loss|
+    @@search.start! do |adf, loss|
       if loss == 0.0
-        found_adf = adf
+        @@found_adf = adf
       end
-      found_adf.nil?
+      @@found_adf.nil?
     end
+  end
 
-    refute_nil found_adf, "no solution found"
-    assert_kind_of Evoasm::ADF, found_adf
+  setup
 
-    assert_equal examples.values, found_adf.run_all(*examples.keys)
+  def test_search
+    refute_nil @@found_adf, "no solution found"
+    assert_kind_of Evoasm::ADF, @@found_adf
+  end
 
+  def test_adf_size
+    assert_equal 1, @@found_adf.size
+  end
+
+  def test_adf_run_all
+    assert_equal @@examples.values, @@found_adf.run_all(*@@examples.keys)
+  end
+
+  def test_adf_run
     # should generalize (i.e. give correct answer for non-training data)
-    assert_equal 31.937438845342623, found_adf.run(10.0)
-    assert_equal 36.78314831549904, found_adf.run(11.0)
-    assert_equal 41.8568990729127, found_adf.run(12.0)
+    assert_equal 31.937438845342623, @@found_adf.run(10.0)
+    assert_equal 36.78314831549904, @@found_adf.run(11.0)
+    assert_equal 41.8568990729127, @@found_adf.run(12.0)
+  end
 
+  def test_adf_to_gv
     filename = Dir::Tmpname.create(['evoasm_gv_test', '.png']) {}
-    found_adf.to_gv.save(filename)
+    @@found_adf.to_gv.save(filename)
     assert File.exist?(filename)
   end
 end

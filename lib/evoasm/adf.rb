@@ -35,6 +35,26 @@ module Evoasm
       output_ary
     end
 
+    def size
+      Libevoasm.adf_size self
+    end
+
+    def clone
+      self.class.new self
+    end
+
+    def eliminate_introns!
+      unless Libevoasm.adf_eliminate_introns self
+        raise Libevoasm::Error.last
+      end
+    end
+
+    def eliminate_introns
+      clone.tap do |adf|
+        adf.eliminate_introns!
+      end
+    end
+
     def to_gv
       require 'gv'
 
@@ -43,23 +63,12 @@ module Evoasm
       disasms = []
       addrs = []
 
-      size = Libevoasm.adf_size self
+      size = self.size
       size.times do |kernel_index|
         code_len_ptr = FFI::MemoryPointer.new :size_t
         code_ptr = Libevoasm.adf_code self, kernel_index, code_len_ptr
 
-        code_len =
-          case FFI.find_type :size_t
-          when FFI::Type::Builtin::ULONG_LONG
-            code_len_ptr.read_ulong_long
-          when FFI::Type::Builtin::ULONG
-            code_len_ptr.read_ulong
-          when FFI::Type::Builtin::UINT
-            code_len_ptr.read_uint
-          else
-            raise
-          end
-
+        code_len = code_len_ptr.read_size_t
         code = code_ptr.read_string(code_len)
 
         disasm = X64.disassemble code, code_ptr.address

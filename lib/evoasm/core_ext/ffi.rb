@@ -26,3 +26,25 @@ class FFI::Enum
     end
   end
 end
+
+class FFI::AbstractMemory
+  def read_size_t
+    case FFI.find_type :size_t
+    when FFI::Type::Builtin::ULONG_LONG
+      read_ulong_long
+    when FFI::Type::Builtin::ULONG
+      read_ulong
+    when FFI::Type::Builtin::UINT
+      read_uint
+    else
+      raise
+    end
+  end
+end
+
+class FFI::Pointer
+  def to_ptr
+    self
+  end
+end
+

@@ -40,7 +40,7 @@ module Evoasm
       params_ary = FFI::MemoryPointer.new :int64, n_params
 
       params_ary.write_array_of_int64 params_values
-      bitmap_ptr.write_uint64 params_bitmap
+      bitmap_ptr.put_uint64 0, params_bitmap
 
       success = Libevoasm.x64_enc self, inst_id, params_ary, bitmap_ptr
       if success

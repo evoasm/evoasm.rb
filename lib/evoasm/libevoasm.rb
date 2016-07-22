@@ -60,7 +60,7 @@ module Evoasm
       attach_function name, :"evoasm_#{name}", args, ret
     end
 
-    def self.enum_hash_to_array(hash, enum, n_key, &block)
+    def self.enum_hash_to_array(hash, enum, n_key, null_value = 0, &block)
       enum_type =
         case enum
         when FFI::Enum
@@ -74,7 +74,7 @@ module Evoasm
       values = hash.values
 
       bitmap = enum_type.flags(keys, shift: true)
-      array = Array.new(n, 0)
+      array = Array.new(n, null_value)
 
       enum_type.values(keys).each_with_index do |enum_value, index|
         array[enum_value] = block[values[index]]
