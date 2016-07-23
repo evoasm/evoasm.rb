@@ -60,7 +60,7 @@ module Evoasm
       attach_function name, :"evoasm_#{name}", args, ret
     end
 
-    def self.enum_hash_to_array(hash, enum, n_key, null_value = 0, &block)
+    def self.enum_hash_to_mem_ptr(hash, type, enum, n_key, bitmap: false, &block)
       enum_type =
         case enum
         when FFI::Enum
@@ -73,13 +73,22 @@ module Evoasm
       keys = hash.keys
       values = hash.values
 
-      bitmap = enum_type.flags(keys, shift: true)
-      array = Array.new(n, null_value)
+      array = FFI::MemoryPointer.new type, n, true
+
+      if bitmap
+        bitmap_ptr = FFI::MemoryPointer.new :uint64
+        bitmap_ptr.put_uint64 0, enum_type.flags(keys, shift: true)
+      end
 
       enum_type.values(keys).each_with_index do |enum_value, index|
-        array[enum_value] = block[values[index]]
+        block[array[enum_value], values[index]]
       end
-      [array, bitmap, n]
+
+      if bitmap
+        [array, bitmap_ptr]
+      else
+        array
+      end
     end
 
     class ParamVal

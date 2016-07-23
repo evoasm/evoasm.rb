@@ -5,7 +5,7 @@ module Evoasm
 
     attach_evoasm_function :search_alloc, [], :pointer
     attach_evoasm_function :search_free, [:pointer], :void
-    attach_evoasm_function :search_init, [:pointer, :pointer, SearchParams.by_ref], :void
+    attach_evoasm_function :search_init, [:pointer, :pointer, SearchParams.by_ref], :bool
     attach_evoasm_function :search_destroy, [:pointer], :void
     callback :result_func, [:pointer, :loss, :pointer], :bool
     attach_evoasm_function :search_start, [:pointer, :result_func, :pointer], :void

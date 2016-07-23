@@ -3,46 +3,20 @@ require 'evoasm/capstone'
 
 module Evoasm
   class X64 < FFI::AutoPointer
-    class Error < StandardError
-      attr_reader :type, :line, :filename
-
-      def self.last
-        self.new(Libevoasm.last_error)
-      end
-
-      def initialize(error)
-        super(error.msg)
-        @line = error.line
-        @type = error.type
-        @filename = error.filename
-      end
-
-      def to_s
-        "#{@filename}:#{@line}: #{message}"
-      end
-    end
-
-
     def self.disassemble(asm, addr = nil)
       Evoasm::Capstone.disassemble_x64 asm, addr
     end
 
     private def convert_encode_params(params)
-      Libevoasm.enum_hash_to_array(params, :x64_param_id, :n_params) do |value|
-        Libevoasm::ParamVal.for value
+      Libevoasm.enum_hash_to_mem_ptr(params, :int64, :x64_param_id, :n_params, bitmap: true) do |ptr, value|
+        ptr.write_int64 Libevoasm::ParamVal.for(value)
       end
     end
 
     def encode(inst_id, params)
-      params_values, params_bitmap, n_params = convert_encode_params params
+      params_ptr, bitmap_ptr = convert_encode_params(params)
 
-      bitmap_ptr = FFI::MemoryPointer.new :uint64
-      params_ary = FFI::MemoryPointer.new :int64, n_params
-
-      params_ary.write_array_of_int64 params_values
-      bitmap_ptr.put_uint64 0, params_bitmap
-
-      success = Libevoasm.x64_enc self, inst_id, params_ary, bitmap_ptr
+      success = Libevoasm.x64_enc self, inst_id, params_ptr, bitmap_ptr
       if success
         buf = FFI::MemoryPointer.new :uint8, 255
         len = Libevoasm.arch_save2 self, buf

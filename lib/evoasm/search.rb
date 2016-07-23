@@ -1,4 +1,5 @@
 require 'evoasm/adf'
+require 'evoasm/error'
 
 module Evoasm
   class Search < FFI::AutoPointer
@@ -41,7 +42,9 @@ module Evoasm
       end
 
       ptr = Libevoasm.search_alloc
-      Libevoasm.search_init ptr, architecture, Libevoasm::SearchParams.new(architecture, parameters)
+      unless Libevoasm.search_init ptr, architecture, Libevoasm::SearchParams.new(architecture, parameters)
+        raise Error.last
+      end
 
       super(ptr)
     end

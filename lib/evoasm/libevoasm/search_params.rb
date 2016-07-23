@@ -3,9 +3,11 @@ require 'evoasm/core_ext/ffi'
 module Evoasm
   module Libevoasm
     class SearchParams < FFI::Struct
+      MAX_PARAMS = 64
+
       layout :insts, :pointer,
              :params, :pointer,
-             :domains, [:pointer, Arch::MAX_PARAMS],
+             :domains, :pointer,
              :min_adf_size, :adf_size,
              :max_adf_size, :adf_size,
              :min_kernel_size, :kernel_size,
@@ -72,11 +74,8 @@ module Evoasm
         self[:seed64].to_ptr.write_array_of_uint64 parameters.seed64
         self[:recur_limit] = parameters.recur_limit
 
-        domains = convert_domains parameters.domains, param_id_enum_type
-        domains_ary = self[:domains]
-        domains.size.times do |i|
-          domains_ary[i] = domains[i].to_ptr
-        end
+        domains_ptr = convert_domains parameters.domains, param_id_enum_type
+        self[:domains] = domains_ptr
 
         input_examples = parameters.examples.keys.map { |k| Array(k) }
         output_examples = parameters.examples.values.map { |k| Array(k) }
@@ -87,10 +86,9 @@ module Evoasm
 
       private
       def convert_domains(domains, enum_type)
-        domain_values, _, _ = Libevoasm.enum_hash_to_array(domains, enum_type, :n_params, FFI::Pointer::NULL) do |domain|
-          Libevoasm::Domain.for domain
+        Libevoasm.enum_hash_to_mem_ptr(domains, Domain.by_ref, enum_type, :n_params) do |ptr, domain|
+          ptr.write_pointer Libevoasm::Domain.for(domain)
         end
-        domain_values
       end
 
     end

@@ -5,7 +5,7 @@ module Evoasm
              :min, :int64,
              :max, :int64
 
-      def initialize
+      def initialize(*args)
         super
         self[:type] = :interval
       end
@@ -13,23 +13,28 @@ module Evoasm
 
     class Enum < FFI::Struct
       MAX_SIZE = 16
-      layout :type, :domain_type,
-             :len, :uint16,
-             :vals, [:int64, MAX_SIZE]
 
-      def initialize
+      LAYOUT = [
+        :type, :domain_type,
+        :len, :uint16,
+        :vals, [:int64, MAX_SIZE]
+      ]
+
+      layout *LAYOUT
+
+      def initialize(*args)
         super
         self[:type] = :enum
       end
     end
 
     class Domain < FFI::Struct
-      layout :type, :uint8
+      layout *Enum::LAYOUT
 
-      def self.for(domain)
+      def self.for(domain, ptr = nil)
         case domain
         when Range
-          Libevoasm::Interval.new.tap do |interval|
+          Libevoasm::Interval.new(ptr).tap do |interval|
             interval[:min] = domain.min
             interval[:max] = domain.max
           end
@@ -37,11 +42,14 @@ module Evoasm
           if domain.size > Libevoasm::Enum::MAX_SIZE
             raise ArgumentError, "enum exceeds maximum size"
           end
-          Libevoasm::Enum.new.tap do |enum|
+          Libevoasm::Enum.new(ptr).tap do |enum|
             enum[:len] = domain.size
             vals = domain.map do |value|
               Libevoasm::ParamVal.for value
             end
+            p vals
+            p enum[:vals]
+            p enum[:vals].to_ptr
             enum[:vals].to_ptr.write_array_of_int64 vals
           end
         else

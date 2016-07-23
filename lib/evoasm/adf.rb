@@ -7,7 +7,7 @@ module Evoasm
       ptr = Libevoasm.adf_alloc
       unless Libevoasm.adf_clone other_ptr, ptr
         Libevoasm.adf_free(ptr)
-        raise Libevoasm::Error.last
+        raise Error.last
       end
       super ptr
     end
