@@ -13,12 +13,13 @@ module Evoasm
     File.join root_dir, 'ext'
   end
 
-  def self.examples_dir
-    File.join root_dir, 'examples'
+  def self.min_log_level=(log_level)
+    Libevoasm.set_min_log_level log_level
   end
 end
 
 require 'evoasm/libevoasm'
 require 'evoasm/error'
+
 
 Evoasm::Libevoasm.init(0, FFI::Pointer::NULL, FFI::Pointer::NULL)

@@ -37,6 +37,16 @@ module Evoasm
       :search, 1 << 0,
     ]
 
+    enum FFI::Type::UINT8, :log_level, [
+      :trace,
+      :debug,
+      :info,
+      :warn,
+      :error,
+      :fatal,
+      :n_log_levels
+    ]
+
     class Arch
       MAX_PARAMS = 64
     end

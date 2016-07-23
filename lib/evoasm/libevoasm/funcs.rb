@@ -2,6 +2,8 @@ module Evoasm
   module Libevoasm
     attach_evoasm_function :init, [:int, :pointer, :pointer], :void
     attach_evoasm_function :last_error, [], Error.by_ref
+    attach_evoasm_function :set_min_log_level, [:log_level], :void
+
 
     attach_evoasm_function :search_alloc, [], :pointer
     attach_evoasm_function :search_free, [:pointer], :void

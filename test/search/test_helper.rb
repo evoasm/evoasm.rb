@@ -1,5 +1,6 @@
 require_relative '../test_helper'
 
+require 'evoasm'
 require 'evoasm/search'
 require 'evoasm/x64'
 require 'tmpdir'

@@ -1,10 +1,12 @@
 require_relative 'test_helper'
 
-class SymRegTest < SearchTest
+Evoasm.min_log_level = :info
+
+class PopcntTest < SearchTest
 
   def self.setup
     x64 = Evoasm::X64.new
-    insts = x64.instructions(:gp, :rflags, search: true).grep /popc/
+    insts = x64.instructions(:gp, :rflags, search: true)
 
     @@examples = {
       0b0 => 0,
@@ -22,7 +24,7 @@ class SymRegTest < SearchTest
 
     @@search = Evoasm::Search.new x64 do |p|
       p.instructions = insts
-      p.kernel_size = (1..5)
+      p.kernel_size = 1
       p.adf_size = 1
       p.population_size = 1600
       p.parameters = %i(reg0 reg1 reg2 reg3)
