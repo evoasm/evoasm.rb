@@ -47,9 +47,7 @@ module Evoasm
             vals = domain.map do |value|
               Libevoasm::ParamVal.for value
             end
-            p vals
-            p enum[:vals]
-            p enum[:vals].to_ptr
+
             enum[:vals].to_ptr.write_array_of_int64 vals
           end
         else

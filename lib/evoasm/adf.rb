@@ -114,8 +114,8 @@ module Evoasm
           succ < size - 1
         end
 
-        succs.each do |successor|
-          succ_addr = addrs[successor.index]
+        succs.each do |succ|
+          succ_addr = addrs[succ]
           tail_port =
             if jmp_addrs.include? succ_addr
               # Remove, in case we the same

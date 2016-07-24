@@ -1,9 +1,9 @@
 require_relative 'test_helper'
 
-class SymRegTest < SearchTest
+class SymRegTest < Minitest::Test
+  include SearchTests
 
   def self.setup
-    p "setup"
     x64 = Evoasm::X64.new
     insts = x64.instructions(:xmm).grep /(add|mul|sqrt).*?sd/
     @@examples = {
@@ -47,6 +47,10 @@ class SymRegTest < SearchTest
   end
 
   setup
+
+  def test_adf_size
+    assert_equal 1, @@found_adf.size
+  end
 
   def test_adf_run
     # should generalize (i.e. give correct answer for non-training data)

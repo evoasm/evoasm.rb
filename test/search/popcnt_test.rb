@@ -1,8 +1,7 @@
 require_relative 'test_helper'
 
-Evoasm.min_log_level = :info
-
-class PopcntTest < SearchTest
+class PopcntTest < Minitest::Test
+  include SearchTests
 
   def self.setup
     x64 = Evoasm::X64.new
@@ -41,6 +40,11 @@ class PopcntTest < SearchTest
   end
 
   setup
+
+  def test_adf_size
+    assert_equal 1, @@found_adf.size
+  end
+
   def test_adf_run
     # should generalize (i.e. give correct answer for non-training data)
     assert_equal 2, @@found_adf.run(0b1001)

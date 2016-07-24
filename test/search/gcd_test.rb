@@ -1,6 +1,9 @@
 require_relative 'test_helper'
 
-class SymRegTest < SearchTest
+Evoasm.min_log_level = :info
+
+class GCDTest < Minitest::Test
+  include SearchTests
 
   def self.setup
     x64 = Evoasm::X64.new
@@ -11,7 +14,7 @@ class SymRegTest < SearchTest
       [8, 2] => 2,
       [8, 4] => 4,
       [8, 6] => 2,
-      [16, 8] => 8,
+      [16, 8] => 8
     }
 
     @@search = Evoasm::Search.new x64 do |p|

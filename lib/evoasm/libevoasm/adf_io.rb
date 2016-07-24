@@ -46,8 +46,6 @@ module Evoasm
           example_val[type] = example
         end
 
-        p [types, arity, flat_examples.size]
-
         self[:arity] = arity
         self[:len] = flat_examples.size
         self[:types].to_ptr.write_array_of_int example_type_enum_type.values(types)
@@ -74,7 +72,7 @@ module Evoasm
           end
           types = example_types
         end
-        types
+        types || []
       end
 
       def determine_arity(examples)
@@ -87,7 +85,7 @@ module Evoasm
           end
           arity = example_arity
         end
-        arity
+        arity || 0
       end
     end
 
