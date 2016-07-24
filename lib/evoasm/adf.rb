@@ -50,8 +50,22 @@ module Evoasm
     end
 
     def eliminate_introns
-      clone.tap do |adf|
-        adf.eliminate_introns!
+      clone.tap(&:eliminate_introns!)
+    end
+
+    def disassemble_kernel(kernel_index)
+      code_len_ptr = FFI::MemoryPointer.new :size_t
+      code_ptr = Libevoasm.adf_code self, kernel_index, code_len_ptr
+
+      code_len = code_len_ptr.read_size_t
+      code = code_ptr.read_string(code_len)
+
+      X64.disassemble code, code_ptr.address
+    end
+
+    def disassemble
+      Array.new(size) do |kernel_index|
+        disassemble_kernel kernel_index
       end
     end
 
@@ -60,20 +74,9 @@ module Evoasm
 
       graph = GV::Graph.open 'g'
 
-      disasms = []
-      addrs = []
-
-      size = self.size
-      size.times do |kernel_index|
-        code_len_ptr = FFI::MemoryPointer.new :size_t
-        code_ptr = Libevoasm.adf_code self, kernel_index, code_len_ptr
-
-        code_len = code_len_ptr.read_size_t
-        code = code_ptr.read_string(code_len)
-
-        disasm = X64.disassemble code, code_ptr.address
-        disasms[kernel_index] = disasm
-        addrs[kernel_index] = disasm.first.first
+      disasms = disassemble
+      addrs = disasms.map do |disasm|
+        disasm.first.first
       end
 
       size.times do |kernel_index|

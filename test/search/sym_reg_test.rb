@@ -52,6 +52,17 @@ class SymRegTest < Minitest::Test
     assert_equal 1, @@found_adf.size
   end
 
+  def test_intron_elimination
+    disasms = @@found_adf.disassemble
+
+    adf = @@found_adf.eliminate_introns
+    assert_runs_examples adf
+
+    adf.disassemble.each_with_index do |disasm, index|
+      assert_operator disasm.size, :<, disasms[index].size
+    end
+  end
+
   def test_adf_run
     # should generalize (i.e. give correct answer for non-training data)
     assert_equal 31.937438845342623, @@found_adf.run(10.0)

@@ -14,8 +14,12 @@ module SearchTests
     assert_kind_of Evoasm::ADF, @@found_adf
   end
 
+  def assert_runs_examples(adf)
+    assert_equal @@examples.values, adf.run_all(*@@examples.keys)
+  end
+
   def test_adf_run_all
-    assert_equal @@examples.values, @@found_adf.run_all(*@@examples.keys)
+    assert_runs_examples @@found_adf
   end
 
   def test_adf_to_gv
