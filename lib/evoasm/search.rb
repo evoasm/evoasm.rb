@@ -1,40 +1,67 @@
-module Evoasm
-  class Search
-    module Util
-      def flatten_examples(examples)
-        arity = check_arity examples
+require 'evoasm/adf'
+require 'evoasm/error'
 
-        [examples.flatten, arity]
+module Evoasm
+  class Search < FFI::AutoPointer
+    attr_reader :architecture
+
+    class Parameters
+      ATTRS = %i(instructions kernel_size examples
+                 adf_size population_size parameters
+                 mutation_rate seed32 seed64 domains recur_limit)
+
+      attr_accessor *ATTRS
+
+      def initialize
+        @mutation_rate = 0.1
+        @seed64 = (1..16).to_a
+        @seed32 = (1..4).to_a
+        @recur_limit = 100
+        @domains = {}
       end
 
-      def check_arity(examples)
-        arity = Array(examples.first).size
-        examples.each do |example|
-          example_arity = Array(example).size
-          if arity && arity != example_arity
-            raise ArgumentError, "invalid arity for example '#{example}'"\
-                                " (#{example_arity} for #{arity})"
-          end
+      def missing
+        ATTRS.select do |attr|
+          send(attr).nil?
         end
-        arity
       end
     end
 
-    DEFAULT_SEED = (1..64).to_a
-    def initialize(arch, examples:, instructions:, kernel_size:,
-                   program_size:, population_size:, parameters:,
-                   mutation_rate: 0.10, seed: DEFAULT_SEED, domains: {}, recur_limit: 0)
+    module Util
+    end
 
-      input_examples, output_examples = examples.keys, examples.values
-      input_examples, input_arity = flatten_examples input_examples
-      output_examples, output_arity = flatten_examples output_examples
+    def initialize(architecture, &block)
+      @archictecture = architecture
 
-      __initialize__ input_examples, input_arity, output_examples, output_arity,
-                   arch, population_size, kernel_size, program_size, instructions,
-                   parameters, mutation_rate, seed, domains, recur_limit
+      parameters = Parameters.new
+      block[parameters]
+
+      missing_parameters = parameters.missing
+      unless missing_parameters.empty?
+        raise ArgumentError, "missing parameters: #{missing_parameters.join ', '}"
+      end
+
+      ptr = Libevoasm.search_alloc
+      unless Libevoasm.search_init ptr, architecture, Libevoasm::SearchParams.new(architecture, parameters)
+        raise Error.last
+      end
+
+      super(ptr)
+    end
+
+    def start!(&block)
+      func = FFI::Function.new(:bool, [:pointer, :double, :pointer]) do |adf_ptr, loss, _user_data|
+        block[ADF.new(adf_ptr), loss]
+      end
+
+      Libevoasm.search_start self, func, nil
+    end
+
+    def self.release(ptr)
+      Libevoasm.search_destroy(ptr)
+      Libevoasm.search_free(ptr)
     end
 
     include Util
-
   end
 end

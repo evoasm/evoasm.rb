@@ -1,20 +1,22 @@
 module Evoasm
-  class Error
-    def message
-      msg = __message
+  class Error < StandardError
+    attr_reader :type, :line, :filename
 
-      case code
-      when :not_encodable
-        "#{msg} #{parameter}"
-      when :missing_param
-        "#{msg} (#{parameter})"
-      when :missing_feature
-        "missing features #{features.join ', '}"
-      when :invalid_access
-        "#{msg} (#{instruction}/#{register})"
-      else
-        msg || code
-      end
+    def self.last
+      self.new(Libevoasm.last_error)
+    end
+
+    def initialize(error)
+      super(error[:msg].to_s)
+      @line = error[:line]
+      @type = error[:type]
+      @filename = error[:filename].to_s
+    end
+
+    def backtrace
+      backtrace = super
+      backtrace.unshift "#{@filename}:#{@line}" if backtrace
+      backtrace
     end
   end
 end
