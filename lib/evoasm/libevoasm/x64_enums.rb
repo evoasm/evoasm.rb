@@ -180,10 +180,10 @@ module Evoasm
       :force_sib?, 21,
       :disp_size, 22,
       :force_disp32?, 23,
-      :rex_b, 24,
-      :force_long_vex?, 25,
-      :vex_l, 26,
-      :modrm_reg, 27,
+      :force_long_vex?, 24,
+      :vex_l, 25,
+      :modrm_reg, 26,
+      :rex_b, 27,
       :vex_v, 28,
       :n_params
     ]

@@ -29,6 +29,7 @@ module Evoasm
       end
 
       private
+
       def load_examples(examples)
         arity = determine_arity examples
         types = determine_types examples

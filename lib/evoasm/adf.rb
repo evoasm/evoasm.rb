@@ -26,7 +26,7 @@ module Evoasm
       output = Libevoasm::ADFOutput.new
 
       unless Libevoasm.adf_run self, input, output
-        raise Libevoasm::Error.last
+        raise Error.last
       end
       output_ary = output.to_a
 
@@ -54,19 +54,34 @@ module Evoasm
     end
 
     def disassemble_kernel(kernel_index)
-      code_len_ptr = FFI::MemoryPointer.new :size_t
-      code_ptr = Libevoasm.adf_code self, kernel_index, code_len_ptr
-
-      code_len = code_len_ptr.read_size_t
+      code_ptr_ptr = FFI::MemoryPointer.new :pointer
+      code_len = Libevoasm.adf_kernel_code self, kernel_index, code_ptr_ptr
+      code_ptr = code_ptr_ptr.read_pointer
       code = code_ptr.read_string(code_len)
 
       X64.disassemble code, code_ptr.address
     end
 
-    def disassemble
+    def disassemble_kernels
       Array.new(size) do |kernel_index|
         disassemble_kernel kernel_index
       end
+    end
+
+    def input_registers(kernel_index = 0)
+      reg_enum_type = Libevoasm.enum_type(:x64_reg_id)
+      reg_enum_type.to_h.each_with_object([]) do |(k, v), acc|
+        acc << k if Libevoasm.adf_kernel_is_input_reg(self, kernel_index, v)
+      end
+    end
+
+    def disassemble(frame = false)
+      code_ptr_ptr = FFI::MemoryPointer.new :pointer
+      code_len = Libevoasm.adf_code self, frame, code_ptr_ptr
+      code_ptr = code_ptr_ptr.read_pointer
+      code = code_ptr.read_string(code_len)
+
+      X64.disassemble code, code_ptr.address
     end
 
     def to_gv
@@ -74,9 +89,9 @@ module Evoasm
 
       graph = GV::Graph.open 'g'
 
-      disasms = disassemble
+      disasms = disassemble_kernels
       addrs = disasms.map do |disasm|
-        disasm.first.first
+        disasm.first&.first
       end
 
       size.times do |kernel_index|
@@ -114,14 +129,14 @@ module Evoasm
                           label: graph.html(label)
 
         succs = [kernel_index + 1, Libevoasm.adf_kernel_alt_succ(self, kernel_index)].select do |succ|
-          succ < size - 1
+          succ < size
         end
 
         succs.each do |succ|
           succ_addr = addrs[succ]
           tail_port =
             if jmp_addrs.include? succ_addr
-              # Remove, in case we the same
+              # Remove, in case we have the same
               # successor multiple times
               # only one of which goes through the jump
               jmp_addrs.delete succ_addr

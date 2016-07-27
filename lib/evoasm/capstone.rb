@@ -79,7 +79,7 @@ module Evoasm
           line << insn[:mnemonic].to_s << insn[:op_str].to_s
           result << line
         end
-        err = nil
+        err = :err_ok
       else
         err = LibCapstone.cs_errno handle
       end
@@ -87,8 +87,8 @@ module Evoasm
       LibCapstone.cs_free insns, count
       LibCapstone.cs_close handle_ptr
 
-      if err
-        raise Error, cs_strerror(err);
+      if err != :err_ok
+        raise Error, LibCapstone.cs_strerror(err);
       end
 
       result

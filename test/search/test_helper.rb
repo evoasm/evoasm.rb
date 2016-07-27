@@ -18,13 +18,13 @@ module SearchTests
     assert_equal @@examples.values, adf.run_all(*@@examples.keys)
   end
 
-  def test_adf_run_all
-    assert_runs_examples @@found_adf
-  end
-
   def test_adf_to_gv
     filename = Dir::Tmpname.create(['evoasm_gv_test', '.png']) {}
     @@found_adf.to_gv.save(filename)
     assert File.exist?(filename)
+  end
+
+  def test_adf_run_all
+    assert_runs_examples @@found_adf
   end
 end

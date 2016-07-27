@@ -1,4 +1,4 @@
-require 'evoasm/core_ext/ffi'
+require 'evoasm/ffi_ext'
 
 module Evoasm
   module Libevoasm
