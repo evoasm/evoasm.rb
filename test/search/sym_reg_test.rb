@@ -1,5 +1,7 @@
 require_relative 'test_helper'
 
+Evoasm.min_log_level = :info
+
 class SymRegTest < Minitest::Test
   include SearchTests
 

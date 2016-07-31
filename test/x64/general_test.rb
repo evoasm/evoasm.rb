@@ -19,6 +19,18 @@ class GeneralTest < X64Test
   end
 
   def test_instructions
+    gp_insts = @x64.instructions :gp, :rflags
+    refute_empty gp_insts
+    assert_includes gp_insts, :xor_rax_imm32
+    refute_includes gp_insts, :vfmadd213pd_xmm_xmm_xmmm128
+    refute_includes gp_insts, :cvtsd2si_r64_xmmm64
+
+    xmm_insts = @x64.instructions :xmm
+    refute_empty xmm_insts
+    refute_includes xmm_insts, :jmp_rel32
+    refute_includes xmm_insts, :xor_rax_imm32
+    assert_includes xmm_insts, :vfmadd213pd_xmm_xmm_xmmm128
+
     search_insts = @x64.instructions :xmm, :gp, :rflags, search: true
     assert_equal search_insts, @x64.instructions(:xmm, :gp, :rflags, search: true, operand_types: [:reg, :imm, :rm])
     refute_empty search_insts
@@ -26,17 +38,7 @@ class GeneralTest < X64Test
     refute_includes search_insts, :call_rm32
     assert_includes search_insts, :xor_rax_imm32
     assert_includes search_insts, :vfmadd213pd_xmm_xmm_xmmm128
-
-    gp_insts = @x64.instructions :gp, :rflags
-    refute_empty gp_insts
-    assert_includes gp_insts, :xor_rax_imm32
-    refute_includes gp_insts, :vfmadd213pd_xmm_xmm_xmmm128
-
-    xmm_insts = @x64.instructions :xmm
-    refute_empty xmm_insts
-    refute_includes xmm_insts, :jmp_rel32
-    refute_includes xmm_insts, :xor_rax_imm32
-    assert_includes xmm_insts, :vfmadd213pd_xmm_xmm_xmmm128
+    assert_empty search_insts.grep(/rdrand/)
   end
 
   def test_mi

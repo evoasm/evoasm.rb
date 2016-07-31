@@ -68,11 +68,28 @@ module Evoasm
       end
     end
 
-    def input_registers(kernel_index = 0)
+    private def io_registers(input, kernel_index)
       reg_enum_type = Libevoasm.enum_type(:x64_reg_id)
       reg_enum_type.to_h.each_with_object([]) do |(k, v), acc|
-        acc << k if Libevoasm.adf_kernel_is_input_reg(self, kernel_index, v)
+        unless k == :n_regs
+          io =
+            if input
+              Libevoasm.adf_is_input_reg(self, kernel_index, v)
+            else
+              Libevoasm.adf_is_output_reg(self, kernel_index, v)
+            end
+
+          acc << k if io
+        end
       end
+    end
+
+    def input_registers(kernel_index = 0)
+      io_registers true, kernel_index
+    end
+
+    def output_registers(kernel_index = size - 1)
+      io_registers false, kernel_index
     end
 
     def disassemble(frame = false)
@@ -80,6 +97,10 @@ module Evoasm
       code_len = Libevoasm.adf_code self, frame, code_ptr_ptr
       code_ptr = code_ptr_ptr.read_pointer
       code = code_ptr.read_string(code_len)
+
+      p code.each_byte.map{|b| "%0.2x" % b}.join(' ')
+      p input_registers
+      p output_registers
 
       X64.disassemble code, code_ptr.address
     end

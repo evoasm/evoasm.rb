@@ -3,3 +3,6 @@ Metrics/MethodLength:
 
 Metrics/ClassLength:
   Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false

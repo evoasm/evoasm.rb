@@ -8,6 +8,7 @@ class GCDTest < Minitest::Test
   def self.setup
     x64 = Evoasm::X64.new
     insts = x64.instructions(:gp, :rflags, search: true)
+
     @@examples = {
       [5, 1] => 1,
       [15, 5] => 5,

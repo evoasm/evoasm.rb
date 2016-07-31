@@ -25,6 +25,12 @@ module SearchTests
   end
 
   def test_adf_run_all
+    require 'pp'
+    pp @@found_adf.disassemble true
+    100.times do |i|
+      p [i, @@examples.values == @@found_adf.run_all(*@@examples.keys)]
+    end
+
     assert_runs_examples @@found_adf
   end
 end
