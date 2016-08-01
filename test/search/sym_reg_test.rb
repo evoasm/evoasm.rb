@@ -40,6 +40,10 @@ class SymRegTest < Minitest::Test
       p.examples = @@examples
     end
 
+    @@search.progress do |*args|
+      p ['progress', args]
+    end
+
     @@search.start! do |adf, loss|
       if loss == 0.0
         @@found_adf = adf

@@ -49,12 +49,18 @@ module Evoasm
       super(ptr)
     end
 
+    def progress(&block)
+      @progress_func = FFI::Function.new(:bool, [:uint, :uint, :uint, :double, :uint, :pointer]) do |pop_idx, cycle, gen, loss, n_inf, user_data|
+        block[pop_idx, cycle, gen, loss, n_inf]
+      end
+    end
+
     def start!(&block)
-      func = FFI::Function.new(:bool, [:pointer, :double, :pointer]) do |adf_ptr, loss, _user_data|
+      goal_func = FFI::Function.new(:bool, [:pointer, :double, :pointer]) do |adf_ptr, loss, _user_data|
         block[ADF.new(adf_ptr), loss]
       end
 
-      Libevoasm.search_start self, func, nil
+      Libevoasm.search_start self, @progress_func, goal_func, nil
     end
 
     def self.release(ptr)
