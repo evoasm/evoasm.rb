@@ -27,9 +27,6 @@ module Evoasm
       end
     end
 
-    module Util
-    end
-
     def initialize(architecture, &block)
       @archictecture = architecture
 
@@ -67,7 +64,5 @@ module Evoasm
       Libevoasm.search_destroy(ptr)
       Libevoasm.search_free(ptr)
     end
-
-    include Util
   end
 end
