@@ -156,7 +156,7 @@ module Evoasm
       :n_regs
     ]
 
-    enum :x64_param_id, [
+    enum :x64_inst_param_id, [
       :reg0, 0,
       :reg1, 1,
       :reg2, 2,
@@ -187,7 +187,7 @@ module Evoasm
       :modrm_reg, 26,
       :rex_b, 27,
       :vex_v, 28,
-      :n_params
+      :n_inst_params
     ]
 
     enum :x64_operand_type, [

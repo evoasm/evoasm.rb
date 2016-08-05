@@ -14,6 +14,9 @@ module Evoasm
 
     attach_evoasm_function :arch_save2, [:pointer, :pointer], :size_t
 
+    attach_evoasm_function :inst_param_id, [:pointer], :int
+    attach_evoasm_function :inst_param_domain, [:pointer], Domain.by_ref
+
     attach_evoasm_function :x64_alloc, [], :pointer
     attach_evoasm_function :x64_free, [:pointer], :void
     attach_evoasm_function :x64_init, [:pointer], :bool
@@ -21,10 +24,14 @@ module Evoasm
     attach_evoasm_function :x64_insts, [:pointer, :uint64, :uint64, :uint64, :uint64, :pointer], :uint16
     attach_evoasm_function :x64_enc, [:pointer, :x64_inst_id, :pointer, :pointer], :bool
     attach_evoasm_function :x64_features, [:pointer], :uint64
-    attach_evoasm_function :x64_operand, [:pointer, :x64_inst_id, :uint], :pointer
-    attach_evoasm_function :x64_n_operands, [:pointer, :x64_inst_id], :uint
-    attach_evoasm_function :x64_operand_param, [:pointer, :x64_inst_id], :x64_param_id
 
+    attach_evoasm_function :x64_inst, [:pointer, :x64_inst_id], :pointer
+    attach_evoasm_function :x64_inst_param, [:pointer, :uint], :pointer
+    attach_evoasm_function :x64_inst_n_params, [:pointer], :uint
+    attach_evoasm_function :x64_inst_operand, [:pointer, :uint], :pointer
+    attach_evoasm_function :x64_inst_n_operands, [:pointer], :uint
+
+    attach_evoasm_function :x64_operand_param_idx, [:pointer], :uint
     attach_evoasm_function :x64_operand_read, [:pointer], :bool
     attach_evoasm_function :x64_operand_written, [:pointer], :bool
     attach_evoasm_function :x64_operand_implicit, [:pointer], :bool

@@ -4,14 +4,53 @@ require 'evoasm/capstone'
 module Evoasm
   class X64 < FFI::AutoPointer
 
-    class Operand < FFI::Pointer
-      def initialize(ptr, inst_id)
+    class Instruction < FFI::Pointer
+
+      class Parameter < FFI::Pointer
+        def name
+          Libevoasm.enum_type(:x64_inst_param_id).find Libevoasm.inst_param_id(self)
+        end
+
+        def domain
+          Libevoasm.inst_param_domain(self).to_ruby
+        end
+      end
+
+      attr_reader :name
+
+      def initialize(ptr, name, x64)
         super(ptr)
-        @inst_id = inst_id
+        @name = name
+        @x64 = x64
+      end
+
+      def operands
+        n_operands = Libevoasm.x64_inst_n_operands self
+        Array.new(n_operands) do |operand_index|
+          Operand.new Libevoasm.x64_inst_operand(self, operand_index), self
+        end
+      end
+
+      def parameters
+        n_params = Libevoasm.x64_inst_n_params self
+        Array.new(n_params) do |param_index|
+          Parameter.new Libevoasm.x64_inst_param(self, param_index)
+        end
+      end
+
+      def encode(params)
+        @x64.encode name, params
+      end
+    end
+
+    class Operand < FFI::Pointer
+      def initialize(ptr, instruction)
+        super(ptr)
+        @instruction = instruction
       end
 
       def parameter
-        Libevoasm.x64_operand_param self, @inst_id
+        @instruction.parameters[Libevoasm.x64_operand_param_idx self]
       end
 
       def read?
@@ -72,15 +111,15 @@ module Evoasm
     end
 
     private def convert_encode_params(params)
-      Libevoasm.enum_hash_to_mem_ptr(params, :int64, :x64_param_id, :n_params, bitmap: true) do |ptr, value|
+      Libevoasm.enum_hash_to_mem_ptr(params, :int64, :x64_inst_param_id, :n_inst_params, bitmap: true) do |ptr, value|
         ptr.put_int64 0, Libevoasm::ParamVal.for(value)
       end
     end
 
-    def encode(inst_id, params)
+    def encode(inst, params)
       params_ptr, bitmap_ptr = convert_encode_params(params)
 
-      success = Libevoasm.x64_enc self, inst_id, params_ptr, bitmap_ptr
+      success = Libevoasm.x64_enc self, inst, params_ptr, bitmap_ptr
       if success
         buf = FFI::MemoryPointer.new :uint8, 255
         len = Libevoasm.arch_save2 self, buf
@@ -90,19 +129,16 @@ module Evoasm
       end
     end
 
-    def operands(inst_id)
-      n_operands = Libevoasm.x64_n_operands self, inst_id
-      Array.new(n_operands) do |operand_index|
-        Operand.new Libevoasm.x64_operand(self, inst_id, operand_index), inst_id
-      end
-    end
-
     def features
       feature_enum_type = Libevoasm.enum_type(:x64_feature)
       features_as_flags = Libevoasm.x64_features self
       feature_enum_type.symbol_map.each_with_object([]) do |(k, v), acc|
         acc << k if features_as_flags & (1 << v)
       end
+    end
+
+    def instruction(inst_name)
+      Instruction.new Libevoasm.x64_inst(self, inst_name), inst_name, self
     end
 
     def instructions(*reg_types, operand_types: [:reg, :rm, :imm], search: true, features: nil)

@@ -2,10 +2,6 @@ require_relative 'test_helper'
 
 module X64
   class GeneralTest < X64Test
-    def setup
-      @x64 = Evoasm::X64.new
-    end
-
     def test_features
       features = @x64.features
       refute_empty features
@@ -40,24 +36,6 @@ module X64
       assert_includes search_insts, :xor_rax_imm32
       assert_includes search_insts, :vfmadd213pd_xmm_xmm_xmmm128
       assert_empty search_insts.grep(/rdrand/)
-    end
-
-    def test_operands
-      operands = @x64.operands :add_rm64_imm8
-
-      assert_equal :rm, operands[0].type
-      assert operands[0].explicit?
-      assert_equal :gp, operands[0].register_type
-      assert_nil operands[0].register
-      assert_equal :reg0, operands[0].parameter
-      assert_equal 64, operands[0].size
-
-      assert_equal :imm, operands[1].type
-      assert operands[1].explicit?
-      assert_nil operands[1].register_type
-      assert_nil operands[1].register
-      assert_equal :imm0, operands[1].parameter
-      assert_equal 8, operands[1].size
     end
 
     def test_mi

@@ -20,6 +20,16 @@ module Evoasm
         @domains = {}
       end
 
+      def instruction_names
+        instructions.map do |instruction|
+          if instruction.is_a? Symbol
+            instruction
+          else
+            instruction.name
+          end
+        end
+      end
+
       def missing
         ATTRS.select do |attr|
           send(attr).nil?
