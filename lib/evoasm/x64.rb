@@ -9,7 +9,7 @@ module Evoasm
 
     private def convert_encode_params(params)
       Libevoasm.enum_hash_to_mem_ptr(params, :int64, :x64_param_id, :n_params, bitmap: true) do |ptr, value|
-        ptr.write_int64 Libevoasm::ParamVal.for(value)
+        ptr.put_int64 0, Libevoasm::ParamVal.for(value)
       end
     end
 

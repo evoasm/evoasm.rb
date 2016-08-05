@@ -13,11 +13,12 @@ Gem::Specification.new do |spec|
   spec.license       = 'MPL-2.0'
 
   spec.files         = `git ls-files -z`.split("\x0")
+  spec.files        += Dir['ext/evoasm_ext/**/*.[ch]']
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ['lib']
-  spec.extensions = %w(ext/Rakefile)
+  spec.extensions    = %w(ext/evoasm_ext/Rakefile)
 
   spec.add_dependency 'pry', '~> 0.10'
   spec.add_dependency 'pastel', '~> 0.6'
