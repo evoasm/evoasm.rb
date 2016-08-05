@@ -3,8 +3,72 @@ require 'evoasm/capstone'
 
 module Evoasm
   class X64 < FFI::AutoPointer
+
+    class Operand < FFI::Pointer
+      def initialize(ptr, inst_id)
+        super(ptr)
+        @inst_id = inst_id
+      end
+
+      def parameter
+        Libevoasm.x64_operand_param self, @inst_id
+      end
+
+      def read?
+        Libevoasm.x64_operand_read self
+      end
+
+      def written?
+        Libevoasm.x64_operand_written self
+      end
+
+      def implicit?
+        Libevoasm.x64_operand_implicit self
+      end
+
+      def type
+        Libevoasm.x64_operand_type self
+      end
+
+      def register
+        reg_id = Libevoasm.x64_operand_reg_id self
+        reg_id == :n_regs ? nil : reg_id
+      end
+
+      def register_type
+        reg_type = Libevoasm.x64_operand_reg_type self
+        reg_type == :n_reg_types ? nil : reg_type
+      end
+
+      def size
+        size = Libevoasm.x64_operand_size self
+
+        case size
+        when :'8' then 8
+        when :'16' then 16
+        when :'32' then 32
+        when :'64' then 64
+        when :'128' then 128
+        when :'256' then 256
+        when :'512' then 512
+        else
+          nil
+        end
+      end
+
+      def explicit?
+        !implicit?
+      end
+    end
+
     def self.disassemble(asm, addr = nil)
       Evoasm::Capstone.disassemble_x64 asm, addr
+    end
+
+    def initialize
+      ptr = Libevoasm.x64_alloc
+      Libevoasm.x64_init ptr
+      super(ptr)
     end
 
     private def convert_encode_params(params)
@@ -26,10 +90,11 @@ module Evoasm
       end
     end
 
-    def initialize
-      ptr = Libevoasm.x64_alloc
-      Libevoasm.x64_init ptr
-      super(ptr)
+    def operands(inst_id)
+      n_operands = Libevoasm.x64_n_operands self, inst_id
+      Array.new(n_operands) do |operand_index|
+        Operand.new Libevoasm.x64_operand(self, inst_id, operand_index), inst_id
+      end
     end
 
     def features

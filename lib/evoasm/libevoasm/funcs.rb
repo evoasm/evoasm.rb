@@ -21,6 +21,17 @@ module Evoasm
     attach_evoasm_function :x64_insts, [:pointer, :uint64, :uint64, :uint64, :uint64, :pointer], :uint16
     attach_evoasm_function :x64_enc, [:pointer, :x64_inst_id, :pointer, :pointer], :bool
     attach_evoasm_function :x64_features, [:pointer], :uint64
+    attach_evoasm_function :x64_operand, [:pointer, :x64_inst_id, :uint], :pointer
+    attach_evoasm_function :x64_n_operands, [:pointer, :x64_inst_id], :uint
+    attach_evoasm_function :x64_operand_param, [:pointer, :x64_inst_id], :x64_param_id
+
+    attach_evoasm_function :x64_operand_read, [:pointer], :bool
+    attach_evoasm_function :x64_operand_written, [:pointer], :bool
+    attach_evoasm_function :x64_operand_implicit, [:pointer], :bool
+    attach_evoasm_function :x64_operand_type, [:pointer], :x64_operand_type
+    attach_evoasm_function :x64_operand_size, [:pointer], :x64_operand_size
+    attach_evoasm_function :x64_operand_reg_type, [:pointer], :x64_reg_type
+    attach_evoasm_function :x64_operand_reg_id, [:pointer], :x64_reg_id
 
     attach_evoasm_function :adf_clone, [:pointer, :pointer], :bool
     attach_evoasm_function :adf_destroy, [:pointer], :bool
@@ -36,5 +47,6 @@ module Evoasm
     attach_evoasm_function :adf_eliminate_introns, [:pointer], :bool
     attach_evoasm_function :adf_is_input_reg, [:pointer, :uint, :uint8], :bool
     attach_evoasm_function :adf_is_output_reg, [:pointer, :uint, :uint8], :bool
+
   end
 end

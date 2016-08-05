@@ -42,6 +42,24 @@ module X64
       assert_empty search_insts.grep(/rdrand/)
     end
 
+    def test_operands
+      operands = @x64.operands :add_rm64_imm8
+
+      assert_equal :rm, operands[0].type
+      assert operands[0].explicit?
+      assert_equal :gp, operands[0].register_type
+      assert_nil operands[0].register
+      assert_equal :reg0, operands[0].parameter
+      assert_equal 64, operands[0].size
+
+      assert_equal :imm, operands[1].type
+      assert operands[1].explicit?
+      assert_nil operands[1].register_type
+      assert_nil operands[1].register
+      assert_equal :imm0, operands[1].parameter
+      assert_equal 8, operands[1].size
+    end
+
     def test_mi
       assert_disassembles_to 'add rax, 0xa', :add_rm64_imm8,
                              reg0: :a, imm0: 0xa

@@ -1888,5 +1888,16 @@ module Evoasm
       :xtest, 1684,
       :n_insts
     ]
+
+    enum :x64_operand_size, [
+      :'8',
+      :'16',
+      :'32',
+      :'64',
+      :'128',
+      :'256',
+      :'512',
+      :n_operand_sizes
+    ]
   end
 end
