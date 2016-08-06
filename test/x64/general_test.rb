@@ -37,13 +37,5 @@ module X64
       assert_includes search_insts, :vfmadd213pd_xmm_xmm_xmmm128
       assert_empty search_insts.grep(/rdrand/)
     end
-
-    def test_mi
-      assert_disassembles_to 'add rax, 0xa', :add_rm64_imm8,
-                             reg0: :a, imm0: 0xa
-
-      assert_disassembles_to 'add qword ptr [rax], 0xa', :add_rm64_imm8,
-                             reg_base: :a, imm0: 0xa
-    end
   end
 end
