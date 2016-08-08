@@ -5,21 +5,30 @@ module X64
   module MiniTest::Assertions
     include Evoasm
 
-    def assert_disassembles_to(disasm, inst_name, **params)
-      disasm.force_encoding('ASCII-8BIT')
-      assert_equal disasm,
-                   Evoasm::X64.disassemble(@x64.encode(inst_name, params)).first.join(' ')
+    def assert_disassembles_to(exp_disasm, inst_name, **params)
+      exp_disasm.force_encoding('ASCII-8BIT')
+      act_disasm = disassemble(@x64.encode(inst_name, params))
+      assert_equal exp_disasm, act_disasm
     end
 
-    def assert_assembles_to(asm, inst_name, **params)
-      asm.force_encoding('ASCII-8BIT')
-      assert_equal asm, @x64.encode(inst_name, params)
+    def assert_assembles_to(exp_asm, inst_name, **params)
+      exp_asm.force_encoding('ASCII-8BIT')
+      act_asm = assemble(inst_name, **params)
+      assert_equal exp_asm, act_asm
     end
   end
 
   class X64Test < Minitest::Test
     def setup
       @x64 = Evoasm::X64.new
+    end
+
+    def disassemble(asm)
+      Evoasm::X64.disassemble(asm).first.join(' ')
+    end
+
+    def assemble(inst_name, **params)
+      @x64.encode(inst_name, params)
     end
   end
 end
