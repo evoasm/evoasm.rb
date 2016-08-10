@@ -10,7 +10,7 @@ module Search
         2 => 3,
         3 => 4
       }
-      @instructions = @x64.instructions(:gp, :rflags, search: true)
+      @instructions = @x64.instruction_names(:gp, :rflags, search: true)
       @kernel_size = (1..15)
       @adf_size = 1
       @population_size = 1600

@@ -50,6 +50,8 @@ module Search
     end
 
     def random_code
+      # Fill registers with random values
+
       ary = Array.new(10) { rand }
       ary.sort! if rand < 0.5
       ary.map! { |e| (e * rand(10_000)).to_i } if rand < 0.5

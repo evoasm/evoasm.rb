@@ -24,6 +24,14 @@ module Evoasm
         @x64 = x64
       end
 
+      def mnemonics
+        Libevoasm.x64_inst_mnem(self).split('/')
+      end
+
+      def mnemonic
+        mnemonics.first
+      end
+
       def operands
         n_operands = Libevoasm.x64_inst_n_operands self
         Array.new(n_operands) do |operand_index|
@@ -61,6 +69,10 @@ module Evoasm
         Libevoasm.x64_operand_written self
       end
 
+      def mnemonic?
+        Libevoasm.x64_operand_mnem self
+      end
+
       def implicit?
         Libevoasm.x64_operand_implicit self
       end
@@ -70,8 +82,22 @@ module Evoasm
       end
 
       def register
-        reg_id = Libevoasm.x64_operand_reg_id self
-        reg_id == :n_regs ? nil : reg_id
+        if type == :rm || type == :reg
+          reg_id = Libevoasm.x64_operand_reg_id self
+          reg_id == :n_regs ? nil : reg_id
+        else
+          nil
+        end
+      end
+
+      INVALID_IMMEDIATE = -1
+      def immediate
+        if type == :imm
+          imm = Libevoasm.x64_operand_imm self
+          imm == INVALID_IMMEDIATE ? nil : imm
+        else
+          nil
+        end
       end
 
       def register_type
@@ -83,6 +109,7 @@ module Evoasm
         size = Libevoasm.x64_operand_size self
 
         case size
+        when :'1' then 1
         when :'8' then 8
         when :'16' then 16
         when :'32' then 32
@@ -141,7 +168,7 @@ module Evoasm
       Instruction.new Libevoasm.x64_inst(self, inst_name), inst_name, self
     end
 
-    def instructions(*reg_types, operand_types: [:reg, :rm, :imm], search: true, features: nil)
+    def instruction_names(*reg_types, operand_types: [:reg, :rm, :imm], search: false, features: nil)
       inst_id_enum_type = Libevoasm.enum_type(:x64_inst_id)
       feature_enum_type = Libevoasm.enum_type(:x64_feature)
       insts_flags_enum_type = Libevoasm.enum_type(:x64_insts_flags)

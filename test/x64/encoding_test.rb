@@ -246,7 +246,7 @@ module X64
                           reg0: :xmm0, reg1: :xmm1, reg2: :xmm2, force_long_vex?: false
       assert_assembles_to "\xC5\xF5\xEC\xC2", :vpaddsb_ymm_ymm_ymmm256,
                           reg0: :xmm0, reg1: :xmm1, reg2: :xmm2
-      assert_assembles_to "\xC4\xE1u\xEC\xC2", :vpaddsb_ymm_ymm_ymmm256,
+      assert_assembles_to "\xC4\xE1\x75\xEC\xC2", :vpaddsb_ymm_ymm_ymmm256,
                           reg0: :xmm0, reg1: :xmm1, reg2: :xmm2, force_long_vex?: true
 
       assert_disassembles_to 'vpaddsb ymm0, ymm1, ymm2', :vpaddsb_ymm_ymm_ymmm256,
@@ -255,6 +255,9 @@ module X64
                              reg0: :xmm0, reg1: :xmm1, reg2: :xmm2, force_long_vex?: false
       assert_disassembles_to 'vpaddsb ymm0, ymm1, ymm2', :vpaddsb_ymm_ymm_ymmm256,
                              reg0: :xmm0, reg1: :xmm1, reg2: :xmm2, force_long_vex?: true
+
+      assert_disassembles_to 'vblendvpd xmm0, xmm1, xmm2, xmm3', :vblendvpd_xmm_xmm_xmmm128_xmm,
+                             reg0: :xmm0, reg1: :xmm1, reg2: :xmm2, reg3: :xmm3
     end
   end
 end

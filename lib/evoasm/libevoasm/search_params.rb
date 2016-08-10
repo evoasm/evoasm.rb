@@ -38,7 +38,7 @@ module Evoasm
 
         self[:mut_rate] = parameters.mutation_rate
 
-        insts = FFI::MemoryPointer.new :uint16, parameters.instructions.size
+        insts = FFI::MemoryPointer.new :uint16, parameters.instruction_names.size
         insts.write_array_of_uint16 inst_id_enum_type.values(parameters.instruction_names)
         self[:insts] = insts
         self[:insts_len] = parameters.instructions.size

@@ -21,7 +21,7 @@ module Evoasm
       end
 
       def instruction_names
-        instructions.map do |instruction|
+        instruction_names.map do |instruction|
           if instruction.is_a? Symbol
             instruction
           else

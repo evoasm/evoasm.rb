@@ -30,15 +30,18 @@ module Evoasm
     attach_evoasm_function :x64_inst_n_params, [:pointer], :uint
     attach_evoasm_function :x64_inst_operand, [:pointer, :uint], :pointer
     attach_evoasm_function :x64_inst_n_operands, [:pointer], :uint
+    attach_evoasm_function :x64_inst_mnem, [:pointer], :string
 
     attach_evoasm_function :x64_operand_param_idx, [:pointer], :uint
     attach_evoasm_function :x64_operand_read, [:pointer], :bool
     attach_evoasm_function :x64_operand_written, [:pointer], :bool
     attach_evoasm_function :x64_operand_implicit, [:pointer], :bool
+    attach_evoasm_function :x64_operand_mnem, [:pointer], :bool
     attach_evoasm_function :x64_operand_type, [:pointer], :x64_operand_type
     attach_evoasm_function :x64_operand_size, [:pointer], :x64_operand_size
     attach_evoasm_function :x64_operand_reg_type, [:pointer], :x64_reg_type
     attach_evoasm_function :x64_operand_reg_id, [:pointer], :x64_reg_id
+    attach_evoasm_function :x64_operand_imm, [:pointer], :int8
 
     attach_evoasm_function :adf_clone, [:pointer, :pointer], :bool
     attach_evoasm_function :adf_destroy, [:pointer], :bool
