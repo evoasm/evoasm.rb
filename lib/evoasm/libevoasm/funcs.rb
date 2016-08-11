@@ -39,6 +39,8 @@ module Evoasm
     attach_evoasm_function :x64_operand_mnem, [:pointer], :bool
     attach_evoasm_function :x64_operand_type, [:pointer], :x64_operand_type
     attach_evoasm_function :x64_operand_size, [:pointer], :x64_operand_size
+    attach_evoasm_function :x64_operand_reg_size, [:pointer], :x64_operand_size
+    attach_evoasm_function :x64_operand_mem_size, [:pointer], :x64_operand_size
     attach_evoasm_function :x64_operand_reg_type, [:pointer], :x64_reg_type
     attach_evoasm_function :x64_operand_reg_id, [:pointer], :x64_reg_id
     attach_evoasm_function :x64_operand_imm, [:pointer], :int8
