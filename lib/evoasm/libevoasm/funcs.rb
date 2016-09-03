@@ -9,28 +9,43 @@ module Evoasm
     attach_evoasm_function :search_free, [:pointer], :void
     attach_evoasm_function :search_init, [:pointer, :pointer, SearchParams.by_ref], :bool
     attach_evoasm_function :search_destroy, [:pointer], :void
-
     attach_evoasm_function :search_start, [:pointer, :pointer, :pointer, :pointer], :void
 
-    attach_evoasm_function :arch_save2, [:pointer, :pointer], :size_t
+    attach_evoasm_function :arch_info, [:arch_id], :pointer
+    attach_evoasm_function :arch_info_features, [:pointer], :uint64
 
-    attach_evoasm_function :inst_param_id, [:pointer], :int
-    attach_evoasm_function :inst_param_domain, [:pointer], Domain.by_ref
+    attach_evoasm_function :buf_ref_alloc, [], :pointer
+    attach_evoasm_function :buf_ref_init, [:pointer, :pointer, :pointer], :void
+    attach_evoasm_function :buf_ref_free, [:pointer], :void
 
-    attach_evoasm_function :x64_alloc, [], :pointer
-    attach_evoasm_function :x64_free, [:pointer], :void
-    attach_evoasm_function :x64_init, [:pointer], :bool
-    attach_evoasm_function :x64_destroy, [:pointer], :void
-    attach_evoasm_function :x64_insts, [:pointer, :uint64, :uint64, :uint64, :uint64, :pointer], :uint16
-    attach_evoasm_function :x64_enc, [:pointer, :x64_inst_id, :pointer, :pointer], :bool
-    attach_evoasm_function :x64_features, [:pointer], :uint64
+    attach_evoasm_function :x64_params_alloc, [], :pointer
+    attach_evoasm_function :x64_params_free, [:pointer], :void
+    attach_evoasm_function :x64_params_init, [:pointer], :void
+    attach_evoasm_function :x64_params_set, [:pointer, :x64_param_id, :int64], :void
+    attach_evoasm_function :x64_basic_params_set, [:pointer, :x64_param_id, :int64], :void
+    attach_evoasm_function :x64_params_get, [:pointer, :x64_param_id], :int64
+    attach_evoasm_function :x64_basic_params_get, [:pointer, :x64_param_id], :int64
+    attach_evoasm_function :x64_basic_params_alloc, [], :pointer
+    attach_evoasm_function :x64_basic_params_free, [:pointer], :void
+    attach_evoasm_function :x64_basic_params_init, [:pointer], :void
 
-    attach_evoasm_function :x64_inst, [:pointer, :x64_inst_id], :pointer
+    attach_evoasm_function :param_id, [:pointer], :int
+    attach_evoasm_function :param_domain, [:pointer], Domain.by_ref
+
+    attach_evoasm_function :x64_init, [], :void
+    attach_evoasm_function :x64_insts, [:uint64, :uint64, :uint64, :uint64, :pointer], :uint16
+
+    attach_evoasm_function :x64_enc, [:x64_inst_id, :pointer, :pointer], :bool
+    attach_evoasm_function :x64_enc_basic, [:x64_inst_id, :pointer, :pointer], :bool
+
+    attach_evoasm_function :x64_inst, [:x64_inst_id], :pointer
     attach_evoasm_function :x64_inst_param, [:pointer, :uint], :pointer
     attach_evoasm_function :x64_inst_n_params, [:pointer], :uint
     attach_evoasm_function :x64_inst_operand, [:pointer, :uint], :pointer
     attach_evoasm_function :x64_inst_n_operands, [:pointer], :uint
     attach_evoasm_function :x64_inst_mnem, [:pointer], :string
+    attach_evoasm_function :x64_inst_enc, [:pointer, :pointer, :pointer], :bool
+    attach_evoasm_function :x64_inst_enc_basic, [:pointer, :pointer, :pointer], :bool
 
     attach_evoasm_function :x64_operand_param_idx, [:pointer], :uint
     attach_evoasm_function :x64_operand_read, [:pointer], :bool

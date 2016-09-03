@@ -145,7 +145,7 @@ module X64
       next if XCHG_IMPLICIT_INST_NAMES.include? inst_name
 
       define_method :"test_#{inst_name}" do
-        instruction = @x64.instruction inst_name
+        instruction = Evoasm::X64.instruction inst_name
         exp_disasm_ops = []
         gp_regs = {
           reg0: [:a, 'al', 'ax', 'eax', 'rax'],
@@ -153,8 +153,8 @@ module X64
           reg2: [:b, 'bl', 'bx', 'ebx', 'rbx']
         }
         xmm_regs = {reg0: :xmm0, reg1: :xmm1, reg2: :xmm2, reg3: :xmm3}
-        imms = {imm0: 0x12, imm1: 0x34, rel: 0x13}
-        params = {}
+        imms = {imm: 0x12, imm0: 0x12, imm1: 0x34, rel: 0x13}
+        parameters = {}
 
 
         p [inst_name]
@@ -173,11 +173,11 @@ module X64
               when :reg0, :reg1, :reg2, :reg3
                   case operand.register_type
                   when :gp
-                    params[param_name] = gp_regs[param_name][0]
+                    parameters[param_name] = gp_regs[param_name][0]
                     op = gp_regs[param_name].fetch(index)
                     exp_disasm_ops << op
                   when :xmm
-                    params[param_name] = xmm_regs[param_name]
+                    parameters[param_name] = xmm_regs[param_name]
                     disasm_op = xmm_regs[param_name].to_s
                     if operand.size == 256
                       disasm_op.sub! 'xmm', 'ymm'
@@ -186,8 +186,8 @@ module X64
                   else
                     raise "unexpected register type '#{operand.register_type}'"
                   end
-              when :imm0, :imm1, :rel
-                params[param_name] = imms[param_name]
+              when :imm, :imm0, :imm1, :rel
+                parameters[param_name] = imms[param_name]
                 unless param_name == :rel
                   exp_disasm_ops << "0x#{imms[param_name].to_s(16)}"
                 end
@@ -207,17 +207,18 @@ module X64
             elsif operand.type == :vsib
               raise
             elsif operand.type == :mem
-              params[:reg_base] = gp_regs[:reg0][0]
+              parameters[:reg_base] = gp_regs[:reg0][0]
+              p operand.size
               exp_disasm_ops << "[#{gp_regs[:reg0].fetch(index)}]"
             end
           end
         end
 
-        p [inst_name, params]
-        asm = assemble(inst_name, **params)
+        p [inst_name, parameters]
+        asm = assemble(inst_name, **parameters)
 
-        if params.key? :rel
-          exp_disasm_ops << "0x#{(params[:rel] + asm.size).to_s(16)}"
+        if parameters.key? :rel
+          exp_disasm_ops << "0x#{(parameters[:rel] + asm.size).to_s(16)}"
         end
 
         mnems =
@@ -227,14 +228,14 @@ module X64
             instruction.mnemonics
           end
 
-        # Capstone print rm operand last
+        # Capstone prints rm operand last
         exp_disasm_ops.reverse! if inst_name =~ /^test_rm\d+_r\d+/
 
         exp_asms = mnems.map do |mnem|
           "#{mnem.downcase} #{exp_disasm_ops.join(', ')}"
         end
 
-        p [inst_name, exp_asms.first, params, asm]
+        p [inst_name, exp_asms, parameters, asm]
         assert_includes exp_asms, disassemble(asm)
       end
     end

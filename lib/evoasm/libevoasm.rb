@@ -26,6 +26,10 @@ module Evoasm
       :interval64
     ]
 
+    enum :arch_id, [
+      :x64
+    ]
+
     enum FFI::Type::UINT16, :error_type, [
       :invalid,
       :argument,
