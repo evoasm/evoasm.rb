@@ -130,114 +130,170 @@ module X64
       xchg_rax_r64
     )
 
-    SKIP_IMPLICIT_XMM0_INST_NAMES = %i(
-      blendvpd_xmm_xmmm128_xmm0
-      blendvps_xmm_xmmm128_xmm0
-      pblendvb_xmm_xmmm128_xmm0
-    ).freeze
 
-    Evoasm::Libevoasm.enum_type(:x64_inst_id).symbols.each do |inst_name|
-      # Capstone uses pseudo-mnemonics, tested separately
-      next if SIMD_CMP_INST_NAMES.include? inst_name
+    class InstructionTest
+      attr_reader :instruction
 
-      # Capstone does not like these for some reason, test separately
-      next if NOP_INST_NAMES.include? inst_name
-      next if XCHG_IMPLICIT_INST_NAMES.include? inst_name
+      class Operand
+        attr_reader :operand
 
-      define_method :"test_#{inst_name}" do
-        instruction = Evoasm::X64.instruction inst_name
-        exp_disasm_ops = []
-        gp_regs = {
-          reg0: [:a, 'al', 'ax', 'eax', 'rax'],
-          reg1: [:c, 'cl', 'cx', 'ecx', 'rcx'],
-          reg2: [:b, 'bl', 'bx', 'ebx', 'rbx']
-        }
-        xmm_regs = {reg0: :xmm0, reg1: :xmm1, reg2: :xmm2, reg3: :xmm3}
-        imms = {imm: 0x12, imm0: 0x12, imm1: 0x34, rel: 0x13}
-        parameters = {}
+        SKIP_IMPLICIT_XMM0_INSTRUCTION_NAMES = %i(
+          blendvpd_xmm_xmmm128_xmm0
+          blendvps_xmm_xmmm128_xmm0
+          pblendvb_xmm_xmmm128_xmm0
+        ).freeze
 
+        REGISTERS = {
+          a: {
+             8 => 'al',
+            16 => 'ax',
+            32 => 'eax',
+            64 => 'rax'
+          },
+          b: {
+            8  => 'bl',
+            16 => 'bx',
+            32 => 'ebx',
+            64 => 'rbx'
+          },
+          c: {
+            8  => 'cl',
+            16 => 'cx',
+            32 => 'ecx',
+            64 => 'rcx'
+          },
+        }.freeze
 
-        p [inst_name]
+        def initialize(operand, ass)
+          @operand = operand
+          @
+        end
 
-        instruction.operands.each do |operand|
-          if operand.register_type == :gp
-            index = Math.log2(operand.size).ceil.to_i - 2
+        def disassembly
+          return nil unless operand.mnemonic?
+          return parameter_disassembly if operand.parameter
+          return implicit_disassembly if operand.implicit?
+          return memory_disassembly if operand.type == :mem
+          raise
+        end
+
+        private
+
+        def memory_disassembly
+          parameters[:reg_base] = gp_regs[:reg0][0]
+          p operand.size
+          exp_disasm_ops << "#{ptrs[:reg0].fetch(index)}"
+        end
+
+        def implicit_disassembly
+          if operand.type == :imm
+            operand.immediate.to_s
+          elsif operand.type == :reg && operand.register == :xmm0
+            'xmm0' unless skip_implicit_xmm0?
+          else
+            REGISTERS.fetch(operand.register).fetch(operand.size)
           end
+        end
 
-          if operand.mnemonic?
-            if operand.parameter
-              param_name = operand.parameter.name
+        def skip_implicit_xmm0?
+          SKIP_IMPLICIT_XMM0_INSTRUCTION_NAMES.include? operand.instruction.name
+        end
 
-              p param_name
-              case param_name
-              when :reg0, :reg1, :reg2, :reg3
-                  case operand.register_type
-                  when :gp
-                    parameters[param_name] = gp_regs[param_name][0]
-                    op = gp_regs[param_name].fetch(index)
-                    exp_disasm_ops << op
-                  when :xmm
-                    parameters[param_name] = xmm_regs[param_name]
-                    disasm_op = xmm_regs[param_name].to_s
-                    if operand.size == 256
-                      disasm_op.sub! 'xmm', 'ymm'
-                    end
-                    exp_disasm_ops << disasm_op
-                  else
-                    raise "unexpected register type '#{operand.register_type}'"
-                  end
-              when :imm, :imm0, :imm1, :rel
-                parameters[param_name] = imms[param_name]
-                unless param_name == :rel
-                  exp_disasm_ops << "0x#{imms[param_name].to_s(16)}"
-                end
+        def parameter_disassembly
+          parameter_name = operand.parameter.name
+
+          case parameter_name
+          when :reg0, :reg1, :reg2, :reg3
+            case operand.register_type
+            when :gp
+              parameters[parameter_name] = gp_regs[parameter_name][0]
+              op = gp_regs[parameter_name].fetch(index)
+              exp_disasm_ops << op
+            when :xmm
+              parameters[parameter_name] = xmm_regs[parameter_name]
+              disasm_op = xmm_regs[parameter_name].to_s
+              if operand.size == 256
+                disasm_op.sub! 'xmm', 'ymm'
               end
-            elsif operand.implicit?
-              if operand.register == :xmm0
-                # for these, Capstone does not list the implicit operand
-                next if SKIP_IMPLICIT_XMM0_INST_NAMES.include? inst_name
-                exp_disasm_ops << 'xmm0'
-              elsif operand.type == :imm
-                exp_disasm_ops << operand.immediate
-              else
-                p operand.register
-                regs = gp_regs.find { |k, v| v[0] == operand.register }[1]
-                exp_disasm_ops << regs.fetch(index).to_s
+              exp_disasm_ops << disasm_op
+            else
+              raise "unexpected register type '#{operand.register_type}'"
+            end
+          when :imm, :imm0, :imm1, :rel
+            parameters[parameter_name] = imms[parameter_name]
+            unless parameter_name == :rel
+              exp_disasm_ops << "0x#{imms[parameter_name].to_s(16)}"
+
+
+              if parameters.key? :rel
+                exp_disasm_ops << "0x#{(parameters[:rel] + asm.size).to_s(16)}"
               end
-            elsif operand.type == :vsib
-              raise
-            elsif operand.type == :mem
-              parameters[:reg_base] = gp_regs[:reg0][0]
-              p operand.size
-              exp_disasm_ops << "[#{gp_regs[:reg0].fetch(index)}]"
             end
           end
+          # code here
         end
-
-        p [inst_name, parameters]
-        asm = assemble(inst_name, **parameters)
-
-        if parameters.key? :rel
-          exp_disasm_ops << "0x#{(parameters[:rel] + asm.size).to_s(16)}"
-        end
-
-        mnems =
-          if inst_name == :mov_r64_imm64
-            %w(movabs)
-          else
-            instruction.mnemonics
-          end
-
-        # Capstone prints rm operand last
-        exp_disasm_ops.reverse! if inst_name =~ /^test_rm\d+_r\d+/
-
-        exp_asms = mnems.map do |mnem|
-          "#{mnem.downcase} #{exp_disasm_ops.join(', ')}"
-        end
-
-        p [inst_name, exp_asms, parameters, asm]
-        assert_includes exp_asms, disassemble(asm)
       end
+
+      def initialize(test_class, instruction, basic: false)
+        @test_class = test_class
+        @instruction = instruction
+        @basic = basic
+      end
+
+      def disassembly
+        mnemonics.map do |mnemonic|
+          "#{mnemonic.downcase} #{expected_disassembly_operands.join(', ')}"
+        end
+      end
+
+      def mnemonics
+        if instruction.name == :mov_r64_imm64
+          %w(movabs)
+        else
+          instruction.mnemonics
+        end
+      end
+
+      def run
+        # Capstone prints rm operand last
+        expected_operands = instruction.operands.map { |operand| Operand.new operand }
+        expected_operands.reverse! if instruction.name =~ /^test_rm\d+_r\d+/
+
+        expected_disassemblys = mnemonics.map do |mnemonic|
+          "#{mnemonic.downcase} #{expected_operands.map(&:disassembly).join(', ')}"
+        end
+        assert_includes expected_disassemblys, disassemble(asm)
+      end
+
+      def basic?
+        @basic
+      end
+
+      def define!
+        run_method = method(:run)
+        @test_class.send :define_method, test_method_name do
+          run_method.call
+        end
+      end
+
+      private
+
+      def test_method_name
+        :"test_#{instruction.name}"
+      end
+    end
+
+    Evoasm::Libevoasm.enum_type(:x64_inst_id).symbols.each do |instruction_name|
+      # Capstone uses pseudo-mnemonics, tested separately
+      next if SIMD_CMP_INST_NAMES.include? instruction_name
+
+      # Capstone does not like these for some reason, test separately
+      next if NOP_INST_NAMES.include? instruction_name
+      next if XCHG_IMPLICIT_INST_NAMES.include? instruction_name
+
+      instruction = Evoasm::X64.instruction instruction_name
+      instruction_test = InstructionTest.new self, instruction
+      instruction_test.define!
     end
   end
 end

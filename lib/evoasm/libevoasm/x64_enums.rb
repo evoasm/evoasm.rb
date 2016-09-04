@@ -192,6 +192,19 @@ module Evoasm
       :n_params
     ]
 
+    enum :x64_basic_param_id, [
+      :reg0, 0,
+      :reg1, 1,
+      :reg2, 2,
+      :reg3, 3,
+      :imm, 4,
+      :imm0, 5,
+      :reg0_high_byte?, 6,
+      :reg1_high_byte?, 7,
+      :rel, 8,
+      :n_basic_params
+    ]
+
     enum :x64_operand_type, [
       :reg, 0,
       :rm, 1,
