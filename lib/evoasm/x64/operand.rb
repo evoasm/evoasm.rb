@@ -1,6 +1,8 @@
 module Evoasm
   module X64
     class Operand < FFI::Pointer
+      attr_reader :instruction
+
       def initialize(ptr, instruction)
         super(ptr)
         @instruction = instruction

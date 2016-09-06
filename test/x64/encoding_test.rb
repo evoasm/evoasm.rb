@@ -5,12 +5,31 @@ module X64
     def test_direct
       assert_disassembles_to 'add rax, rbx', :add_r64_rm64,
                              reg0: :a, reg1: :b
+      assert_disassembles_to 'add rax, r12', :add_r64_rm64,
+                             reg0: :a, reg1: :r12
+      assert_disassembles_to 'add r11, rbx', :add_r64_rm64,
+                             reg0: :r11, reg1: :b
       assert_disassembles_to 'add r11, r12', :add_r64_rm64,
                              reg0: :r11, reg1: :r12
+
       assert_disassembles_to 'add eax, ebx', :add_r32_rm32,
                              reg0: :a, reg1: :b
+      assert_disassembles_to 'add eax, r12d', :add_r32_rm32,
+                             reg0: :a, reg1: :r12
+      assert_disassembles_to 'add r11d, ebx', :add_r32_rm32,
+                             reg0: :r11, reg1: :b
+      assert_disassembles_to 'add r11d, r12d', :add_r32_rm32,
+                             reg0: :r11, reg1: :r12
+
       assert_disassembles_to 'add ax, bx', :add_r16_rm16,
                              reg0: :a, reg1: :b
+      assert_disassembles_to 'add ax, r12w', :add_r16_rm16,
+                             reg0: :a, reg1: :r12
+      assert_disassembles_to 'add r11w, bx', :add_r16_rm16,
+                             reg0: :r11, reg1: :b
+      assert_disassembles_to 'add r11w, r12w', :add_r16_rm16,
+                             reg0: :r11, reg1: :r12
+
     end
 
     def test_indirect
@@ -88,10 +107,10 @@ module X64
 
     def test_address_size
       assert_disassembles_to 'add rax, dword ptr [ebx]', :add_r64_rm64,
-                             reg0: :a, reg_base: :b, address_size: 32
+                             reg0: :a, reg_base: :b, addr_size: 32
 
       assert_disassembles_to 'add eax, dword ptr [ebx]', :add_r32_rm32,
-                             reg0: :a, reg_base: :b, address_size: 32
+                             reg0: :a, reg_base: :b, addr_size: 32
     end
 
     def test_rex
@@ -201,7 +220,7 @@ module X64
                                reg0: :si, reg1: :di
 
         assert_raises Evoasm::Error do
-          @x64.encode :add_r8_rm8,
+          Evoasm::X64.encode :add_r8_rm8,
                       reg0: :si,
                       reg1: :b,
                       reg1_high_byte?: true
