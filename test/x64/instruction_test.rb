@@ -28,7 +28,7 @@ module X64
       assert_equal :reg0, operands[0].parameter.name
       assert_equal 64, operands[0].size
 
-      assert_equal :imm, operands[1].parameter_name
+      assert_equal :imm, operands[1].parameter_names
       assert operands[1].explicit?
       assert_nil operands[1].register_type
       assert_nil operands[1].register

@@ -65,8 +65,24 @@ module Evoasm
         !implicit?
       end
 
+      def register_size
+        if type == :rm || type == :reg
+          convert_size Libevoasm.x64_operand_reg_size(self)
+        else
+          nil
+        end
+      end
+
+      def index_register_size
+        if type == :vsib
+          convert_size Libevoasm.x64_operand_index_reg_size(self)
+        else
+          nil
+        end
+      end
+
       def memory_size
-        if type == :rm || type == :mem
+        if type == :rm || type == :mem || type == :vsib
           convert_size Libevoasm.x64_operand_mem_size(self)
         else
           nil

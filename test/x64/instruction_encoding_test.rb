@@ -383,23 +383,24 @@ module X64
           }
         }.freeze
 
-        attr_reader :parameter_name
-        attr_reader :parameter_value
+        attr_reader :parameter_names
+        attr_reader :parameter_values
         attr_reader :type, :size
 
-        def initialize(type, parameter_name, parameter_value, size = nil)
+        def initialize(type, parameter_names, parameter_values, size = nil, register_size = nil)
           @type = type
-          @parameter_name = parameter_name
-          @parameter_value = parameter_value
+          @parameter_names = Array(parameter_names)
+          @parameter_values = Array(parameter_values)
           @size = size
+          @register_size = register_size
         end
 
-        def parameter_names
-          Array(@parameter_name)
+        def parameter_name
+          @parameter_names.first
         end
 
-        def parameter_values
-          Array(@parameter_value)
+        def parameter_value
+          @parameter_values.first
         end
 
         def disassembly(encoded_instruction = nil)
@@ -428,15 +429,25 @@ module X64
             if parameter_name == :moffs
               "0x#{parameter_value.to_s(16)}"
             else
-              base_register, = REGISTERS.fetch_values(*parameter_value).map do |sizes|
-                if sizes.key? 64
-                  sizes[64]
-                else
-                  sizes[128]
-                end
-              end
 
-              base_register
+              base_register, index_register =
+                REGISTERS.values_at(*parameter_values.values_at(0, 1)).map do |sizes|
+                  next nil if sizes.nil?
+                  if sizes.key? 64
+                    sizes[64]
+                  else
+                    sizes[@register_size]
+                  end
+                end
+
+              scale = parameter_values[2]
+
+              sib = ''
+              sib << base_register
+              sib << " + #{index_register}" if index_register
+              sib << "*#{scale}" if scale && scale != 1
+
+              sib
             end
 
           "#{pointer_size} ptr [#{pointer}]"
@@ -512,7 +523,6 @@ module X64
 
         def load
           if formal_operand.mnemonic?
-            p formal_operand.type if formal_operand.instruction.name == :mov_al_moffs8
             case formal_operand.type
             when :reg
               add_register_operand
@@ -524,7 +534,7 @@ module X64
             when :mem
               add_memory_operand
             when :vsib
-              add_memory_operand
+              add_vsib_operand
             else
               raise "unknown operand type #{formal_operand.type}"
             end
@@ -564,12 +574,19 @@ module X64
           end
         end
 
+        def add_vsib_operand
+          @actual_operands << ActualOperand.new(:mem,
+                                                [:reg_base, :reg_index, :scale],
+                                                [:a, :xmm0, 1],
+                                                memory_size,
+                                                formal_operand.index_register_size)
+        end
+
         def add_immediate_operand
           @actual_operands <<
             if formal_operand.implicit?
               ActualOperand.new(:imm, parameter_name, formal_operand.immediate)
             else
-              p [parameter_name, IMMEDIATE_VALUES.fetch(parameter_name)]
               ActualOperand.new(:imm, parameter_name, IMMEDIATE_VALUES.fetch(parameter_name))
             end
         end
@@ -581,32 +598,29 @@ module X64
         def memory_size
           # Workaround bugs in Capstone
           # which sometimes reports wrong pointer sizes
+          # FIXME: recheck if we really got them right
           case formal_operand.instruction.name
           when :comisd_xmm_xmmm64
-            # should be 64
             128
           when :comiss_xmm_xmmm32
-            # should be 32
             128
-          when :punpcklbw_mm_mmm32, :punpckldq_mm_mmm32, :punpcklwd_mm_mmm32
-            # should be 32
+          when :punpcklbw_mm_mmm32,
+               :punpckldq_mm_mmm32,
+               :punpcklwd_mm_mmm32
             64
-          when :vcomisd_xmm_xmmm64, :vcomisd_xmm_xmmm32, :vcomiss_xmm_xmmm32
+          when :vcomisd_xmm_xmmm64,
+               :vcomisd_xmm_xmmm32,
+               :vcomiss_xmm_xmmm32
             128
-          when :vpmovsxbd_ymm_xmmm64
+          when :vpmovsxbd_ymm_xmmm64,
+               :vpmovsxwq_ymm_xmmm64,
+               :vpmovsxbd_ymm_xmmm64,
+               :vpmovzxbd_ymm_xmmm64,
+               :vpmovzxwq_ymm_xmmm64
             32
-          when :vpmovsxbq_ymm_xmmm32
+          when :vpmovsxbq_ymm_xmmm32,
+               :vpmovzxbq_ymm_xmmm32
             16
-          when :vpmovsxwq_ymm_xmmm64
-            32
-          when :vpmovsxbd_ymm_xmmm64
-            32
-          when :vpmovzxbd_ymm_xmmm64
-            32
-          when :vpmovzxbq_ymm_xmmm32
-            16
-          when :vpmovzxwq_ymm_xmmm64
-            32
           else
             formal_operand.memory_size
           end
@@ -665,7 +679,7 @@ module X64
           # Capstone gives operands in wrong order
           # Oddly, only if both operands are registers
           if instruction.name =~ /^test_rm\d+_r\d+/ &&
-             combination.all? { |operand| operand.type == :reg }
+            combination.all? { |operand| operand.type == :reg }
             combination.reverse!
           end
 

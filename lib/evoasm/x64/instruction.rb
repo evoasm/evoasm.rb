@@ -24,10 +24,14 @@ module Evoasm
         mnemonics.first
       end
 
+      def operand(index)
+        Operand.new Libevoasm.x64_inst_operand(self, index), self
+      end
+
       def operands
         n_operands = Libevoasm.x64_inst_n_operands self
-        Array.new(n_operands) do |operand_index|
-          Operand.new Libevoasm.x64_inst_operand(self, operand_index), self
+        Array.new(n_operands) do |index|
+          operand index
         end
       end
 

@@ -221,9 +221,9 @@ module X64
 
         assert_raises Evoasm::Error do
           Evoasm::X64.encode :add_r8_rm8,
-                      reg0: :si,
-                      reg1: :b,
-                      reg1_high_byte?: true
+                             reg0: :si,
+                             reg1: :b,
+                             reg1_high_byte?: true
         end
       end
 
@@ -277,6 +277,30 @@ module X64
 
       assert_disassembles_to 'vblendvpd xmm0, xmm1, xmm2, xmm3', :vblendvpd_xmm_xmm_xmmm128_xmm,
                              reg0: :xmm0, reg1: :xmm1, reg2: :xmm2, reg3: :xmm3
+    end
+
+    def test_vsib
+      assert_disassembles_to 'vpgatherdd xmm0, dword ptr [rax + xmm1*2], xmm2', :vpgatherdd_xmm_vm32x_xmm,
+                             reg0: :xmm0, reg_base: :a, reg_index: :xmm1, scale: 2, reg1: :xmm2
+
+      assert_disassembles_to 'vpgatherdd xmm0, dword ptr [rax + xmm1], xmm2', :vpgatherdd_xmm_vm32x_xmm,
+                             reg0: :xmm0, reg_base: :a, reg_index: :xmm1, scale: 1, reg1: :xmm2
+
+      assert_disassembles_to 'vpgatherdd xmm12, dword ptr [rax + xmm1], xmm2', :vpgatherdd_xmm_vm32x_xmm,
+                             reg0: :xmm12, reg_base: :a, reg_index: :xmm1, scale: 1, reg1: :xmm2
+
+      assert_disassembles_to 'vpgatherdd xmm12, dword ptr [r12 + xmm1], xmm2', :vpgatherdd_xmm_vm32x_xmm,
+                             reg0: :xmm12, reg_base: :r12, reg_index: :xmm1, scale: 1, reg1: :xmm2
+
+      assert_disassembles_to 'vpgatherdd xmm12, dword ptr [r12 + xmm12*8], xmm2', :vpgatherdd_xmm_vm32x_xmm,
+                             reg0: :xmm12, reg_base: :r12, reg_index: :xmm12, scale: 8, reg1: :xmm2
+
+      assert_disassembles_to 'vpgatherdd xmm12, dword ptr [rdi + xmm12*8], xmm2', :vpgatherdd_xmm_vm32x_xmm,
+                             reg0: :xmm12, reg_base: :di, reg_index: :xmm12, scale: 8, reg1: :xmm2
+
+      assert_disassembles_to 'vpgatherqq ymm12, qword ptr [rdi + ymm12*8], ymm2', :vpgatherqq_ymm_vm64y_ymm,
+                             reg0: :xmm12, reg_base: :di, reg_index: :xmm12, scale: 8, reg1: :xmm2
+
     end
   end
 end
