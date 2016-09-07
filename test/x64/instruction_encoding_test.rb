@@ -100,6 +100,16 @@ module X64
       assert_assembles_to "\x66\xA7", :cmpsw
       assert_assembles_to "\xA7", :cmpsd
       assert_assembles_to "\x48\xA7", :cmpsq
+
+      assert_assembles_to "\xF3\xA6", :repe_cmpsb
+      assert_assembles_to "\xF3\x66\xA7", :repe_cmpsw
+      assert_assembles_to "\xF3\xA7", :repe_cmpsd
+      assert_assembles_to "\xF3\x48\xA7", :repe_cmpsq
+
+      assert_assembles_to "\xF2\xA6", :repne_cmpsb
+      assert_assembles_to "\xF2\x66\xA7", :repne_cmpsw
+      assert_assembles_to "\xF2\xA7", :repne_cmpsd
+      assert_assembles_to "\xF2\x48\xA7", :repne_cmpsq
     end
 
     def test_lods
@@ -107,6 +117,11 @@ module X64
       assert_assembles_to "\x66\xAD", :lodsw
       assert_assembles_to "\xAD", :lodsd
       assert_assembles_to "\x48\xAD", :lodsq
+
+      assert_assembles_to "\xF3\xAC", :rep_lodsb
+      assert_assembles_to "\xF3\x66\xAD", :rep_lodsw
+      assert_assembles_to "\xF3\xAD", :rep_lodsd
+      assert_assembles_to "\xF3\x48\xAD", :rep_lodsq
     end
 
     def test_movs
@@ -114,6 +129,40 @@ module X64
       assert_assembles_to "\x66\xA5", :movsw
       assert_assembles_to "\xA5", :movsd
       assert_assembles_to "\x48\xA5", :movsq
+
+      assert_assembles_to "\xF3\xA4", :rep_movsb
+      assert_assembles_to "\xF3\x66\xA5", :rep_movsw
+      assert_assembles_to "\xF3\xA5", :rep_movsd
+      assert_assembles_to "\xF3\x48\xA5", :rep_movsq
+    end
+
+    def test_scas
+      assert_assembles_to "\xAE", :scasb
+      assert_assembles_to "\x66\xAF", :scasw
+      assert_assembles_to "\xAF", :scasd
+      assert_assembles_to "\x48\xAF", :scasq
+
+      assert_assembles_to "\xF3\xAE", :repe_scasb
+      assert_assembles_to "\xF3\x66\xAF", :repe_scasw
+      assert_assembles_to "\xF3\xAF", :repe_scasd
+      assert_assembles_to "\xF3\x48\xAF", :repe_scasq
+
+      assert_assembles_to "\xF2\xAE", :repne_scasb
+      assert_assembles_to "\xF2\x66\xAF", :repne_scasw
+      assert_assembles_to "\xF2\xAF", :repne_scasd
+      assert_assembles_to "\xF2\x48\xAF", :repne_scasq
+    end
+
+    def test_stos
+      assert_assembles_to "\xAA", :stosb
+      assert_assembles_to "\x66\xAB", :stosw
+      assert_assembles_to "\xAB", :stosd
+      assert_assembles_to "\x48\xAB", :stosq
+
+      assert_assembles_to "\xF3\xAA", :rep_stosb
+      assert_assembles_to "\xF3\x66\xAB", :rep_stosw
+      assert_assembles_to "\xF3\xAB", :rep_stosd
+      assert_assembles_to "\xF3\x48\xAB", :rep_stosq
     end
 
     def test_nop
@@ -139,6 +188,18 @@ module X64
       assert_assembles_to "\x66\x4D\x0F\x6E\x24\x24", :movq_xmm_rm64, reg0: :xmm12, reg_base: :r12
     end
 
+    def test_vmovq
+      assert_assembles_to "\xC4\xE1\xF9\x6E\xC0", :vmovq_xmm_rm64, reg0: :xmm0, reg1: :a
+      assert_assembles_to "\xC4\xC1\xF9\x6E\xC4", :vmovq_xmm_rm64, reg0: :xmm0, reg1: :r12
+      assert_assembles_to "\xC4\x41\xF9\x6E\xE4", :vmovq_xmm_rm64, reg0: :xmm12, reg1: :r12
+      assert_assembles_to "\xC4\x41\xF9\x6E\x24\x24", :vmovq_xmm_rm64, reg0: :xmm12, reg_base: :r12
+
+      assert_assembles_to "\xC4\xE1\xF9\x7E\xC0", :vmovq_rm64_xmm, reg0: :a, reg1: :xmm0
+      assert_assembles_to "\xC4\xC1\xF9\x7E\xC4", :vmovq_rm64_xmm, reg0: :r12, reg1: :xmm0
+      assert_assembles_to "\xC4\x41\xF9\x7E\xE4", :vmovq_rm64_xmm, reg0: :r12, reg1: :xmm12
+      assert_assembles_to "\xC4\x41\xF9\x7E\x24\x24", :vmovq_rm64_xmm, reg_base: :r12, reg1: :xmm12
+    end
+
     def test_movd_xmm
       assert_assembles_to "\x66\x0F\x6E\xC0", :movd_xmm_rm32, reg0: :xmm0, reg1: :a
       assert_assembles_to "\x66\x41\x0F\x6E\xC4", :movd_xmm_rm32, reg0: :xmm0, reg1: :r12
@@ -151,6 +212,11 @@ module X64
       assert_assembles_to "\x66\x93", :xchg_ax_r16, reg0: :b
       assert_assembles_to "\x93", :xchg_eax_r32, reg0: :b
       assert_assembles_to "\x48\x93", :xchg_rax_r64, reg0: :b
+    end
+
+    def test_prefetchwt1
+      assert_assembles_to "\x0F\x0D\x10", :prefetchwt1_m8, reg_base: :a
+      assert_assembles_to "\x67\x0F\x0D\x10", :prefetchwt1_m8, reg_base: :a, addr_size: 32
     end
 
     SIMD_CMP_INSTRUCTION_NAMES = %i(
@@ -177,46 +243,74 @@ module X64
       xchg_rax_r64
     ).freeze
 
-    CMPS_INSTRUCTION_NAMES = %i(
+    STRING_INSTRUCTION_NAMES = %i(
       cmpsb
       cmpsw
       cmpsd
       cmpsq
-    ).freeze
-
-    LODS_INSTRUCTION_NAMES = %i(
+      repe_cmpsb
+      repe_cmpsw
+      repe_cmpsd
+      repe_cmpsq
+      repne_cmpsb
+      repne_cmpsw
+      repne_cmpsd
+      repne_cmpsq
       lodsb
       lodsw
       lodsd
       lodsq
-    ).freeze
-
-    MOVS_INSTRUCTION_NAMES = %i(
+      rep_lodsb
+      rep_lodsw
+      rep_lodsd
+      rep_lodsq
       movsb
       movsw
       movsd
       movsq
+      rep_movsb
+      rep_movsw
+      rep_movsd
+      rep_movsq
+      scasb
+      scasw
+      scasd
+      scasq
+      repe_scasb
+      repe_scasw
+      repe_scasd
+      repe_scasq
+      repne_scasb
+      repne_scasw
+      repne_scasd
+      repne_scasq
+      stosb
+      stosw
+      stosd
+      stosq
+      rep_stosb
+      rep_stosw
+      rep_stosd
+      rep_stosq
     ).freeze
 
-    MOVQ_MM_INSTRUCTION_NAMES = %i(
+    MOVQ_MOVD_INSTRUCTION_NAMES = %i(
       movq_mm_rm64
       movq_rm64_mm
-    ).freeze
-
-    MOVD_MM_INSTRUCTION_NAMES = %i(
       movd_mm_rm32
       movd_rm32_mm
-    ).freeze
-
-    MOVQ_XMM_INSTRUCTION_NAMES = %i(
       movq_xmm_rm64
       movq_rm64_xmm
-    ).freeze
-
-    MOVD_XMM_INSTRUCTION_NAMES = %i(
       movd_xmm_rm32
       movd_rm32_xmm
+      vmovq_xmm_rm64
+      vmovq_rm64_xmm
     ).freeze
+
+    UNSUPPORTED_INSTRUCTION_NAMES = %i(
+      prefetchwt1_m8
+      rdpid_r64
+    )
 
     class InstructionTest
       attr_reader :instruction
@@ -384,6 +478,7 @@ module X64
           blendvpd_xmm_xmmm128_xmm0
           blendvps_xmm_xmmm128_xmm0
           pblendvb_xmm_xmmm128_xmm0
+          sha256rnds2_xmm_xmmm128_xmm0
         ).freeze
 
         IMMEDIATE_VALUES = {
@@ -427,6 +522,8 @@ module X64
             when :imm
               add_immediate_operand
             when :mem
+              add_memory_operand
+            when :vsib
               add_memory_operand
             else
               raise "unknown operand type #{formal_operand.type}"
@@ -482,18 +579,42 @@ module X64
         end
 
         def memory_size
-          # Workaround bug in Capstone
-          # which reports wrong pointer size
-          # (xmmword instead of qword/dword)
+          # Workaround bugs in Capstone
+          # which sometimes reports wrong pointer sizes
           case formal_operand.instruction.name
           when :comisd_xmm_xmmm64
+            # should be 64
             128
           when :comiss_xmm_xmmm32
+            # should be 32
             128
+          when :punpcklbw_mm_mmm32, :punpckldq_mm_mmm32, :punpcklwd_mm_mmm32
+            # should be 32
+            64
+          when :vcomisd_xmm_xmmm64, :vcomisd_xmm_xmmm32, :vcomiss_xmm_xmmm32
+            128
+          when :vpmovsxbd_ymm_xmmm64
+            32
+          when :vpmovsxbq_ymm_xmmm32
+            16
+          when :vpmovsxwq_ymm_xmmm64
+            32
+          when :vpmovsxbd_ymm_xmmm64
+            32
+          when :vpmovzxbd_ymm_xmmm64
+            32
+          when :vpmovzxbq_ymm_xmmm32
+            16
+          when :vpmovzxwq_ymm_xmmm64
+            32
           else
             formal_operand.memory_size
           end
         end
+      end
+
+      def test_rdpid
+        skip 'missing'
       end
 
       def initialize(test_class, instruction)
@@ -506,6 +627,12 @@ module X64
         when :clflushopt_m8
           # Capstone, might be a bug
           %w(clflush)
+        when :vcvtpd2dq_xmm_xmmm128
+          %w(vcvtpd2dqx vcvtpd2dq)
+        when :vcvtpd2ps_xmm_xmmm128
+          %w(vcvtpd2ps vcvtpd2psx)
+        when :vcvttpd2dq_xmm_xmmm128
+          %w(vcvttpd2dqx vcvttpd2dq)
         else
           instruction.mnemonics
         end
@@ -516,13 +643,13 @@ module X64
         operands = instruction.operands.map do |operand|
           ActualOperands.new operand
         end.reject(&:empty?)
-        operands.reverse! if instruction.name =~ /^test_rm\d+_r\d+/
 
         combinations =
           if operands.empty?
             [[]]
           else
-            combinations = operands.first.to_a.product(*(operands[1..-1] || []).map(&:to_a))
+            combinations =
+              operands.first.to_a.product(*(operands[1..-1] || []).map(&:to_a))
           end
 
         raise if combinations.empty?
@@ -534,6 +661,13 @@ module X64
           end
 
           encoded_instruction = instruction.encode parameters
+
+          # Capstone gives operands in wrong order
+          # Oddly, only if both operands are registers
+          if instruction.name =~ /^test_rm\d+_r\d+/ &&
+             combination.all? { |operand| operand.type == :reg }
+            combination.reverse!
+          end
 
           operands_disassembly = combination.map do |operand|
             operand.disassembly encoded_instruction
@@ -575,9 +709,7 @@ module X64
       next if XCHG_IMPLICIT_INSTRUCTION_NAMES.include? instruction_name
 
       # Capstone gives implicit operands for these
-      next if CMPS_INSTRUCTION_NAMES.include? instruction_name
-      next if LODS_INSTRUCTION_NAMES.include? instruction_name
-      next if MOVS_INSTRUCTION_NAMES.include? instruction_name
+      next if STRING_INSTRUCTION_NAMES.include? instruction_name
 
       # Most (dis)assemblers (including Capstone) use the MOVD mnemonic for both
       # movq and movd, and MOVQ (but sometimes also MOVD) for the XMM version.
@@ -586,10 +718,11 @@ module X64
       # for SIB operands.
       # Anyway, Capstone does not get this 100% right, or at least not
       # how we need it.
-      next if MOVQ_MM_INSTRUCTION_NAMES.include? instruction_name
-      next if MOVD_MM_INSTRUCTION_NAMES.include? instruction_name
-      next if MOVD_XMM_INSTRUCTION_NAMES.include? instruction_name
-      next if MOVQ_XMM_INSTRUCTION_NAMES.include? instruction_name
+      next if MOVQ_MOVD_INSTRUCTION_NAMES.include? instruction_name
+
+      # not supported by Capstone
+      next if UNSUPPORTED_INSTRUCTION_NAMES.include? instruction_name
+
 
       instruction = Evoasm::X64.instruction instruction_name
       instruction_test = InstructionTest.new self, instruction
