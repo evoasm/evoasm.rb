@@ -113,6 +113,14 @@ module X64
                              reg0: :a, reg_base: :b, addr_size: 32
     end
 
+    def test_lock
+      assert_disassembles_to 'lock add qword ptr [rax], rbx', :add_rm64_r64,
+                             reg_base: :a, reg1: :b, lock?: true
+
+      assert_disassembles_to 'lock inc qword ptr [r10]', :inc_rm64,
+                             reg_base: :r10, lock?: true
+    end
+
     def test_rex
       assert_disassembles_to 'add rax, rbx', :add_r64_rm64,
                              reg0: :a, reg1: :b, force_rex?: true

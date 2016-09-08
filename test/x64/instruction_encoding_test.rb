@@ -336,6 +336,18 @@ module X64
             32 => 'ecx',
             64 => 'rcx'
           },
+          bp: {
+            8 => 'bpl',
+            16 => 'bp',
+            32 => 'ebp',
+            64 => 'rbp'
+          },
+          sp: {
+            8 => 'spl',
+            16 => 'sp',
+            32 => 'esp',
+            64 => 'rsp'
+          },
           r11: {
             8 => 'r11b',
             16 => 'r11w',
@@ -480,7 +492,7 @@ module X64
         attr_reader :formal_operand
 
         REGISTERS = {
-          gp: %i(a c b r11 r12),
+          gp: %i(a c b sp bp r11 r12),
           xmm: %i(xmm0 xmm1 xmm10 xmm11),
           mm: %i(mm0 mm1 mm7)
         }.freeze
@@ -676,7 +688,8 @@ module X64
 
         raise if combinations.empty?
         combinations.each do |combination|
-          parameters = combination.each_with_object(Evoasm::X64::Parameters.new(basic: basic)) do |operand, parameters|
+          parameters = Evoasm::X64::Parameters.new(basic: basic)
+          combination.each do |operand|
             operand.parameter_names.zip(operand.parameter_values) do |name, value|
               parameters[name] = value
             end
