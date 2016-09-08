@@ -13,6 +13,10 @@ module Evoasm
       def self.get(parameters, basic: false)
         case parameters
         when self
+          if basic && !parameters.basic?
+            raise ArgumentError, 'cannot convert non-basic parameters '\
+                                 'to basic parameters'
+          end
           parameters
         when Hash
           new parameters, basic: basic
@@ -31,12 +35,13 @@ module Evoasm
         end
 
         @param_id_enum_type =
-          if basic?
+          if basic
             Libevoasm.enum_type(:x64_basic_param_id)
           else
             Libevoasm.enum_type(:x64_param_id)
           end
 
+        @basic = basic
         @disp_size_enum_type = Libevoasm.enum_type :x64_disp_size
         @addr_size_enum_type = Libevoasm.enum_type :x64_addr_size
         @scale_enum_type = Libevoasm.enum_type :x64_scale

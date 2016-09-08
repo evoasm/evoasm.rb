@@ -42,7 +42,15 @@ module Evoasm
         end
       end
 
+      def basic?
+        Libevoasm.x64_inst_basic(self)
+      end
+
       def encode(parameters, basic: false)
+        if basic && !basic?
+          raise ArgumentError, 'instruction does not support basic'
+        end
+
         buf_ref = Libevoasm.buf_ref_alloc
         data = FFI::MemoryPointer.new :uint8, 32
         len_ptr = FFI::MemoryPointer.new :size_t, 1
@@ -50,7 +58,13 @@ module Evoasm
 
         Libevoasm.buf_ref_init buf_ref, data, len_ptr
 
-        success = Libevoasm.x64_inst_enc self, parameters, buf_ref
+
+        success =
+          if basic
+            Libevoasm.x64_inst_enc_basic self, parameters, buf_ref
+          else
+            Libevoasm.x64_inst_enc self, parameters, buf_ref
+          end
 
         Libevoasm.buf_ref_free buf_ref
 

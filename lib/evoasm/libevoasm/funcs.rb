@@ -46,6 +46,7 @@ module Evoasm
     attach_evoasm_function :x64_inst_mnem, [:pointer], :string
     attach_evoasm_function :x64_inst_enc, [:pointer, :pointer, :pointer], :bool
     attach_evoasm_function :x64_inst_enc_basic, [:pointer, :pointer, :pointer], :bool
+    attach_evoasm_function :x64_inst_basic, [:pointer], :bool
 
     attach_evoasm_function :x64_operand_param_idx, [:pointer], :uint
     attach_evoasm_function :x64_operand_read, [:pointer], :bool

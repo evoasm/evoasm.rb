@@ -500,11 +500,16 @@ module X64
           moffs: 0x4d,
         }.freeze
 
-        def initialize(formal_operand)
+        def initialize(formal_operand, basic:)
           @formal_operand = formal_operand
           @actual_operands = []
+          @basic = basic
 
           load
+        end
+
+        def basic?
+          @basic
         end
 
         def parameter_name
@@ -528,12 +533,13 @@ module X64
               add_register_operand
             when :rm
               add_register_operand
-              add_memory_operand
+              add_memory_operand unless basic?
             when :imm
               add_immediate_operand
             when :mem
               add_memory_operand
             when :vsib
+              raise if basic?
               add_vsib_operand
             else
               raise "unknown operand type #{formal_operand.type}"
@@ -605,21 +611,21 @@ module X64
           when :comiss_xmm_xmmm32
             128
           when :punpcklbw_mm_mmm32,
-               :punpckldq_mm_mmm32,
-               :punpcklwd_mm_mmm32
+            :punpckldq_mm_mmm32,
+            :punpcklwd_mm_mmm32
             64
           when :vcomisd_xmm_xmmm64,
-               :vcomisd_xmm_xmmm32,
-               :vcomiss_xmm_xmmm32
+            :vcomisd_xmm_xmmm32,
+            :vcomiss_xmm_xmmm32
             128
           when :vpmovsxbd_ymm_xmmm64,
-               :vpmovsxwq_ymm_xmmm64,
-               :vpmovsxbd_ymm_xmmm64,
-               :vpmovzxbd_ymm_xmmm64,
-               :vpmovzxwq_ymm_xmmm64
+            :vpmovsxwq_ymm_xmmm64,
+            :vpmovsxbd_ymm_xmmm64,
+            :vpmovzxbd_ymm_xmmm64,
+            :vpmovzxwq_ymm_xmmm64
             32
           when :vpmovsxbq_ymm_xmmm32,
-               :vpmovzxbq_ymm_xmmm32
+            :vpmovzxbq_ymm_xmmm32
             16
           else
             formal_operand.memory_size
@@ -652,10 +658,12 @@ module X64
         end
       end
 
-      def run(test)
+      def run(test, basic:)
+        return if basic && !instruction.basic?
+
         # Capstone prints rm operand last
         operands = instruction.operands.map do |operand|
-          ActualOperands.new operand
+          ActualOperands.new operand, basic: basic
         end.reject(&:empty?)
 
         combinations =
@@ -668,13 +676,13 @@ module X64
 
         raise if combinations.empty?
         combinations.each do |combination|
-          parameters = combination.each_with_object(Evoasm::X64::Parameters.new) do |operand, parameters|
+          parameters = combination.each_with_object(Evoasm::X64::Parameters.new(basic: basic)) do |operand, parameters|
             operand.parameter_names.zip(operand.parameter_values) do |name, value|
               parameters[name] = value
             end
           end
 
-          encoded_instruction = instruction.encode parameters
+          encoded_instruction = instruction.encode parameters, basic: basic
 
           # Capstone gives operands in wrong order
           # Oddly, only if both operands are registers
@@ -695,21 +703,25 @@ module X64
         end
       end
 
-      def basic?
-        @basic
-      end
-
-      def define!
+      def define!(basic:)
         run_method = method(:run)
-        @test_class.send :define_method, test_method_name do
-          run_method.call self
+
+        @test_class.send :define_method, test_method_name(basic: basic) do
+          run_method.call self, basic: basic
+        end
+
+        @test_class.send :define_method, test_method_name(basic: basic) do
+          run_method.call self, basic: basic
         end
       end
 
       private
 
-      def test_method_name
-        :"test_#{instruction.name}"
+      def test_method_name(basic:)
+        method_name = "test_#{instruction.name}"
+        method_name << '_basic' if basic
+
+        method_name
       end
     end
 
@@ -740,7 +752,9 @@ module X64
 
       instruction = Evoasm::X64.instruction instruction_name
       instruction_test = InstructionTest.new self, instruction
-      instruction_test.define!
+
+      instruction_test.define! basic: false
+      instruction_test.define! basic: true
     end
   end
 end
