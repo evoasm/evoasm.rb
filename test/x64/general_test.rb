@@ -3,7 +3,7 @@ require_relative 'test_helper'
 module X64
   class GeneralTest < X64Test
     def test_features
-      features = @x64.features
+      features = Evoasm::X64.features
       refute_empty features
       assert features.all? { |i| i.is_a? Symbol }
       if RUBY_PLATFORM =~ /linux/
@@ -16,20 +16,20 @@ module X64
     end
 
     def test_instructions
-      gp_insts = @x64.instruction_names :gp, :rflags
+      gp_insts = Evoasm::X64.instruction_names :gp, :rflags
       refute_empty gp_insts
       assert_includes gp_insts, :xor_rax_imm32
       refute_includes gp_insts, :vfmadd213pd_xmm_xmm_xmmm128
       refute_includes gp_insts, :cvtsd2si_r64_xmmm64
 
-      xmm_insts = @x64.instruction_names :xmm
+      xmm_insts = Evoasm::X64.instruction_names :xmm
       refute_empty xmm_insts
       refute_includes xmm_insts, :jmp_rel32
       refute_includes xmm_insts, :xor_rax_imm32
       assert_includes xmm_insts, :vfmadd213pd_xmm_xmm_xmmm128
 
-      search_insts = @x64.instruction_names :xmm, :gp, :rflags, search: true
-      assert_equal search_insts, @x64.instruction_names(:xmm, :gp, :rflags, search: true, operand_types: [:reg, :imm, :rm])
+      search_insts = Evoasm::X64.instruction_names :xmm, :gp, :rflags, search: true
+      assert_equal search_insts, Evoasm::X64.instruction_names(:xmm, :gp, :rflags, search: true, operand_types: [:reg, :imm, :rm])
       refute_empty search_insts
       refute_includes search_insts, :jmp_rel32
       refute_includes search_insts, :call_rm32

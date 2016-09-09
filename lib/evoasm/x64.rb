@@ -45,20 +45,23 @@ module Evoasm
 
         features_as_flags =
           if features.nil?
-            Libevoasm.x64_features self
+            arch_info = Libevoasm.arch_info :x64
+            Libevoasm.arch_info_features arch_info
           else
             feature_enum_type.flags features, shift: true
           end
+
         op_types_as_flags = op_type_enum_type.flags operand_types, shift: true
         reg_types_as_flags = reg_type_enum_type.flags reg_types, shift: true
 
         n_insts = inst_id_enum_type[:n_insts]
         array = FFI::MemoryPointer.new :int, n_insts
-        len = Libevoasm.x64_insts(self, flags_as_flags, features_as_flags,
+        len = Libevoasm.x64_insts(flags_as_flags, features_as_flags,
                                    op_types_as_flags, reg_types_as_flags, array)
-        insts = array.read_array_of_type(:int, :read_int, len)
 
-        insts.map { |e| inst_id_enum_type[e] }
+        instruction_ids = array.read_array_of_type(:int, :read_int, len)
+
+        instruction_ids.map { |e| inst_id_enum_type[e] }
       end
 
     end

@@ -20,10 +20,13 @@ module Evoasm
     typedef :double, :loss
     typedef :uint64, :params_bitmap
 
-    enum FFI::Type::UINT8, :domain_type, [
+    enum :domain_type, [
       :enum,
-      :interval,
-      :interval64
+      :range,
+      :int64,
+      :int32,
+      :int16,
+      :int8
     ]
 
     enum :arch_id, [
@@ -132,7 +135,6 @@ module Evoasm
   end
 end
 
-require 'evoasm/libevoasm/domain'
 require 'evoasm/libevoasm/adf_io'
 require 'evoasm/libevoasm/search_params'
 require 'evoasm/libevoasm/x64_enums'

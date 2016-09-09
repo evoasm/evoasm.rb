@@ -3,9 +3,8 @@ require_relative 'test_helper'
 module X64
   class InstructionTest < X64Test
     def setup
-      super
-      @instruction_add = @x64.instruction :add_rm64_imm8
-      @instruction_cmov = @x64.instruction :cmovae_cmovnb_cmovnc_r64_rm64
+      @instruction_add = Evoasm::X64.instruction :add_rm64_imm8
+      @instruction_cmov = Evoasm::X64.instruction :cmovae_r64_rm64
     end
 
     def test_name
@@ -21,14 +20,14 @@ module X64
     def test_operands
       operands = @instruction_add.operands
 
-      assert_equal :rm, operands[0].parameter_name
+      assert_equal :rm, operands[0].type
       assert operands[0].explicit?
       assert_equal :gp, operands[0].register_type
       assert_nil operands[0].register
       assert_equal :reg0, operands[0].parameter.name
       assert_equal 64, operands[0].size
 
-      assert_equal :imm, operands[1].parameter_names
+      assert_equal :imm, operands[1].type
       assert operands[1].explicit?
       assert_nil operands[1].register_type
       assert_nil operands[1].register
@@ -39,18 +38,21 @@ module X64
     end
 
     def test_parameters
-      parameters = @instruction_add.parameters.map(&:name)
-      assert_includes parameters, :reg0
-      assert_includes parameters, :imm0
+      reg0_parameter = @instruction_add.parameters.find do |parameter|
+        parameter.name == :reg0
+      end
+      refute_nil reg0_parameter
 
-      domain = @instruction_add.parameters[1].domain
-      assert_kind_of Range, domain
-      assert_equal -128, domain.min
-      assert_equal 127, domain.max
-    end
+      imm_parameter = @instruction_add.parameters.find do |parameter|
+        parameter.name == :imm0
+      end
+      refute_nil imm_parameter
 
-    def test_encode
-      assert_equal "\x48\x83\xC0\x0a".force_encoding('ASCII-8BIT'), @instruction_add.encode(reg0: :a, imm0: 0xa)
+      imm_domain = imm_parameter.domain
+      assert_kind_of Evoasm::Domain, imm_domain
+      assert_equal :int8, imm_domain.type
+      assert_equal 127, imm_domain.max
+      assert_equal -128, imm_domain.min
     end
   end
 end

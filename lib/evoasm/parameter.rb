@@ -1,3 +1,5 @@
+require 'evoasm/domain'
+
 module Evoasm
   class Parameter < FFI::Pointer
     def id
@@ -5,7 +7,7 @@ module Evoasm
     end
 
     def domain
-      Libevoasm.param_domain(self).to_ruby
+      Domain.wrap Libevoasm.param_domain(self)
     end
   end
 end

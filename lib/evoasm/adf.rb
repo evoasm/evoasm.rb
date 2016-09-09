@@ -3,6 +3,18 @@ require 'evoasm/search'
 module Evoasm
   class ADF < FFI::AutoPointer
 
+    class IO < FFI::AutoPointer
+      def self.release(ptr)
+        Libevoasm.adf_io_unref(ptr)
+      end
+
+      def initialize()
+        ptr = Libevoasm.adf_io_alloc
+        Libevoasm.adf_io_init ptr
+      end
+    end
+
+
     def initialize(other_ptr)
       ptr = Libevoasm.adf_alloc
       unless Libevoasm.adf_clone other_ptr, ptr

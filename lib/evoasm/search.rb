@@ -21,7 +21,7 @@ module Evoasm
       end
 
       def instruction_names
-        instruction_names.map do |instruction|
+        instructions.map do |instruction|
           if instruction.is_a? Symbol
             instruction
           else
@@ -38,7 +38,7 @@ module Evoasm
     end
 
     def initialize(architecture, &block)
-      @archictecture = architecture
+      @architecture = architecture
 
       parameters = Parameters.new
       block[parameters]

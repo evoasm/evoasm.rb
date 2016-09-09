@@ -19,8 +19,7 @@ module Evoasm
              :mut_rate, :uint32,
              :adf_input, ADFInput,
              :adf_output, ADFOutput,
-             :seed64, [:uint64, 16],
-             :seed32, [:uint32, 4],
+             :seed, [:uint64, 16],
              :max_loss, :loss
 
       def initialize(architecture, parameters)
@@ -29,11 +28,11 @@ module Evoasm
         clear
 
         case architecture
-        when X64
+        when :x64
           inst_id_enum_type = Libevoasm.enum_type :x64_inst_id
           param_id_enum_type = Libevoasm.enum_type :x64_param_id
         else
-          raise
+          raise "unknown architecture #{architecture}"
         end
 
         self[:mut_rate] = parameters.mutation_rate

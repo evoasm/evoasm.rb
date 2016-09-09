@@ -9,8 +9,7 @@ module Search
 
     class Context < SearchContext
       def initialize
-        x64 = Evoasm::X64.new
-        insts = x64.instruction_names(:gp, :rflags, search: true)
+        instruction_names = Evoasm::X64.instruction_names(:gp, :rflags, search: true)
 
         @examples = {
           [5, 1] => 1,
@@ -22,8 +21,8 @@ module Search
           [16, 8] => 8
         }
 
-        @search = Evoasm::Search.new x64 do |p|
-          p.instructions = insts
+        @search = Evoasm::Search.new :x64 do |p|
+          p.instructions = instruction_names
           p.kernel_size = (20..50)
           p.adf_size = 5
           p.population_size = 5000

@@ -7,7 +7,7 @@ module Evoasm
 
     attach_evoasm_function :search_alloc, [], :pointer
     attach_evoasm_function :search_free, [:pointer], :void
-    attach_evoasm_function :search_init, [:pointer, :pointer, SearchParams.by_ref], :bool
+    attach_evoasm_function :search_init, [:arch_id, :pointer, SearchParams.by_ref], :bool
     attach_evoasm_function :search_destroy, [:pointer], :void
     attach_evoasm_function :search_start, [:pointer, :pointer, :pointer, :pointer], :void
 
@@ -30,7 +30,7 @@ module Evoasm
     attach_evoasm_function :x64_basic_params_init, [:pointer], :void
 
     attach_evoasm_function :param_id, [:pointer], :int
-    attach_evoasm_function :param_domain, [:pointer], Domain.by_ref
+    attach_evoasm_function :param_domain, [:pointer], :pointer
 
     attach_evoasm_function :x64_init, [], :void
     attach_evoasm_function :x64_insts, [:uint64, :uint64, :uint64, :uint64, :pointer], :uint16
@@ -77,5 +77,17 @@ module Evoasm
     attach_evoasm_function :adf_is_input_reg, [:pointer, :uint, :uint8], :bool
     attach_evoasm_function :adf_is_output_reg, [:pointer, :uint, :uint8], :bool
 
+    attach_evoasm_function :enum_domain_len, [:pointer], :uint
+    attach_evoasm_function :enum_domain_val, [:pointer, :uint], :int64
+    attach_evoasm_function :domain_alloc, [], :pointer
+    attach_evoasm_function :domain_free, [:pointer], :void
+    attach_evoasm_function :domain_init, [:pointer, :domain_type, :varargs], :bool
+    attach_evoasm_function :domain_min_max, [:pointer, :pointer, :pointer], :void
+    attach_evoasm_function :domain_type, [:pointer], :domain_type
+
+
+    attach_evoasm_function :adf_io_unref, [:pointer], :void
+    attach_evoasm_function :adf_io_alloc, [:uint16], :pointer
+    attach_evoasm_function :adf_io_init, [:pointer, :domain_type, :varargs], :bool
   end
 end

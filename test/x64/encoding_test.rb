@@ -288,25 +288,25 @@ module X64
     end
 
     def test_vsib
-      assert_disassembles_to 'vpgatherdd xmm0, dword ptr [rax + xmm1*2], xmm2', :vpgatherdd_xmm_vm32x_xmm,
+      assert_disassembles_to 'vpgatherdd xmm0, dword ptr [rax + xmm1*2], xmm2', :vpgatherdd_xmm_vm32x32_xmm,
                              reg0: :xmm0, reg_base: :a, reg_index: :xmm1, scale: 2, reg1: :xmm2
 
-      assert_disassembles_to 'vpgatherdd xmm0, dword ptr [rax + xmm1], xmm2', :vpgatherdd_xmm_vm32x_xmm,
+      assert_disassembles_to 'vpgatherdd xmm0, dword ptr [rax + xmm1], xmm2', :vpgatherdd_xmm_vm32x32_xmm,
                              reg0: :xmm0, reg_base: :a, reg_index: :xmm1, scale: 1, reg1: :xmm2
 
-      assert_disassembles_to 'vpgatherdd xmm12, dword ptr [rax + xmm1], xmm2', :vpgatherdd_xmm_vm32x_xmm,
+      assert_disassembles_to 'vpgatherdd xmm12, dword ptr [rax + xmm1], xmm2', :vpgatherdd_xmm_vm32x32_xmm,
                              reg0: :xmm12, reg_base: :a, reg_index: :xmm1, scale: 1, reg1: :xmm2
 
-      assert_disassembles_to 'vpgatherdd xmm12, dword ptr [r12 + xmm1], xmm2', :vpgatherdd_xmm_vm32x_xmm,
+      assert_disassembles_to 'vpgatherdd xmm12, dword ptr [r12 + xmm1], xmm2', :vpgatherdd_xmm_vm32x32_xmm,
                              reg0: :xmm12, reg_base: :r12, reg_index: :xmm1, scale: 1, reg1: :xmm2
 
-      assert_disassembles_to 'vpgatherdd xmm12, dword ptr [r12 + xmm12*8], xmm2', :vpgatherdd_xmm_vm32x_xmm,
+      assert_disassembles_to 'vpgatherdd xmm12, dword ptr [r12 + xmm12*8], xmm2', :vpgatherdd_xmm_vm32x32_xmm,
                              reg0: :xmm12, reg_base: :r12, reg_index: :xmm12, scale: 8, reg1: :xmm2
 
-      assert_disassembles_to 'vpgatherdd xmm12, dword ptr [rdi + xmm12*8], xmm2', :vpgatherdd_xmm_vm32x_xmm,
+      assert_disassembles_to 'vpgatherdd xmm12, dword ptr [rdi + xmm12*8], xmm2', :vpgatherdd_xmm_vm32x32_xmm,
                              reg0: :xmm12, reg_base: :di, reg_index: :xmm12, scale: 8, reg1: :xmm2
 
-      assert_disassembles_to 'vpgatherqq ymm12, qword ptr [rdi + ymm12*8], ymm2', :vpgatherqq_ymm_vm64y_ymm,
+      assert_disassembles_to 'vpgatherqq ymm12, qword ptr [rdi + ymm12*8], ymm2', :vpgatherqq_ymm_vm64y64_ymm,
                              reg0: :xmm12, reg_base: :di, reg_index: :xmm12, scale: 8, reg1: :xmm2
 
     end
