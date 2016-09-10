@@ -10,7 +10,7 @@ module Evoasm
         end
       end
 
-      def self.get(parameters, basic: false)
+      def self.for(parameters, basic: false)
         case parameters
         when self
           if basic && !parameters.basic?

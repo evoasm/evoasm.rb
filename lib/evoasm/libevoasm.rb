@@ -15,6 +15,7 @@ module Evoasm
     ]
 
     typedef :uint16, :inst_id
+    typedef :uint8, :param_id
     typedef :uint8, :adf_size
     typedef :uint8, :kernel_size
     typedef :double, :loss
@@ -136,7 +137,6 @@ module Evoasm
 end
 
 require 'evoasm/libevoasm/adf_io'
-require 'evoasm/libevoasm/search_params'
 require 'evoasm/libevoasm/x64_enums'
 require 'evoasm/libevoasm/funcs'
 

@@ -5,38 +5,6 @@ module Evoasm
   class Search < FFI::AutoPointer
     attr_reader :architecture
 
-    class Parameters
-      ATTRS = %i(instructions kernel_size examples
-                 adf_size population_size parameters
-                 mutation_rate seed32 seed64 domains recur_limit)
-
-      attr_accessor *ATTRS
-
-      def initialize
-        @mutation_rate = 0.1
-        @seed64 = (1..16).to_a
-        @seed32 = (1..4).to_a
-        @recur_limit = 100
-        @domains = {}
-      end
-
-      def instruction_names
-        instructions.map do |instruction|
-          if instruction.is_a? Symbol
-            instruction
-          else
-            instruction.name
-          end
-        end
-      end
-
-      def missing
-        ATTRS.select do |attr|
-          send(attr).nil?
-        end
-      end
-    end
-
     def initialize(architecture, &block)
       @architecture = architecture
 

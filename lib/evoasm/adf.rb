@@ -3,17 +3,13 @@ require 'evoasm/search'
 module Evoasm
   class ADF < FFI::AutoPointer
 
-    class IO < FFI::AutoPointer
-      def self.release(ptr)
-        Libevoasm.adf_io_unref(ptr)
-      end
+    require_relative 'adf/io.rb'
 
-      def initialize()
-        ptr = Libevoasm.adf_io_alloc
-        Libevoasm.adf_io_init ptr
-      end
+
+    def self.release(ptr)
+      Libevoasm.adf_destroy(ptr)
+      Libevoasm.adf_free(ptr)
     end
-
 
     def initialize(other_ptr)
       ptr = Libevoasm.adf_alloc
@@ -22,11 +18,6 @@ module Evoasm
         raise Error.last
       end
       super ptr
-    end
-
-    def self.release(ptr)
-      Libevoasm.adf_destroy(ptr)
-      Libevoasm.adf_free(ptr)
     end
 
     def run(*input_example)
@@ -110,7 +101,7 @@ module Evoasm
       code_ptr = code_ptr_ptr.read_pointer
       code = code_ptr.read_string(code_len)
 
-      p code.each_byte.map{|b| "%0.2x" % b}.join(' ')
+      p code.each_byte.map { |b| "%0.2x" % b }.join(' ')
       p input_registers
       p output_registers
 

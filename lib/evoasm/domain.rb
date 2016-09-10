@@ -21,6 +21,19 @@ module Evoasm
         end
       end
 
+      def for(value)
+        case value
+        when self
+          value
+        when Range
+          RangeDomain.new value.min, value.max
+        when Array
+          EnumerationDomain.new *value
+        else
+          raise ArgumentError, "cannot convert into domain"
+        end
+      end
+
       protected
 
       alias wrap_ new

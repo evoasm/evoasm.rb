@@ -7,7 +7,7 @@ module Evoasm
 
     attach_evoasm_function :search_alloc, [], :pointer
     attach_evoasm_function :search_free, [:pointer], :void
-    attach_evoasm_function :search_init, [:arch_id, :pointer, SearchParams.by_ref], :bool
+    attach_evoasm_function :search_init, [:arch_id, :pointer, :pointer], :bool
     attach_evoasm_function :search_destroy, [:pointer], :void
     attach_evoasm_function :search_start, [:pointer, :pointer, :pointer, :pointer], :void
 
@@ -67,7 +67,7 @@ module Evoasm
     attach_evoasm_function :adf_io_destroy, [:pointer], :void
     attach_evoasm_function :adf_alloc, [], :pointer
     attach_evoasm_function :adf_free, [:pointer], :void
-    attach_evoasm_function :adf_run, [:pointer, ADFInput.by_ref, ADFOutput.by_ref], :bool
+    attach_evoasm_function :adf_run, [:pointer, :pointer], :pointer
 
     attach_evoasm_function :adf_size, [:pointer], :adf_size
     attach_evoasm_function :adf_kernel_code, [:pointer, :uint, :pointer], :size_t
@@ -77,6 +77,57 @@ module Evoasm
     attach_evoasm_function :adf_is_input_reg, [:pointer, :uint, :uint8], :bool
     attach_evoasm_function :adf_is_output_reg, [:pointer, :uint, :uint8], :bool
 
+    attach_evoasm_function :adf_io_alloc, [:uint16], :pointer
+    attach_evoasm_function :adf_io_free, [:pointer], :void
+    attach_evoasm_function :adf_io_init, [:pointer, :uint16, :varargs], :bool
+    attach_evoasm_function :adf_io_arity, [:pointer], :uint8
+    attach_evoasm_function :adf_io_len, [:pointer], :uint16
+    attach_evoasm_function :adf_io_value_f64, [:pointer, :uint], :double
+    attach_evoasm_function :adf_io_value_i64, [:pointer, :uint], :int64
+    attach_evoasm_function :adf_io_type, [:pointer, :uint], :example_type
+
+    attach_evoasm_function :search_params_alloc, [], :pointer
+    attach_evoasm_function :search_params_free, [:pointer], :void
+    attach_evoasm_function :search_params_init, [:pointer], :void
+
+    attach_evoasm_function :search_params_min_adf_size, [:pointer], :adf_size
+    attach_evoasm_function :search_params_max_adf_size, [:pointer], :adf_size
+    attach_evoasm_function :search_params_min_kernel_size, [:pointer], :kernel_size
+    attach_evoasm_function :search_params_max_kernel_size, [:pointer], :kernel_size
+    attach_evoasm_function :search_params_recur_limit, [:pointer], :uint32
+    attach_evoasm_function :search_params_pop_size, [:pointer], :uint32
+    attach_evoasm_function :search_params_mut_rate, [:pointer], :uint32
+    attach_evoasm_function :search_params_adf_input, [:pointer], :pointer
+    attach_evoasm_function :search_params_adf_output, [:pointer], :pointer
+    attach_evoasm_function :search_params_max_loss, [:pointer], :loss
+    attach_evoasm_function :search_params_n_insts, [:pointer], :uint16
+    attach_evoasm_function :search_params_n_params, [:pointer], :uint8
+    attach_evoasm_function :search_params_set_min_adf_size, [:pointer, :adf_size], :void
+    attach_evoasm_function :search_params_set_max_adf_size, [:pointer, :adf_size], :void
+    attach_evoasm_function :search_params_set_min_kernel_size, [:pointer, :kernel_size], :void
+    attach_evoasm_function :search_params_set_max_kernel_size, [:pointer, :kernel_size], :void
+    attach_evoasm_function :search_params_set_recur_limit, [:pointer, :uint32], :void
+    attach_evoasm_function :search_params_set_pop_size, [:pointer, :uint32], :void
+    attach_evoasm_function :search_params_set_mut_rate, [:pointer, :uint32], :void
+    attach_evoasm_function :search_params_set_adf_input, [:pointer, :pointer], :void
+    attach_evoasm_function :search_params_set_adf_output, [:pointer, :pointer], :void
+    attach_evoasm_function :search_params_set_max_loss, [:pointer, :loss], :void
+    attach_evoasm_function :search_params_set_n_insts, [:pointer, :uint16], :void
+    attach_evoasm_function :search_params_set_n_params, [:pointer, :uint8], :void
+    attach_evoasm_function :search_params_set_domain, [:pointer, :uint8], :void
+
+    attach_evoasm_function :search_params_set_inst, [:pointer, :uint, :inst_id], :void
+    attach_evoasm_function :search_params_inst, [:pointer, :uint], :inst_id
+    attach_evoasm_function :search_params_set_param, [:pointer, :uint, :param_id], :void
+    attach_evoasm_function :search_params_param, [:pointer, :uint], :param_id
+    attach_evoasm_function :search_params_seed, [:pointer], :pointer
+
+    attach_evoasm_function :prng_seed_set, [:pointer, :uint, :uint64], :void
+    attach_evoasm_function :prng_seed_get, [:pointer, :uint], :uint64
+
+    attach_evoasm_function :adf_io_alloc, [:uint16], :pointer
+    attach_evoasm_function :adf_io_init, [:pointer, :uint16, :varargs], :bool
+
     attach_evoasm_function :enum_domain_len, [:pointer], :uint
     attach_evoasm_function :enum_domain_val, [:pointer, :uint], :int64
     attach_evoasm_function :domain_alloc, [], :pointer
@@ -85,9 +136,5 @@ module Evoasm
     attach_evoasm_function :domain_min_max, [:pointer, :pointer, :pointer], :void
     attach_evoasm_function :domain_type, [:pointer], :domain_type
 
-
-    attach_evoasm_function :adf_io_unref, [:pointer], :void
-    attach_evoasm_function :adf_io_alloc, [:uint16], :pointer
-    attach_evoasm_function :adf_io_init, [:pointer, :domain_type, :varargs], :bool
   end
 end

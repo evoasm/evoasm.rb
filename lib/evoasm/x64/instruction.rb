@@ -54,7 +54,7 @@ module Evoasm
         buf_ref = Libevoasm.buf_ref_alloc
         data = FFI::MemoryPointer.new :uint8, 32
         len_ptr = FFI::MemoryPointer.new :size_t, 1
-        parameters = Parameters.get(parameters, basic: basic)
+        parameters = Parameters.for(parameters, basic: basic)
 
         Libevoasm.buf_ref_init buf_ref, data, len_ptr
 
