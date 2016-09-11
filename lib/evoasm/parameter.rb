@@ -7,7 +7,10 @@ module Evoasm
     end
 
     def domain
-      Domain.wrap Libevoasm.param_domain(self)
+      domain = Domain.wrap Libevoasm.param_domain(self)
+      domain.autorelease = false
+
+      domain
     end
   end
 end

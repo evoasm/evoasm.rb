@@ -8,16 +8,13 @@ module Evoasm
     def initialize(architecture, &block)
       @architecture = architecture
 
-      parameters = Parameters.new
+      parameters = Parameters.new architecture
       block[parameters]
 
-      missing_parameters = parameters.missing
-      unless missing_parameters.empty?
-        raise ArgumentError, "missing parameters: #{missing_parameters.join ', '}"
-      end
+      parameters.validate!
 
       ptr = Libevoasm.search_alloc
-      unless Libevoasm.search_init ptr, architecture, Libevoasm::SearchParams.new(architecture, parameters)
+     unless Libevoasm.search_init ptr, architecture, parameters
         raise Error.last
       end
 
@@ -44,3 +41,5 @@ module Evoasm
     end
   end
 end
+
+require 'evoasm/search/parameters'

@@ -8,22 +8,27 @@ module Evoasm
       include Enumerable
 
       def self.release(ptr)
-        Libevoasm.adf_io_unref(ptr)
+        Libevoasm.adf_io_free(ptr)
       end
 
-      def initialize(examples)
-        arity = determine_arity examples
+      def initialize(examples_or_ptr)
+        if examples_or_ptr.is_a?(FFI::Pointer)
+          super(examples_or_ptr)
+        else
+          examples = examples_or_ptr
+          arity = determine_arity examples
 
-        if arity > MAX_ARITY
-          raise ArgumentError, "maximum arity exceeded (#{arity} > #{MAX_ARITY})"
+          if arity > MAX_ARITY
+            raise ArgumentError, "maximum arity exceeded (#{arity} > #{MAX_ARITY})"
+          end
+
+          flat_examples = examples.flatten
+
+          ptr = Libevoasm.adf_io_alloc flat_examples.size
+          load_examples ptr, flat_examples, arity
+
+          super(ptr)
         end
-
-        flat_examples = examples.flatten
-
-        ptr = Libevoasm.adf_io_alloc flat_examples.size
-        load_examples ptr, flat_examples, arity
-
-        super(ptr)
       end
 
       def arity
@@ -37,6 +42,12 @@ module Evoasm
         end
       end
 
+      def to_a
+        Array.new(size) do |example_index|
+          self[example_index]
+        end
+      end
+
       def length
         Libevoasm.adf_io_len self
       end
@@ -46,9 +57,14 @@ module Evoasm
       end
 
       def [](example_index)
+
         absolute_index = arity * example_index
-        Array.new(arity) do |value_index|
-          value_at(absolute_index + value_index)
+        if arity > 1
+          Array.new(arity) do |value_index|
+            value_at(absolute_index + value_index)
+          end
+        else
+          value_at(absolute_index)
         end
       end
 

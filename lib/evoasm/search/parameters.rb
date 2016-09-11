@@ -1,16 +1,15 @@
 require 'evoasm/search'
+require 'evoasm/prng'
 
 module Evoasm
   class Search
     class Parameters < FFI::AutoPointer
-      DEFAULT_SEED = (1..16).to_a
-      SEED_SIZE = 16
 
       def self.release(ptr)
         Libevoasm.search_params_free ptr
       end
 
-      attr_accessor :input, :output
+      attr_reader :input, :output
 
       def initialize(architecture)
         ptr = Libevoasm.search_params_alloc
@@ -25,12 +24,11 @@ module Evoasm
         end
 
         super(ptr)
-
-        self.seed = DEFAULT_SEED
+        self.prng = PRNG.new
       end
 
       def instructions=(instructions)
-        instructions.each_with_index do |instruction|
+        instructions.each_with_index do |instruction, index|
           name =
             if instruction.is_a? Symbol
               instruction
@@ -44,7 +42,7 @@ module Evoasm
 
       def instructions
         Array.new(Libevoasm.search_params_n_insts self) do |index|
-          Libevoasm.search_params_inst(self, index)
+          @inst_id_enum_type[Libevoasm.search_params_inst(self, index)]
         end
       end
 
@@ -107,6 +105,16 @@ module Evoasm
         self.output = ADF::Output.new output_examples
       end
 
+      def input=(input)
+        @input = input
+        Libevoasm.search_params_set_adf_input self, input
+      end
+
+      def output=(output)
+        @output = output
+        Libevoasm.search_params_set_adf_output self, output
+      end
+
       def examples
         input.zip(output).to_h
       end
@@ -126,31 +134,40 @@ module Evoasm
       end
 
       def domains=(domains_hash)
-        domains_hash.each do |parameter_name, domain|
-          Libevoasm.search_params_set_domain(self, parameter_name, Domain.for(domain))
+        domains = []
+        domains_hash.each do |parameter_name, domain_value|
+          domain = Domain.for domain_value
+          success = Libevoasm.search_params_set_domain(self, parameter_name, domain)
+          if !success
+            raise ArgumentError, "no such parameter #{parameter_name}"
+          end
+          domains << domain
         end
+
+        # keep reference to prevent disposal by GC
+        @domains = domains
       end
 
       def domains
         parameters.map do |parameter_name|
-          [parameter_name, Libevoasm.search_params_domain(self, parameter_name)]
+          domain_ptr = Libevoasm.search_params_domain(self, parameter_name)
+          domain = @domains.find {|domain| domain == domain_ptr}
+          [parameter_name, domain]
         end.to_h
       end
 
-      def seed=(seed)
-        if seed.size != SEED_SIZE
-          raise ArgumentError, "seed must be have exactly #{SEED_SIZE} elements"
-        end
-        seed_ptr = Libevoasm.search_params_seed(self)
-        seed.each_with_index do |seed_value, index|
-          Libevoasm.prng_seed_set(seed_ptr, index, seed_value)
-        end
+      def prng=(prng)
+        @prng = prng
+        Libevoasm.search_params_set_prng(self, prng)
       end
 
-      def seed
-        seed_ptr = Libevoasm.search_params_seed(self)
-        Array.new(SEED_SIZE) do |index|
-          Libevoasm.prng_seed_get(seed_ptr, index)
+      def prng
+        @prng
+      end
+
+      def validate!
+        unless Libevoasm.search_params_valid(self)
+          raise Error.last
         end
       end
     end

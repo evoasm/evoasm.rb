@@ -25,17 +25,15 @@ module Evoasm
     end
 
     def run_all(*input_examples)
-      input = Libevoasm::ADFInput.new(input_examples)
-      output = Libevoasm::ADFOutput.new
+      input = ADF::Input.new(input_examples)
 
-      unless Libevoasm.adf_run self, input, output
+      output_ptr = Libevoasm.adf_run self, input
+
+      if output_ptr.null?
         raise Error.last
       end
-      output_ary = output.to_a
 
-      Libevoasm.adf_io_destroy output
-
-      output_ary
+      ADF::Output.new(output_ptr).to_a
     end
 
     def size

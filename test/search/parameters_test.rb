@@ -10,24 +10,17 @@ module Search
     def test_kernel_size
       @parameters.kernel_size = 10
       assert_equal 10, @parameters.kernel_size
+
+      @parameters.kernel_size = (0..100)
+      assert_equal (0..100), @parameters.kernel_size
     end
 
     def test_adf_size
       @parameters.adf_size = 10
       assert_equal 10, @parameters.adf_size
-    end
 
-    def test_seed
-      assert_equal Evoasm::Search::Parameters::DEFAULT_SEED,
-                   @parameters.seed
-
-      assert_raises ArgumentError do
-        @parameters.seed = [1,2,3]
-      end
-
-      seed = (16...32).to_a
-      @parameters.seed = seed
-      assert_equal seed, @parameters.seed
+      @parameters.adf_size = (0..100)
+      assert_equal (0..100), @parameters.adf_size
     end
 
     def test_mutation_rate
@@ -50,9 +43,9 @@ module Search
 
     def test_examples
       examples = {
-        [0, 1] => [0],
-        [1, 0] => [100],
-        [3, 5] => [10000]
+        [0, 1] => 0,
+        [1, 0] => 100,
+        [3, 5] => 10000
       }
       @parameters.examples = examples
       assert_equal examples, @parameters.examples
@@ -72,10 +65,40 @@ module Search
     def test_domains
       domains = {
         reg0: [:a, :c, :b],
-        reg1: [:r11, :r12, :r13]
+        reg1: [:r11, :r12, :r13],
+        imm0: (0..10)
       }
 
-      #@parameters.domains = domains
+      # must set parameter before setting domain
+      assert_raises ArgumentError do
+        @parameters.domains = domains
+      end
+
+      @parameters.parameters = %i(reg0 reg1 imm0)
+      @parameters.domains = domains
+
+      assert_kind_of Evoasm::EnumerationDomain, @parameters.domains[:reg0]
+      assert_kind_of Evoasm::RangeDomain, @parameters.domains[:imm0]
+      assert_equal 0, @parameters.domains[:imm0].min
+      assert_equal 10, @parameters.domains[:imm0].max
+    end
+
+    def test_instructions
+      instructions = %i(adc_al_imm8 adc_rm8_r8)
+      @parameters.instructions = instructions
+
+      assert_equal instructions, @parameters.instructions
+    end
+
+    def test_validate!
+      error = assert_raises Evoasm::Error do
+        @parameters.validate!
+      end
+
+      # while at it, let's test Error
+      assert_equal :argument, error.type
+      assert_kind_of Integer, error.line
+      assert_match /search-params/, error.filename
     end
 
   end

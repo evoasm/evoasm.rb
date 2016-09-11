@@ -7,7 +7,10 @@ require 'evoasm/x64/parameters'
 module Evoasm
   module X64
 
-    Libevoasm.x64_init
+    Evoasm.min_log_level = :info
+    unless Libevoasm.x64_init
+      raise Error.last
+    end
 
     class << self
       def disassemble(assembly, address = nil)

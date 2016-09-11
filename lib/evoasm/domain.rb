@@ -11,11 +11,11 @@ module Evoasm
         type = Libevoasm.domain_type ptr
         case type
         when :enum
-          EnumerationDomain.wrap_ ptr
+          EnumerationDomain.new_from_pointer ptr
         when :range
-          RangeDomain.wrap_ ptr
+          RangeDomain.new_from_pointer ptr
         when :int8, :int16, :int32, :int64
-          TypeDomain.wrap_ ptr
+          TypeDomain.new_from_pointer ptr
         else
           raise "invalid domain type #{type}"
         end
@@ -36,7 +36,7 @@ module Evoasm
 
       protected
 
-      alias wrap_ new
+      alias new_from_pointer new
 
       def new(type, var_args)
         ptr = Libevoasm.domain_alloc
@@ -74,10 +74,8 @@ module Evoasm
   class EnumerationDomain < Domain
     def self.new(*values)
       values = values.flatten
-      values_ptr = FFI::MemoryPointer.new :int64, values.size
-      values_ptr.write_array_of_int64 values
-
-      super(:enum, [:uint, values.size, :pointer, values_ptr])
+      var_args = [:uint, values.size, *values.flat_map { |v| [:int64, v]}]
+      super(:enum, var_args)
     end
 
     def length
