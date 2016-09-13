@@ -4,13 +4,12 @@ module Search
   class GeneralTest < Minitest::Test
 
     def setup
-      @x64 = Evoasm::X64.new
       @examples = {
         1 => 2,
         2 => 3,
         3 => 4
       }
-      @instructions = @x64.instruction_names(:gp, :rflags, search: true)
+      @instruction_names = Evoasm::X64.instruction_names(:gp, :rflags, search: true)
       @kernel_size = (1..15)
       @adf_size = 1
       @population_size = 1600
@@ -18,8 +17,8 @@ module Search
     end
 
     def search!
-      @search = Evoasm::Search.new @x64 do |p|
-        p.instructions = @instructions
+      @search = Evoasm::Search.new :x64 do |p|
+        p.instructions = @instruction_names
         p.kernel_size = @kernel_size
         p.adf_size = @adf_size
         p.population_size = @population_size
@@ -40,7 +39,7 @@ module Search
     end
 
     def test_no_instructions
-      @instructions = []
+      @instruction_names = []
       assert_raises Evoasm::Error do
         search!
       end

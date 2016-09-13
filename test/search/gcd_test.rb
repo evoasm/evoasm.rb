@@ -11,8 +11,6 @@ module Search
       def initialize
         instruction_names = Evoasm::X64.instruction_names(:gp, :rflags, search: true)
 
-        p instruction_names
-
         @examples = {
           [5, 1] => 1,
           [15, 5] => 5,

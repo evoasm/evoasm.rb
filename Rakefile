@@ -8,6 +8,7 @@ import 'ext/evoasm_ext/compile.rake'
 Rake::TestTask.new do |t|
   t.libs.push 'lib'
   t.pattern = "test/**/*_test.rb"
+  t.verbose = true
 end
 task :default => :test
 

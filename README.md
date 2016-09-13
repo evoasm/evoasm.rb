@@ -9,23 +9,30 @@ It will then try to come up with a short program (in the form of machine code) t
 by means of genetic programming.
 *Evoasm* contains a JIT that executes the generated machine code on the fly.
 
-Currently, the only supported architecture is **x86_64**.
+Currently, the only supported architecture is **x86-64**.
 
-**NOTE:** *Evoasm* is in a very early stage.
+## Features
+
+* Fast JIT
+* Non-linear control flow
+* [x86-64](https://github.com/evoasm/evoasm-gen/blob/master/data/tables/x64.csv) up to AVX2 (no FPU)
+* Lightweight backend [C library](https://github.com/evoasm/libevoasm) with no third-party dependencies
+* Ruby bindings
 
 ## Installation
 
-    $ gem install evoasm --pre
+    $ gem install evoasm
     
 ### Requirements
 
-* Ruby 2.3 (MRI)
+* Ruby (MRI >= 2.3, JRuby >= 9.1.2)
 * [Capstone](http://www.capstone-engine.org/) for disassembling (*optional*).
+* [Graphviz](http://www.graphviz.org/) (libgraphviz) for visualizing programs (*optional*).
 * POSIX-compliant OS (Linux and Mac OS X should both work).
 
 ## Usage
 
-Please see [Getting Started](https://github.com/furunkel/evoasm/wiki/Getting-Started).
+Please see [Getting Started](https://github.com/evoasm/evoasm/docs/GettingStarted.md).
 
 
 ## Contributing
