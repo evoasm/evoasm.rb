@@ -8,13 +8,13 @@ module Evoasm
     def initialize(architecture, &block)
       @architecture = architecture
 
-      parameters = Parameters.new architecture
-      block[parameters]
+      @parameters = Parameters.new architecture
+      block[@parameters]
 
-      parameters.validate!
+      @parameters.validate!
 
       ptr = Libevoasm.search_alloc
-     unless Libevoasm.search_init ptr, architecture, parameters
+      unless Libevoasm.search_init ptr, architecture, @parameters
         raise Error.last
       end
 
