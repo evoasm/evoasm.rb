@@ -49,14 +49,14 @@ examples = {
 search = Evoasm::Search.new :x64 do |p|
 
   # Restrict search space to instructions
-  # operating on XMM registers whose name contains
+  # operating on XMM registers and whose name contains
   # either add, mul, or sqrt.
   instruction_names = Evoasm::X64.instruction_names(:xmm, search: true)
                                  .grep /(add|mul|sqrt).*?sd/
   p.instructions = instruction_names
   
   # Programs should be at least 5,
-  # but no longer than 15 instructions, 
+  # but no longer than 15 instructions
   p.kernel_size = (5..15)
   
   # We only need a single kernel

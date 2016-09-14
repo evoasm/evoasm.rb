@@ -32,7 +32,7 @@ Currently, the only supported architecture is **x86-64**.
 
 ## Usage
 
-Please see [Getting Started](https://github.com/evoasm/evoasm/docs/GettingStarted.md).
+Please see [Getting Started](https://github.com/evoasm/evoasm/blob/master/docs/GettingStarted.md).
 
 
 ## Contributing
