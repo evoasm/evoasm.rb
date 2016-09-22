@@ -34,7 +34,7 @@ module Evoasm
         Instruction.new Libevoasm.x64_inst(inst_name), inst_name
       end
 
-      def instruction_names(*reg_types, operand_types: [:reg, :rm, :imm], search: false, features: nil)
+      def instruction_names(*reg_types, operand_types: [:reg, :rm, :imm], search: true, features: nil)
         inst_id_enum_type = Libevoasm.enum_type(:x64_inst_id)
         feature_enum_type = Libevoasm.enum_type(:x64_feature)
         insts_flags_enum_type = Libevoasm.enum_type(:x64_insts_flags)

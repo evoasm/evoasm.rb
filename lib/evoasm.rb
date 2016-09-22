@@ -9,6 +9,10 @@ module Evoasm
     File.join root_dir, 'data'
   end
 
+  def self.test_dir
+    File.join root_dir, 'test'
+  end
+
   def self.ext_dir
     File.join root_dir, 'ext'
   end

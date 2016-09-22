@@ -48,7 +48,7 @@ examples = {
 
 search = Evoasm::Search.new :x64 do |p|
 
-  # Restrict search space to instructions
+  program_deme
   # operating on XMM registers and whose name contains
   # either add, mul, or sqrt.
   instruction_names = Evoasm::X64.instruction_names(:xmm, search: true)
@@ -60,11 +60,11 @@ search = Evoasm::Search.new :x64 do |p|
   p.kernel_size = (5..15)
   
   # We only need a single kernel
-  p.adf_size = 1
+  p.program_size = 1
   
   p.population_size = 1600
   
-  # Which parameters to include in the search
+  program_deme
   # In this example, it's all about finding
   # the right register combinations
   p.parameters = %i(reg0 reg1 reg2 reg3)
@@ -86,12 +86,12 @@ search = Evoasm::Search.new :x64 do |p|
   p.examples = examples
 end
 
-found_adf = nil
+found_program = nil
 
-# Start search
-search.start! do |adf, loss|
-  puts adf.disassemble
-  found_adf = adf
+program_deme
+search.start! do |program, loss|
+  puts program.disassemble
+  found_program = program
   
   # Stop search
   false
@@ -115,12 +115,12 @@ On my machine, *Evoasm* will find a solution in less than a second:
 0x555556ceb650:  vfmadd231sd   xmm2, xmm3, xmm0
 ```
 
-You can now experiment with the found ADF (Automatically Defined Function).
+You can now experiment with the found program (Automatically Defined Function).
 
 ```ruby
-> adf.run 1.0  # => [1.7320508075688772]
+> program.run 1.0  # => [1.7320508075688772]
 # test for values not given in table
-> adf.run 10.0 # => [31.937438845342623]
+> program.run 10.0 # => [31.937438845342623]
 ```
 
 ### Intron Elimination
@@ -131,8 +131,8 @@ Introns can be removed using the `eliminate_introns!` method.
 This will considerably shorten the size of the solution:
 
 ```ruby
-> adf.eliminate_introns!
-> adf.disassemble # => ["0x555556ceb620:  mulsd   xmm2, xmm1",
+> program.eliminate_introns!
+> program.disassemble # => ["0x555556ceb620:  mulsd   xmm2, xmm1",
                       #     "0x555556ceb624:  vfmadd132sd   xmm3, xmm0, xmm2",
                       #     "0x555556ceb629:  vaddsd   xmm1, xmm3, xmm1",
                       #     "0x555556ceb62d:  sqrtsd   xmm1, xmm1"]

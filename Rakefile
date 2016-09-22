@@ -5,12 +5,24 @@ require 'evoasm/gen'
 
 import 'ext/evoasm_ext/compile.rake'
 
-Rake::TestTask.new do |t|
-  t.libs.push 'lib'
-  t.pattern = "test/**/*_test.rb"
-  t.verbose = true
+
+namespace :test do
+  Rake::TestTask.new :unit do |t|
+    t.libs.push 'lib', 'test/unit', 'test/helpers'
+    t.pattern = "test/unit/**/*_test.rb"
+    t.verbose = true
+  end
+
+  Rake::TestTask.new :integration do |t|
+    t.libs.push 'lib', 'test/integration', 'test/helpers'
+    t.pattern = "test/integration/**/*_test.rb"
+    t.verbose = true
+  end
 end
+
+task :test => ['test:unit', 'test:integration']
 task :default => :test
+
 
 require 'evoasm/gen'
 Evoasm::Gen::GenTask.new 'lib/evoasm/libevoasm' do |t|

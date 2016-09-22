@@ -14,8 +14,11 @@ module Evoasm
       end
 
       ptr = Libevoasm.prng_alloc
-      var_args = seed.flat_map { |seed_value| [:int64, seed_value] }
-      Libevoasm.prng_init ptr, *var_args
+
+      seed_ptr = FFI::MemoryPointer.new :uint64, SEED_SIZE
+      seed_ptr.write_array_of_uint64 seed
+
+      Libevoasm.prng_init ptr, seed_ptr
       super(ptr)
     end
 
