@@ -48,8 +48,8 @@ module Evoasm
 
         features_as_flags =
           if features.nil?
-            arch_info = Libevoasm.arch_info :x64
-            Libevoasm.arch_info_features arch_info
+            arch_info = Libevoasm.get_arch_info :x64
+            Libevoasm.arch_info_get_features arch_info
           else
             feature_enum_type.flags features, shift: true
           end

@@ -1,6 +1,7 @@
 require 'evoasm/program'
 require 'evoasm/error'
 require 'evoasm/deme'
+require 'evoasm/program'
 
 module Evoasm
   class ProgramDeme < Deme
@@ -10,8 +11,7 @@ module Evoasm
       block[@parameters] if block
 
       ptr = Libevoasm.program_deme_alloc
-      a = Libevoasm.program_deme_init ptr, architecture, @parameters
-      unless a
+      unless Libevoasm.program_deme_init ptr, architecture, @parameters
         raise Error.last
       end
 
@@ -21,6 +21,17 @@ module Evoasm
     def self.release(ptr)
       Libevoasm.program_deme_destroy(ptr)
       Libevoasm.program_deme_free(ptr)
+    end
+
+    private
+
+    def new_individual(ptr)
+      program = Program.new
+      unless Libevoasm.program_deme_get_program(self, ptr, program)
+        raise Error.last
+      end
+
+      program
     end
   end
 end

@@ -66,7 +66,7 @@ module Search
       end
     end
 
-    def test_invalid_program_size
+    def test_invalid_kernel_count
       @kernel_count = 0
       assert_raises Evoasm::Error do
         search!

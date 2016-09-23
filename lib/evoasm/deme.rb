@@ -20,7 +20,7 @@ module Evoasm
 
     def loss(per_example = true)
       n_inf_ptr = FFI::MemoryPointer.new :uint
-      loss = Libevoasm.deme_loss self, n_inf_ptr, per_example
+      loss = Libevoasm.deme_get_loss self, n_inf_ptr, per_example
       n_inf = n_inf_ptr.read_uint
 
       [loss, n_inf]

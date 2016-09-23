@@ -11,12 +11,8 @@ module Evoasm
       Libevoasm.program_free(ptr)
     end
 
-    def initialize(other_ptr)
+    def initialize
       ptr = Libevoasm.program_alloc
-      unless Libevoasm.program_clone other_ptr, ptr
-        Libevoasm.program_free(ptr)
-        raise Error.last
-      end
       super ptr
     end
 

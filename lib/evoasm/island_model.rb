@@ -5,11 +5,16 @@ module Evoasm
   class IslandModel < FFI::AutoPointer
     attr_reader :architecture
 
+    def self.release(ptr)
+      Libevoasm.program_deme_destroy(ptr)
+      Libevoasm.program_deme_free(ptr)
+    end
+
     def initialize(&block)
       @parameters = Parameters.new architecture
       block[@parameters]
 
-      @parameters.validate!
+      #@parameters.validate!
 
       ptr = Libevoasm.island_model_alloc
       unless Libevoasm.island_model_init ptr, @parameters
@@ -32,11 +37,6 @@ module Evoasm
       end
 
       Libevoasm.island_model_start self, result_func, nil
-    end
-
-    def self.release(ptr)
-      Libevoasm.program_deme_destroy(ptr)
-      Libevoasm.program_deme_free(ptr)
     end
 
     private
