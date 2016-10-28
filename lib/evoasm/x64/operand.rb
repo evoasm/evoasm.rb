@@ -9,32 +9,32 @@ module Evoasm
       end
 
       def parameter
-        @instruction.parameters[Libevoasm.x64_operand_param_idx self]
+        @instruction.parameters[Libevoasm.x64_operand_get_param_idx self]
       end
 
       def read?
-        Libevoasm.x64_operand_read self
+        Libevoasm.x64_operand_is_read self
       end
 
       def written?
-        Libevoasm.x64_operand_written self
+        Libevoasm.x64_operand_is_written self
       end
 
       def mnemonic?
-        Libevoasm.x64_operand_mnem self
+        Libevoasm.x64_operand_is_mnem self
       end
 
       def implicit?
-        Libevoasm.x64_operand_implicit self
+        Libevoasm.x64_operand_is_implicit self
       end
 
       def type
-        Libevoasm.x64_operand_type self
+        Libevoasm.x64_operand_get_type self
       end
 
       def register
         if type == :rm || type == :reg
-          reg_id = Libevoasm.x64_operand_reg_id self
+          reg_id = Libevoasm.x64_operand_get_reg_id self
           reg_id == :n_regs ? nil : reg_id
         else
           nil
@@ -45,7 +45,7 @@ module Evoasm
 
       def immediate
         if type == :imm
-          imm = Libevoasm.x64_operand_imm self
+          imm = Libevoasm.x64_operand_get_imm self
           imm == INVALID_IMMEDIATE ? nil : imm
         else
           nil
@@ -53,12 +53,12 @@ module Evoasm
       end
 
       def register_type
-        reg_type = Libevoasm.x64_operand_reg_type self
+        reg_type = Libevoasm.x64_operand_get_reg_type self
         reg_type == :n_reg_types ? nil : reg_type
       end
 
       def size
-        convert_size Libevoasm.x64_operand_size(self)
+        convert_size Libevoasm.x64_operand_get_size(self)
       end
 
       def explicit?
@@ -67,7 +67,7 @@ module Evoasm
 
       def register_size
         if type == :rm || type == :reg
-          convert_size Libevoasm.x64_operand_reg_size(self)
+          convert_size Libevoasm.x64_operand_get_reg_size(self)
         else
           nil
         end
@@ -75,7 +75,7 @@ module Evoasm
 
       def index_register_size
         if type == :vsib
-          convert_size Libevoasm.x64_operand_index_reg_size(self)
+          convert_size Libevoasm.x64_operand_get_index_reg_size(self)
         else
           nil
         end
@@ -83,7 +83,7 @@ module Evoasm
 
       def memory_size
         if type == :rm || type == :mem || type == :vsib
-          convert_size Libevoasm.x64_operand_mem_size(self)
+          convert_size Libevoasm.x64_operand_get_mem_size(self)
         else
           nil
         end

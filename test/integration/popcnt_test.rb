@@ -6,7 +6,7 @@ module Search
 
     class Context < SearchContext
       def initialize
-        instruction_names = Evoasm::X64.instruction_names(:gp, :rflags, program_deme: true)
+        instruction_names = Evoasm::X64.instruction_names(:gp, :rflags, population: true)
 
         @examples = {
           0b0 => 0,

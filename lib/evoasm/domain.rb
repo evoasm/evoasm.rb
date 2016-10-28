@@ -8,7 +8,7 @@ module Evoasm
       end
 
       def wrap(ptr)
-        type = Libevoasm.domain_type ptr
+        type = Libevoasm.domain_get_type ptr
         case type
         when :enum
           EnumerationDomain.new_from_pointer ptr
@@ -57,7 +57,7 @@ module Evoasm
       min = FFI::MemoryPointer.new :int64
       max = FFI::MemoryPointer.new :int64
 
-      Libevoasm.domain_min_max self, min, max
+      Libevoasm.domain_get_bounds self, min, max
 
       [min.read_int64, max.read_int64]
     end
@@ -79,12 +79,12 @@ module Evoasm
     end
 
     def length
-      Libevoasm.enum_domain_len self
+      Libevoasm.enum_domain_get_len self
     end
 
     def values
       Array.new(length) do |index|
-        Libevoasm.enum_domain_val self, index
+        Libevoasm.enum_domain_get_val self, index
       end
     end
   end
@@ -101,7 +101,7 @@ module Evoasm
     end
 
     def type
-      Libevoasm.domain_type self
+      Libevoasm.domain_get_type self
     end
   end
 end

@@ -3,11 +3,11 @@ require 'evoasm/domain'
 module Evoasm
   class Parameter < FFI::Pointer
     def id
-      Libevoasm.param_id self
+      Libevoasm.param_get_id self
     end
 
     def domain
-      domain = Domain.wrap Libevoasm.param_domain(self)
+      domain = Domain.wrap Libevoasm.param_get_domain(self)
       domain.autorelease = false
 
       domain

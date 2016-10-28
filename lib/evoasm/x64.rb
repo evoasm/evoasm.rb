@@ -23,8 +23,8 @@ module Evoasm
 
       def features
         feature_enum_type = Libevoasm.enum_type(:x64_feature)
-        arch_info = Libevoasm.arch_info :x64
-        features_as_flags = Libevoasm.arch_info_features arch_info
+        arch_info = Libevoasm.get_arch_info :x64
+        features_as_flags = Libevoasm.arch_info_get_features arch_info
         feature_enum_type.symbol_map.each_with_object([]) do |(k, v), acc|
           acc << k if features_as_flags & (1 << v)
         end

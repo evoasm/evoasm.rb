@@ -1,4 +1,4 @@
-require_relative 'program_deme_helper'
+require_relative 'population_helper'
 
 Evoasm.min_log_level = :info
 
@@ -9,7 +9,7 @@ module Search
 
     class Context < SearchContext
       def initialize
-        instruction_names = Evoasm::X64.instruction_names(:gp, :rflags, program_deme: true)
+        instruction_names = Evoasm::X64.instruction_names(:gp, :rflags, population: true)
 
         @examples = {
           [5, 1] => 1,

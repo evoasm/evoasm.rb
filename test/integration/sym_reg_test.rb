@@ -8,7 +8,7 @@ module Search
 
     class Context < SearchContext
       def initialize
-        instruction_names = Evoasm::X64.instruction_names(:xmm, program_deme: true).grep /(add|mul|sqrt).*?sd/
+        instruction_names = Evoasm::X64.instruction_names(:xmm, population: true).grep /(add|mul|sqrt).*?sd/
         @examples = {
           0.0 => 0.0,
           0.5 => 1.0606601717798212,

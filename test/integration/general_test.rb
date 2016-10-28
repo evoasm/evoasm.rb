@@ -9,7 +9,7 @@ module Search
         2 => 3,
         3 => 4
       }
-      @instruction_names = Evoasm::X64.instruction_names(:gp, :rflags, program_deme: true)
+      @instruction_names = Evoasm::X64.instruction_names(:gp, :rflags, population: true)
       @kernel_size = (1..15)
       @kernel_count = 1
       @size = 1600

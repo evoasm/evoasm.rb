@@ -1,21 +1,21 @@
 require 'evoasm/test'
-require 'evoasm/program_deme'
+require 'evoasm/population'
 require 'evoasm/x64'
 require 'evoasm'
 
 
-require 'program_deme_helper'
+require 'population_helper'
 
 module Evoasm
-  class ProgramDemeTest < Minitest::Test
-    include ProgramDemeHelper
+  class PopulationTest < Minitest::Test
+    include PopulationHelper
 
     def setup
       set_deme_parameters_ivars
     end
 
     def start
-      @deme = new_deme
+      @deme = new_populaiton
 
       @deme.seed
 
@@ -30,7 +30,7 @@ module Evoasm
 
     def test_unseeded
       error = assert_raises Evoasm::Error do
-        deme = new_deme
+        deme = new_populaiton
         deme.evaluate { |_, _|}
       end
 

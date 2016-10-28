@@ -17,7 +17,7 @@ module Evoasm
       end
 
       def mnemonics
-        Libevoasm.x64_inst_mnem(self).split('/')
+        Libevoasm.x64_inst_get_mnem(self).split('/')
       end
 
       def mnemonic
@@ -25,25 +25,25 @@ module Evoasm
       end
 
       def operand(index)
-        Operand.new Libevoasm.x64_inst_operand(self, index), self
+        Operand.new Libevoasm.x64_inst_get_operand(self, index), self
       end
 
       def operands
-        n_operands = Libevoasm.x64_inst_n_operands self
+        n_operands = Libevoasm.x64_inst_get_n_operands self
         Array.new(n_operands) do |index|
           operand index
         end
       end
 
       def parameters
-        n_params = Libevoasm.x64_inst_n_params self
+        n_params = Libevoasm.x64_inst_get_n_params self
         Array.new(n_params) do |param_index|
-          Parameter.new Libevoasm.x64_inst_param(self, param_index)
+          Parameter.new Libevoasm.x64_inst_get_param(self, param_index)
         end
       end
 
       def basic?
-        Libevoasm.x64_inst_basic(self)
+        Libevoasm.x64_inst_is_basic(self)
       end
 
       def encode(parameters, basic: false)

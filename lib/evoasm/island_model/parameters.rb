@@ -1,4 +1,4 @@
-require 'evoasm/deme'
+require 'evoasm/population'
 
 module Evoasm
   class IslandModel
