@@ -6,10 +6,9 @@ module Search
   class GCDTest < Minitest::Test
     include SearchTests
 
-
     class Context < SearchContext
       def initialize
-        instruction_names = Evoasm::X64.instruction_names(:gp, :rflags, population: true)
+        instruction_names = Evoasm::X64.instruction_names(:gp, :rflags)
 
         @examples = {
           [5, 1] => 1,

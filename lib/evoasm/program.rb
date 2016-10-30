@@ -33,11 +33,7 @@ module Evoasm
     end
 
     def size
-      Libevoasm.program_size self
-    end
-
-    def clone
-      self.class.new self
+      Libevoasm.program_get_size self
     end
 
     def eliminate_introns!

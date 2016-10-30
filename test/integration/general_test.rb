@@ -11,8 +11,8 @@ module Search
       }
       @instruction_names = Evoasm::X64.instruction_names(:gp, :rflags, population: true)
       @kernel_size = (1..15)
-      @kernel_count = 1
-      @size = 1600
+      @program_size = 1
+      @deme_size = 1600
       @parameters = %i(reg0 reg1 reg2 reg3)
     end
 
@@ -31,62 +31,6 @@ module Search
           @found_program = program
         end
         @found_program.nil?
-      end
-    end
-
-    def test_no_error
-      search!
-    end
-
-    def test_no_instructions
-      @instruction_names = []
-      assert_raises Evoasm::Error do
-        search!
-      end
-    end
-
-    def test_no_parameters
-      @parameters = []
-      assert_raises Evoasm::Error do
-        search!
-      end
-    end
-
-    def test_no_examples
-      @examples = {}
-      assert_raises Evoasm::Error do
-        search!
-      end
-    end
-
-    def test_zero_population_size
-      @size = 0
-      assert_raises Evoasm::Error do
-        search!
-      end
-    end
-
-    def test_invalid_kernel_count
-      @kernel_count = 0
-      assert_raises Evoasm::Error do
-        search!
-      end
-
-      @kernel_count = (0..0)
-      assert_raises Evoasm::Error do
-        search!
-      end
-    end
-
-    def test_invalid_kernel_size
-      @kernel_size = 0
-      assert_raises Evoasm::Error do
-        search!
-      end
-
-      @kernel_size = (0..0)
-      assert_raises Evoasm::Error do
-        search!
       end
     end
   end

@@ -1,13 +1,12 @@
 require 'evoasm/test'
 require 'evoasm/population/parameters'
-require 'evoasm/deme/parameters_test'
 
 module Evoasm
   class Population
     class ParametersTest < Minitest::Test
 
       def setup
-        @parameters = Evoasm::ProgramDeme::Parameters.new :x64
+        @parameters = Evoasm::Population::Parameters.new :x64
       end
 
       def test_mutation_rate
@@ -18,9 +17,14 @@ module Evoasm
         assert_in_epsilon 0.5, @parameters.mutation_rate, 0.0001
       end
 
-      def test_size
-        @parameters.size = 100
-        assert_equal 100, @parameters.size
+      def test_deme_size
+        @parameters.deme_size = 100
+        assert_equal 100, @parameters.deme_size
+      end
+
+      def test_deme_count
+        @parameters.deme_count = 12
+        assert_equal 12, @parameters.deme_count
       end
 
       def test_validate!
@@ -31,7 +35,7 @@ module Evoasm
         # while at it, let's test Error
         assert_equal :argument, error.type
         assert_kind_of Integer, error.line
-        assert_match /deme-params/, error.filename
+        assert_match /pop-params/, error.filename
       end
 
       def test_kernel_size
@@ -42,12 +46,12 @@ module Evoasm
         assert_equal (0..100), @parameters.kernel_size
       end
 
-      def test_kernel_count
-        @parameters.kernel_count = 10
-        assert_equal 10, @parameters.kernel_count
+      def test_program_size
+        @parameters.program_size = 10
+        assert_equal 10, @parameters.program_size
 
-        @parameters.kernel_count = (0..100)
-        assert_equal (0..100), @parameters.kernel_count
+        @parameters.program_size = (0..100)
+        assert_equal (0..100), @parameters.program_size
       end
 
       def test_recur_limit

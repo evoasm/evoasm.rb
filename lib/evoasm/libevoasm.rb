@@ -95,7 +95,7 @@ module Evoasm
     attach_evoasm_function :param_get_domain, [:pointer], :pointer
 
     attach_evoasm_function :x64_init, [], :bool
-    attach_evoasm_function :x64_insts, [:uint64, :uint64, :uint64, :uint64, :pointer], :uint16
+    attach_evoasm_function :x64_insts, [:uint64, :uint64, :uint64, :uint64, :pointer], :size_t
 
     attach_evoasm_function :x64_enc, [:x64_inst_id, :pointer, :pointer], :bool
     attach_evoasm_function :x64_enc_basic, [:x64_inst_id, :pointer, :pointer], :bool
@@ -138,9 +138,9 @@ module Evoasm
     attach_evoasm_function :program_is_input_reg, [:pointer, :size_t, :uint8], :bool
     attach_evoasm_function :program_is_output_reg, [:pointer, :size_t, :uint8], :bool
 
-    attach_evoasm_function :program_io_alloc, [:uint16], :pointer
+    attach_evoasm_function :program_io_alloc, [:size_t], :pointer
     attach_evoasm_function :program_io_free, [:pointer], :void
-    attach_evoasm_function :program_io_init, [:pointer, :uint16, :varargs], :bool
+    attach_evoasm_function :program_io_init, [:pointer, :size_t, :varargs], :bool
     attach_evoasm_function :program_io_get_arity, [:pointer], :uint8
     attach_evoasm_function :program_io_get_len, [:pointer], :uint16
     attach_evoasm_function :program_io_get_value_f64, [:pointer, :size_t], :double
@@ -156,27 +156,28 @@ module Evoasm
     attach_evoasm_function :pop_free, [:pointer], :void
     attach_evoasm_function :pop_init, [:pointer, :arch_id, :pointer], :bool
     attach_evoasm_function :pop_calc_summary, [:pointer, :pointer], :bool
+    attach_evoasm_function :pop_get_best_loss, [:pointer], :loss
     attach_evoasm_function :pop_summary_len, [:pointer], :size_t
     attach_evoasm_function :pop_load_best_program, [:pointer, :pointer], :bool
 
-    attach_evoasm_function :pop_params_get_mut_rate, [:pointer], :double
+    attach_evoasm_function :pop_params_get_mut_rate, [:pointer], :float
     attach_evoasm_function :pop_params_get_n_params, [:pointer], :uint8
-    attach_evoasm_function :pop_params_set_mut_rate, [:pointer, :double], :void
+    attach_evoasm_function :pop_params_set_mut_rate, [:pointer, :float], :void
     attach_evoasm_function :pop_params_set_n_params, [:pointer, :uint8], :void
     attach_evoasm_function :pop_params_set_domain, [:pointer, :uint8, :pointer], :bool
     attach_evoasm_function :pop_params_get_domain, [:pointer, :uint8], :pointer
     attach_evoasm_function :pop_params_alloc, [], :pointer
     attach_evoasm_function :pop_params_free, [:pointer], :void
     attach_evoasm_function :pop_params_init, [:pointer], :void
-    attach_evoasm_function :pop_params_get_recur_limit, [:pointer], :uint32
+    attach_evoasm_function :pop_params_get_recur_limit, [:pointer], :size_t
     attach_evoasm_function :pop_params_get_program_input, [:pointer], :pointer
     attach_evoasm_function :pop_params_get_program_output, [:pointer], :pointer
-    attach_evoasm_function :pop_params_get_n_insts, [:pointer], :uint16
+    attach_evoasm_function :pop_params_get_n_insts, [:pointer], :size_t
     attach_evoasm_function :pop_params_get_inst, [:pointer, :size_t], :inst_id
-    attach_evoasm_function :pop_params_set_n_programs_per_deme, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_set_n_kernels_per_deme, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_get_n_programs_per_deme, [:pointer], :size_t
-    attach_evoasm_function :pop_params_get_n_kernels_per_deme, [:pointer], :size_t
+    attach_evoasm_function :pop_params_get_deme_size, [:pointer], :size_t
+    attach_evoasm_function :pop_params_set_deme_size, [:pointer, :size_t], :void
+    attach_evoasm_function :pop_params_get_n_demes, [:pointer], :size_t
+    attach_evoasm_function :pop_params_set_n_demes, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_set_min_kernel_size, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_set_max_kernel_size, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_get_min_kernel_size, [:pointer], :size_t
@@ -185,8 +186,8 @@ module Evoasm
     attach_evoasm_function :pop_params_set_max_program_size, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_get_min_program_size, [:pointer], :size_t
     attach_evoasm_function :pop_params_get_max_program_size, [:pointer], :size_t
-    attach_evoasm_function :pop_params_set_recur_limit, [:pointer, :uint32], :void
-    attach_evoasm_function :pop_params_set_n_insts, [:pointer, :uint16], :void
+    attach_evoasm_function :pop_params_set_recur_limit, [:pointer, :size_t], :void
+    attach_evoasm_function :pop_params_set_n_insts, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_set_program_input, [:pointer, :pointer], :void
     attach_evoasm_function :pop_params_set_program_output, [:pointer, :pointer], :void
     attach_evoasm_function :pop_params_set_inst, [:pointer, :size_t, :inst_id], :void
@@ -204,9 +205,10 @@ module Evoasm
     attach_evoasm_function :prng_rand32, [:pointer], :uint32
     attach_evoasm_function :prng_rand16, [:pointer], :uint16
     attach_evoasm_function :prng_rand8, [:pointer], :uint8
+    attach_evoasm_function :prng_randf, [:pointer], :float
     attach_evoasm_function :prng_rand_between, [:pointer, :int64, :int64], :int64
 
-    attach_evoasm_function :program_io_alloc, [:uint16], :pointer
+    attach_evoasm_function :program_io_alloc, [:size_t], :pointer
     attach_evoasm_function :program_io_init, [:pointer, :uint16, :varargs], :bool
 
     attach_evoasm_function :enum_domain_get_len, [:pointer], :size_t
@@ -219,7 +221,7 @@ module Evoasm
 
     attach_evoasm_function :error_get_type, [:pointer], :error_type
     attach_evoasm_function :error_get_code, [:pointer], :error_code
-    attach_evoasm_function :error_get_line, [:pointer], :uint32
+    attach_evoasm_function :error_get_line, [:pointer], :uint
     attach_evoasm_function :error_get_msg, [:pointer], :string
     attach_evoasm_function :error_get_filename, [:pointer], :string
   end

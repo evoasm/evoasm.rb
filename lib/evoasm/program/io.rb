@@ -32,7 +32,7 @@ module Evoasm
       end
 
       def arity
-        Libevoasm.program_io_arity self
+        Libevoasm.program_io_get_arity self
       end
 
       def each
@@ -49,7 +49,7 @@ module Evoasm
       end
 
       def length
-        Libevoasm.program_io_len self
+        Libevoasm.program_io_get_len self
       end
 
       def size
@@ -57,7 +57,6 @@ module Evoasm
       end
 
       def [](example_index)
-
         absolute_index = arity * example_index
         if arity > 1
           Array.new(arity) do |value_index|
@@ -71,12 +70,12 @@ module Evoasm
       private
 
       def value_at(index)
-        type = Libevoasm.program_io_type self, index
+        type = Libevoasm.program_io_get_type self, index
         case type
         when :i64
-          Libevoasm.program_io_value_i64 self, index
+          Libevoasm.program_io_get_value_i64 self, index
         when :f64
-          Libevoasm.program_io_value_f64 self, index
+          Libevoasm.program_io_get_value_f64 self, index
         else
           raise
         end

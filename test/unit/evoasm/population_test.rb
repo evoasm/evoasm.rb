@@ -3,7 +3,6 @@ require 'evoasm/population'
 require 'evoasm/x64'
 require 'evoasm'
 
-
 require 'population_helper'
 
 module Evoasm
@@ -11,26 +10,12 @@ module Evoasm
     include PopulationHelper
 
     def setup
-      set_deme_parameters_ivars
-    end
-
-    def start
-      @deme = new_populaiton
-
-      @deme.seed
-
-      until @found_program
-        @deme.evaluate do |program, loss|
-          raise if loss != 0.0
-          @found_program = program
-        end
-        @deme.next_generation!
-      end
+      set_population_parameters_ivars
     end
 
     def test_unseeded
       error = assert_raises Evoasm::Error do
-        deme = new_populaiton
+        deme = new_population
         deme.evaluate { |_, _|}
       end
 
@@ -68,41 +53,32 @@ module Evoasm
       assert_match /input|output/, error.message
     end
 
-    def test_zero_size
-      @size = 0
+    def test_invalid_deme_size
+      @deme_size = 0
       error = assert_raises Evoasm::Error do
         start
       end
-
-      assert_match /size/, error.message
+      assert_match /deme size/i, error.message
     end
 
-    def test_invalid_kernel_count
-      @kernel_count = 0
-      error = assert_raises Evoasm::Error do
-        start
+    def test_invalid_program_size
+      [0, (0..0)].each do |program_size|
+        @program_size = program_size
+        error = assert_raises Evoasm::Error do
+          start
+        end
+        assert_match /program size/i, error.message
       end
-      assert_match /count/, error.message
-
-      @kernel_count = (0..0)
-      error = assert_raises Evoasm::Error do
-        start
-      end
-      assert_match /count/, error.message
     end
 
     def test_invalid_kernel_size
-      @kernel_size = 0
-      error = assert_raises Evoasm::Error do
-        start
+      [0, (0..0)].each do |kernel_size|
+        @kernel_size = kernel_size
+        error = assert_raises Evoasm::Error do
+          start
+        end
+        assert_match /kernel size/i, error.message
       end
-      assert_match /size/, error.message
-
-      @kernel_size = (0..0)
-      error = assert_raises Evoasm::Error do
-        start
-      end
-      assert_match /size/, error.message
     end
   end
 end

@@ -1,5 +1,6 @@
 require 'evoasm/prng'
 require 'evoasm/program/io'
+require 'evoasm/domain'
 
 module Evoasm
   class Population
@@ -11,7 +12,7 @@ module Evoasm
 
       attr_reader :input, :output
 
-      def initialize(architecture)
+      def initialize(architecture, &block)
         ptr = Libevoasm.pop_params_alloc
         Libevoasm.pop_params_init ptr
 
@@ -26,30 +27,26 @@ module Evoasm
         super(ptr)
 
         self.seed = PRNG::DEFAULT_SEED
+
+        if block
+          block[self]
+        end
       end
 
       def mutation_rate
-        Libevoasm.pop_params_mut_rate(self)
+        Libevoasm.pop_params_get_mut_rate(self)
       end
 
       def mutation_rate=(mutation_rate)
         Libevoasm.pop_params_set_mut_rate self, mutation_rate
       end
 
-      def programs_per_deme
-        Libevoasm.pop_params_get_n_programs_per_deme self
+      def deme_size
+        Libevoasm.pop_params_get_deme_size self
       end
 
-      def programs_per_deme=(programs_per_deme)
-        Libevoasm.pop_params_set_n_programs_per_deme self, programs_per_deme
-      end
-
-      def kernels_per_deme
-        Libevoasm.pop_params_get_n_kernels_per_deme self
-      end
-
-      def kernels_per_deme=(kernels_per_deme)
-        Libevoasm.pop_params_set_n_kernels_per_deme self, kernels_per_deme
+      def deme_size=(deme_size)
+        Libevoasm.pop_params_set_deme_size self, deme_size
       end
 
       def deme_count
@@ -65,11 +62,13 @@ module Evoasm
           Libevoasm.pop_params_set_param(self, index, parameters_enum_type[parameter_name])
         end
         Libevoasm.pop_params_set_n_params(self, parameter_names.size)
+        puts "Setting n_params to #{parameter_names.size}"
+        puts "n_params is #{Libevoasm.pop_params_get_n_params self}"
       end
 
       def parameters
-        Array.new(Libevoasm.pop_params_n_params self) do |index|
-          parameters_enum_type[Libevoasm.pop_params_param(self, index)]
+        Array.new(Libevoasm.pop_params_get_n_params self) do |index|
+          parameters_enum_type[Libevoasm.pop_params_get_param(self, index)]
         end
       end
 
@@ -90,7 +89,7 @@ module Evoasm
 
       def domains
         parameters.map do |parameter_name|
-          domain_ptr = Libevoasm.pop_params_domain(self, parameter_name)
+          domain_ptr = Libevoasm.pop_params_get_domain(self, parameter_name)
           domain = @domains.find { |domain| domain == domain_ptr }
           [parameter_name, domain]
         end.to_h
@@ -108,12 +107,12 @@ module Evoasm
 
       def seed
         Array.new(PRNG::SEED_SIZE) do |index|
-          Libevoasm.pop_params_seed(self, index)
+          Libevoasm.pop_params_get_seed(self, index)
         end
       end
 
       def validate!
-        unless Libevoasm.pop_params_valid(self)
+        unless Libevoasm.pop_params_validate(self)
           raise Error.last
         end
       end
@@ -132,15 +131,15 @@ module Evoasm
       end
 
       def instructions
-        Array.new(Libevoasm.pop_params_n_insts self) do |index|
-          @inst_id_enum_type[Libevoasm.pop_params_inst(self, index)]
+        Array.new(Libevoasm.pop_params_get_n_insts self) do |index|
+          @inst_id_enum_type[Libevoasm.pop_params_get_inst(self, index)]
         end
       end
 
-      %w(kernel_size kernel_count).each do |attr_name|
+      %w(kernel_size program_size).each do |attr_name|
         define_method attr_name do
-          min = Libevoasm.send "pop_params_min_#{attr_name}", self
-          max = Libevoasm.send "pop_params_max_#{attr_name}", self
+          min = Libevoasm.send "pop_params_get_min_#{attr_name}", self
+          max = Libevoasm.send "pop_params_get_max_#{attr_name}", self
 
           if min == max
             return min
@@ -158,13 +157,14 @@ module Evoasm
             min = value
             max = value
           end
+
           Libevoasm.send "pop_params_set_min_#{attr_name}", self, min
           Libevoasm.send "pop_params_set_max_#{attr_name}", self, max
         end
       end
 
       def recur_limit
-        Libevoasm.pop_params_recur_limit self
+        Libevoasm.pop_params_get_recur_limit self
       end
 
       def recur_limit=(recur_limit)

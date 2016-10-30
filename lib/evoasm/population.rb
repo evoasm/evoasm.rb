@@ -9,8 +9,8 @@ module Evoasm
       Libevoasm.pop_free(ptr)
     end
 
-    def initialize(architecture, parameters = nil)
-      @parameters = parameters || Parameters.new(architecture)
+    def initialize(architecture, parameters)
+      @parameters = parameters
 
       ptr = Libevoasm.pop_alloc
       unless Libevoasm.pop_init ptr, architecture, @parameters
@@ -30,11 +30,26 @@ module Evoasm
       Libevoasm.pop_seed self
     end
 
+    def best_loss
+      Libevoasm.pop_get_best_loss self
+    end
+
+    def best_program
+      program = Program.new
+      unless Libevoasm.pop_load_best_program self, program
+        raise Error.last
+      end
+
+      program
+    end
+
     def summary
-      summary_len = Libevoasm.pop_summary_len pop
-      summary = FFI::MemoryPointer.new :loss, summary_len
-      summary = Libevoasm.pop_calc_summary self, summary
-      summary.each_slice(5).to_a
+      summary_len = Libevoasm.pop_summary_len self
+      summary = FFI::MemoryPointer.new :float, summary_len
+      unless Libevoasm.pop_calc_summary self, summary
+        raise Error.last
+      end
+      summary.read_array_of_float(summary_len).each_slice(5).to_a
     end
 
     def next_generation!

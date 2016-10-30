@@ -3,17 +3,8 @@ require 'evoasm/x64'
 require 'tmpdir'
 
 module PopulationHelper
-  class SearchContext
-    attr_reader :search
-    attr_reader :examples
-    attr_reader :found_program
 
-    def free
-      search.free
-    end
-  end
-
-  def set_deme_parameters_ivars
+  def set_population_parameters_ivars
     @examples = {
       1 => 2,
       2 => 3,
@@ -21,34 +12,49 @@ module PopulationHelper
     }
     @instruction_names = Evoasm::X64.instruction_names(:gp, :rflags)
     @kernel_size = (1..15)
-    @kernel_count = 1
-    @size = 1600
+    @program_size = 1
+    @deme_size = 1200
     @parameters = %i(reg0 reg1 reg2 reg3)
   end
 
-  def new_populaiton
-    Evoasm::Population.new :x64 do |p|
+  def new_population(architecture = :x64)
+    parameters = Evoasm::Population::Parameters.new architecture do |p|
       p.instructions = @instruction_names
       p.kernel_size = @kernel_size
-      p.kernel_count = @kernel_count
-      p.size = @size
-      p.parameters = @parameters
+      p.program_size = @program_size
+      p.deme_size = @deme_size
       p.examples = @examples
+      p.parameters = @parameters
+    end
+
+    #p [@instruction_names, @examples, @parameters]
+
+    Evoasm::Population.new :x64, parameters
+  end
+
+  def start
+    @population = new_population
+
+    @population.seed
+
+    until @found_program
+      @population.evaluate
+
+      if @population.best_loss == 0.0
+        @found_program = @population.best_program
+      end
+
+      @population.next_generation!
     end
   end
 
-  module SearchTests
-
-    def context
-      self.class.instance_variable_get :@context
-    end
-
+  module Tests
     def found_program
-      context.found_program
+      @found_program
     end
 
     def examples
-      context.examples
+      @examples
     end
 
     def test_search
