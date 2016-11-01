@@ -27,18 +27,20 @@ module PopulationHelper
       p.parameters = @parameters
     end
 
-    #p [@instruction_names, @examples, @parameters]
-
     Evoasm::Population.new :x64, parameters
   end
 
-  def start
+  def start(&block)
     @population = new_population
-
+    @found_program = nil
     @population.seed
 
     until @found_program
       @population.evaluate
+
+      if block
+        block[@population.summary]
+      end
 
       if @population.best_loss == 0.0
         @found_program = @population.best_program
@@ -57,13 +59,15 @@ module PopulationHelper
       @examples
     end
 
-    def test_search
+    def test_program_found
       refute_nil found_program, "no solution found"
       assert_kind_of Evoasm::Program, found_program
     end
 
     def assert_runs_examples(program)
       assert_equal examples.values, program.run_all(*examples.keys)
+      p examples.keys
+      p program.run_all(*examples.keys)
     end
 
     def test_program_to_gv
@@ -85,24 +89,25 @@ module PopulationHelper
     end
 
     def test_consistent_progress
-      all_progresses = []
+      all_summaries = []
 
       n = 5
       n.times do |i|
         random_code
-        progresses = []
-        context = self.class.const_get(:Context).new do |search|
-          search.progress do |*args|
-            progresses << args
-          end
+        summaries = []
+
+        start do |summary|
+          summaries << summary
         end
-        all_progresses << progresses
-        context.free
+
+        all_summaries << summaries
       end
 
-      assert_equal n, all_progresses.size
+      assert_equal n, all_summaries.size
 
-      all_progresses.uniq.tap do |uniq|
+      p all_summaries
+
+      all_summaries.uniq.tap do |uniq|
         assert_equal 1, uniq.size
       end
     end

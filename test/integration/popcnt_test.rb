@@ -8,6 +8,8 @@ module Search
     include PopulationHelper::Tests
 
     def setup
+      set_population_parameters_ivars
+
       @instruction_names = Evoasm::X64.instruction_names(:gp, :rflags)
       @examples = {
         0b0 => 0,
@@ -26,7 +28,6 @@ module Search
       @program_size = 1
       @parameters = %i(reg0 reg1 reg2 reg3)
 
-      set_population_parameters_ivars
       start
     end
 
@@ -37,8 +38,15 @@ module Search
 
     def test_program_run
       p examples
+
+      p found_program.run_all(*examples.keys)
+      p @found_program.run_all(0b1001, 0, 0b1101)
+      p found_program.run_all([0b1001], [0], [0b1101])
+      p found_program.run_all([0b1001], [0], [0b1101])
+
       # should generalize (i.e. give correct answer for non-training data)
       assert_equal 2, found_program.run(0b1001)
+      assert_equal 0, found_program.run(0b0)
       assert_equal 3, found_program.run(0b1101)
     end
   end

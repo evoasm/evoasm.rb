@@ -48,7 +48,7 @@ module Evoasm
 
     def disassemble_kernel(kernel_index)
       code_ptr_ptr = FFI::MemoryPointer.new :pointer
-      code_len = Libevoasm.program_kernel_code self, kernel_index, code_ptr_ptr
+      code_len = Libevoasm.program_get_kernel_code self, kernel_index, code_ptr_ptr
       code_ptr = code_ptr_ptr.read_pointer
       code = code_ptr.read_string(code_len)
 
@@ -142,7 +142,7 @@ module Evoasm
                           shape: :none,
                           label: graph.html(label)
 
-        succs = [kernel_index + 1, Libevoasm.program_kernel_alt_succ(self, kernel_index)].select do |succ|
+        succs = [kernel_index + 1, kernel_index + Libevoasm.program_get_jmp_off(self, kernel_index)].select do |succ|
           succ < size
         end
 

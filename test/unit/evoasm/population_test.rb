@@ -26,6 +26,19 @@ module Evoasm
       start
     end
 
+    def test_find_median
+      [8, 16].each do |size|
+        ary = Array.new(size) { rand(0..1000) }
+        median = ary.sort.at((ary.size / 2) - 1)
+
+        p ary.sort
+
+        data_ptr = FFI::MemoryPointer.new :float, ary.size
+        data_ptr.write_array_of_float ary
+        assert_equal median, Libevoasm.pop_find_median_loss(data_ptr, ary.size)
+      end
+    end
+
     def test_no_instructions
       @instruction_names = []
       error = assert_raises Evoasm::Error do

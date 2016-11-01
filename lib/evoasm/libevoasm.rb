@@ -159,6 +159,7 @@ module Evoasm
     attach_evoasm_function :pop_get_best_loss, [:pointer], :loss
     attach_evoasm_function :pop_summary_len, [:pointer], :size_t
     attach_evoasm_function :pop_load_best_program, [:pointer, :pointer], :bool
+    attach_evoasm_function :pop_find_median_loss, [:pointer, :size_t], :loss
 
     attach_evoasm_function :pop_params_get_mut_rate, [:pointer], :float
     attach_evoasm_function :pop_params_get_n_params, [:pointer], :uint8
@@ -191,7 +192,6 @@ module Evoasm
     attach_evoasm_function :pop_params_set_program_input, [:pointer, :pointer], :void
     attach_evoasm_function :pop_params_set_program_output, [:pointer, :pointer], :void
     attach_evoasm_function :pop_params_set_inst, [:pointer, :size_t, :inst_id], :void
-
     attach_evoasm_function :pop_params_set_param, [:pointer, :size_t, :param_id], :void
     attach_evoasm_function :pop_params_get_param, [:pointer, :size_t], :param_id
     attach_evoasm_function :pop_params_get_seed, [:pointer, :size_t], :uint64
