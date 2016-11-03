@@ -77,7 +77,7 @@ module Evoasm
         when :f64
           Libevoasm.program_io_get_value_f64 self, index
         else
-          raise
+          raise "unknown value type #{type}"
         end
       end
 

@@ -35,7 +35,7 @@ module Evoasm
       :fma, 29,
       :rtm, 30,
       :hle_rtm, 31,
-      :n_features
+      :none
     ]
 
     enum :x64_inst_flag, [
@@ -74,7 +74,7 @@ module Evoasm
       :udcpuid, 21,
       :xf, 22,
       :pfx, 23,
-      :n_exceptions
+      :none
     ]
 
     enum :x64_reg_type, [
@@ -85,7 +85,7 @@ module Evoasm
       :mm, 4,
       :xmm, 5,
       :zmm, 6,
-      :n_reg_types
+      :none
     ]
 
     enum :x64_reg_id, [
@@ -154,7 +154,7 @@ module Evoasm
       :zmm29, 62,
       :zmm30, 63,
       :zmm31, 64,
-      :n_regs
+      :none
     ]
 
     enum :x64_param_id, [
@@ -187,7 +187,7 @@ module Evoasm
       :vex_l, 26,
       :modrm_reg, 27,
       :vex_v, 28,
-      :n_params
+      :none
     ]
 
     enum :x64_basic_param_id, [
@@ -200,7 +200,7 @@ module Evoasm
       :reg0_high_byte?, 6,
       :reg1_high_byte?, 7,
       :rel, 8,
-      :n_basic_params
+      :none
     ]
 
     enum :x64_operand_type, [
@@ -209,13 +209,7 @@ module Evoasm
       :vsib, 2,
       :mem, 3,
       :imm, 4,
-      :n_operand_types
-    ]
-
-    enum :x64_disp_size, [
-      :disp8, 0,
-      :disp32, 1,
-      :n_disp_sizes
+      :none
     ]
 
     enum :x64_scale, [
@@ -223,13 +217,13 @@ module Evoasm
       :scale2, 1,
       :scale4, 2,
       :scale8, 3,
-      :n_scales
+      :none
     ]
 
     enum :x64_addr_size, [
       :addr_size64, 0,
       :addr_size32, 1,
-      :n_addr_sizes
+      :none
     ]
 
     enum :x64_inst_id, [
@@ -1922,7 +1916,7 @@ module Evoasm
       :vxorps_xmm_xmm_xmmm128, 1686,
       :vxorps_ymm_ymm_ymmm256, 1687,
       :xtest, 1688,
-      :n_insts
+      :none
     ]
 
 
@@ -1935,7 +1929,7 @@ module Evoasm
       :'128',
       :'256',
       :'512',
-      :n_operand_sizes
+      :none
     ]
   end
 end

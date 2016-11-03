@@ -1,47 +1,35 @@
-require_relative 'population_helper'
+require 'evoasm/test'
+require 'evoasm/population'
+require 'population_helper'
 
 Evoasm.min_log_level = :info
 
 module Search
   class GCDTest < Minitest::Test
-    include SearchTests
+    include PopulationHelper
+    include PopulationHelper::Tests
 
-    class Context < SearchContext
-      def initialize
-        instruction_names = Evoasm::X64.instruction_names(:gp, :rflags)
+    def setup
+      set_default_parameters
 
-        @examples = {
-          [5, 1] => 1,
-          [15, 5] => 5,
-          [8, 2] => 2,
-          [8, 2] => 2,
-          [8, 4] => 4,
-          [8, 6] => 2,
-          [16, 8] => 8
-        }
+      @instruction_names = Evoasm::X64.instruction_names(:gp, :rflags)
 
-        @search = Evoasm::Search.new :x64 do |p|
-          p.instructions = instruction_names
-          p.kernel_size = (20..50)
-          p.program_size = 5
-          p.population_size = 5000
-          p.mutation_rate = 0.5
-          p.parameters = %i(reg0 reg1 reg2 reg3)
-          p.examples = @examples
-        end
+      @examples = {
+        [5, 1] => 1,
+        [15, 5] => 5,
+        [8, 2] => 2,
+        [8, 4] => 4,
+        [8, 6] => 2,
+        [16, 8] => 8
+      }
 
-        yield @search if block_given?
-
-        @search.start! do |program, loss|
-          if loss == 0.0
-            @found_program = program
-          end
-          @found_program.nil?
-        end
-      end
+      @kernel_size = (20..50)
+      @program_size = 5
+      #@deme_size = 5000
+      #@mutation_rate = 0.2
+      @parameters = %i(reg0 reg1 reg2 reg3)
+      start
     end
-
-    @context = Context.new
 
     def test_program_run
       # should generalize (i.e. give correct answer for non-training data)

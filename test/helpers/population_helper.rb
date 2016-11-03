@@ -4,7 +4,7 @@ require 'tmpdir'
 
 module PopulationHelper
 
-  def set_population_parameters_ivars
+  def set_default_parameters
     @examples = {
       1 => 2,
       2 => 3,
@@ -25,6 +25,7 @@ module PopulationHelper
       p.deme_size = @deme_size
       p.examples = @examples
       p.parameters = @parameters
+      p.domains = @domains if @domains
     end
 
     Evoasm::Population.new :x64, parameters

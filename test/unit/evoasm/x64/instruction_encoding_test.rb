@@ -744,7 +744,7 @@ module Evoasm
       end
 
       Evoasm::Libevoasm.enum_type(:x64_inst_id).symbols.each do |instruction_name|
-        next if instruction_name == :n_insts
+        next if instruction_name == :none
         # Capstone uses pseudo-mnemonics, tested separately
         next if SIMD_CMP_INSTRUCTION_NAMES.include? instruction_name
 

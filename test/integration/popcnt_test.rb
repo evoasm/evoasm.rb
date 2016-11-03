@@ -2,13 +2,13 @@ require 'evoasm/test'
 require 'evoasm/population'
 require 'population_helper'
 
-module Search
+module Evoasm
   class PopcntTest < Minitest::Test
     include PopulationHelper
     include PopulationHelper::Tests
 
     def setup
-      set_population_parameters_ivars
+      set_default_parameters
 
       @instruction_names = Evoasm::X64.instruction_names(:gp, :rflags)
       @examples = {
@@ -37,16 +37,9 @@ module Search
     end
 
     def test_program_run
-      p examples
-
-      p found_program.run_all(*examples.keys)
-      p @found_program.run_all(0b1001, 0, 0b1101)
-      p found_program.run_all([0b1001], [0], [0b1101])
-      p found_program.run_all([0b1001], [0], [0b1101])
-
       # should generalize (i.e. give correct answer for non-training data)
       assert_equal 2, found_program.run(0b1001)
-      assert_equal 0, found_program.run(0b0)
+      assert_equal 1, found_program.run(0b1000)
       assert_equal 3, found_program.run(0b1101)
     end
   end

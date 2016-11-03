@@ -1,8 +1,5 @@
 require 'evoasm/test'
 require 'evoasm/population'
-require 'evoasm/x64'
-require 'evoasm'
-
 require 'population_helper'
 
 module Evoasm
@@ -10,7 +7,7 @@ module Evoasm
     include PopulationHelper
 
     def setup
-      set_population_parameters_ivars
+      set_default_parameters
     end
 
     def test_unseeded

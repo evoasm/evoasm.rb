@@ -35,7 +35,7 @@ module Evoasm
       def register
         if type == :rm || type == :reg
           reg_id = Libevoasm.x64_operand_get_reg_id self
-          reg_id == :n_regs ? nil : reg_id
+          reg_id == :none ? nil : reg_id
         else
           nil
         end
@@ -54,7 +54,7 @@ module Evoasm
 
       def register_type
         reg_type = Libevoasm.x64_operand_get_reg_type self
-        reg_type == :n_reg_types ? nil : reg_type
+        reg_type == :none ? nil : reg_type
       end
 
       def size

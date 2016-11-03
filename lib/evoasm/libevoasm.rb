@@ -53,7 +53,7 @@ module Evoasm
       :warn,
       :error,
       :fatal,
-      :n_log_levels
+      :none
     ]
 
     class Error < FFI::Struct

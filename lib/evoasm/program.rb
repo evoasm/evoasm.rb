@@ -64,7 +64,7 @@ module Evoasm
     private def io_registers(input, kernel_index)
       reg_enum_type = Libevoasm.enum_type(:x64_reg_id)
       reg_enum_type.to_h.each_with_object([]) do |(k, v), acc|
-        unless k == :n_regs
+        unless k == :none
           io =
             if input
               Libevoasm.program_is_input_reg(self, kernel_index, v)
@@ -87,7 +87,7 @@ module Evoasm
 
     def disassemble(frame = false)
       code_ptr_ptr = FFI::MemoryPointer.new :pointer
-      code_len = Libevoasm.program_code self, frame, code_ptr_ptr
+      code_len = Libevoasm.program_get_code self, frame, code_ptr_ptr
       code_ptr = code_ptr_ptr.read_pointer
       code = code_ptr.read_string(code_len)
 

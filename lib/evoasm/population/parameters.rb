@@ -62,8 +62,6 @@ module Evoasm
           Libevoasm.pop_params_set_param(self, index, parameters_enum_type[parameter_name])
         end
         Libevoasm.pop_params_set_n_params(self, parameter_names.size)
-        puts "Setting n_params to #{parameter_names.size}"
-        puts "n_params is #{Libevoasm.pop_params_get_n_params self}"
       end
 
       def parameters

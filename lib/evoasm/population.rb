@@ -35,10 +35,13 @@ module Evoasm
     end
 
     def best_program
+      p "creating program"
       program = Program.new
+      p "loading program"
       unless Libevoasm.pop_load_best_program self, program
         raise Error.last
       end
+      p "loaded program"
 
       program
     end
