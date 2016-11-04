@@ -134,31 +134,20 @@ module Evoasm
         end
       end
 
-      %w(kernel_size program_size).each do |attr_name|
-        define_method attr_name do
-          min = Libevoasm.send "pop_params_get_min_#{attr_name}", self
-          max = Libevoasm.send "pop_params_get_max_#{attr_name}", self
+      def kernel_size=(kernel_size)
+        Libevoasm.pop_params_set_kernel_size self, kernel_size
+      end
 
-          if min == max
-            return min
-          else
-            return (min..max)
-          end
-        end
+      def kernel_size
+        Libevoasm.pop_params_get_kernel_size self
+      end
 
-        define_method "#{attr_name}=" do |value|
-          case value
-          when Range
-            min = value.min
-            max = value.max
-          else
-            min = value
-            max = value
-          end
+      def program_size=(program_size)
+        Libevoasm.pop_params_set_program_size self, program_size
+      end
 
-          Libevoasm.send "pop_params_set_min_#{attr_name}", self, min
-          Libevoasm.send "pop_params_set_max_#{attr_name}", self, max
-        end
+      def program_size
+        Libevoasm.pop_params_get_program_size self
       end
 
       def recur_limit

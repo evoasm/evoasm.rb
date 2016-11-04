@@ -11,8 +11,6 @@ module PopulationHelper
       3 => 4
     }
     @instruction_names = Evoasm::X64.instruction_names(:gp, :rflags)
-    @kernel_size = (1..15)
-    @program_size = 1
     @deme_size = 1200
     @parameters = %i(reg0 reg1 reg2 reg3)
   end

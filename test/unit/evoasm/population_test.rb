@@ -8,6 +8,8 @@ module Evoasm
 
     def setup
       set_default_parameters
+      @kernel_size = 2
+      @program_size = 1
     end
 
     def test_unseeded
@@ -72,7 +74,7 @@ module Evoasm
     end
 
     def test_invalid_program_size
-      [0, (0..0)].each do |program_size|
+      [0, 2**32].each do |program_size|
         @program_size = program_size
         error = assert_raises Evoasm::Error do
           start
@@ -82,7 +84,7 @@ module Evoasm
     end
 
     def test_invalid_kernel_size
-      [0, (0..0)].each do |kernel_size|
+      [0, 2**32].each do |kernel_size|
         @kernel_size = kernel_size
         error = assert_raises Evoasm::Error do
           start

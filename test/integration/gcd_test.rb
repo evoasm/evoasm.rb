@@ -23,7 +23,7 @@ module Search
         [16, 8] => 8
       }
 
-      @kernel_size = (20..50)
+      @kernel_size = (20)
       @program_size = 5
       #@deme_size = 5000
       #@mutation_rate = 0.2

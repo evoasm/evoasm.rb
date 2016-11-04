@@ -56,21 +56,12 @@ module Evoasm
       :none
     ]
 
-    class Error < FFI::Struct
-      layout :type, :error_type,
-             :code, :uint16,
-             :line, :uint32,
-             :filename, [:char, 128],
-             :msg, [:char, 128],
-             :data, [:uint8, 64]
-    end
-
     def self.attach_evoasm_function(name, args, returns, options = {})
       attach_function name, :"evoasm_#{name}", args, returns, options
     end
 
     attach_evoasm_function :init, [:int, :pointer, :pointer], :void
-    attach_evoasm_function :get_last_error, [], Error.by_ref
+    attach_evoasm_function :get_last_error, [], :pointer
     attach_evoasm_function :set_min_log_level, [:log_level], :void
 
     attach_evoasm_function :get_arch_info, [:arch_id], :pointer
@@ -176,17 +167,14 @@ module Evoasm
     attach_evoasm_function :pop_params_get_n_insts, [:pointer], :size_t
     attach_evoasm_function :pop_params_get_inst, [:pointer, :size_t], :inst_id
     attach_evoasm_function :pop_params_get_deme_size, [:pointer], :size_t
+    attach_evoasm_function :pop_params_get_deme_height, [:pointer], :size_t
     attach_evoasm_function :pop_params_set_deme_size, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_get_n_demes, [:pointer], :size_t
     attach_evoasm_function :pop_params_set_n_demes, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_set_min_kernel_size, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_set_max_kernel_size, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_get_min_kernel_size, [:pointer], :size_t
-    attach_evoasm_function :pop_params_get_max_kernel_size, [:pointer], :size_t
-    attach_evoasm_function :pop_params_set_min_program_size, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_set_max_program_size, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_get_min_program_size, [:pointer], :size_t
-    attach_evoasm_function :pop_params_get_max_program_size, [:pointer], :size_t
+    attach_evoasm_function :pop_params_set_kernel_size, [:pointer, :size_t], :void
+    attach_evoasm_function :pop_params_get_kernel_size, [:pointer], :size_t
+    attach_evoasm_function :pop_params_set_program_size, [:pointer, :size_t], :void
+    attach_evoasm_function :pop_params_get_program_size, [:pointer], :size_t
     attach_evoasm_function :pop_params_set_recur_limit, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_set_n_insts, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_set_program_input, [:pointer, :pointer], :void

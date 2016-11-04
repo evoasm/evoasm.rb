@@ -2,7 +2,7 @@ require 'evoasm/test'
 require 'evoasm/population'
 require 'population_helper'
 
-Evoasm.min_log_level = :info
+#Evoasm.min_log_level = :info
 
 module Evoasm
   class SymRegTest < Minitest::Test
@@ -27,7 +27,8 @@ module Evoasm
         5.0 => 11.61895003862225
       }
 
-      @kernel_size = (5..15)
+      @kernel_size = 10
+      @program_size = 1
       @parameters = %i(reg0 reg1 reg2 reg3)
       regs = %i(xmm0 xmm1 xmm2 xmm3)
       @domains = {

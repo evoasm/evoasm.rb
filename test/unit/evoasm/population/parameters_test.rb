@@ -41,17 +41,11 @@ module Evoasm
       def test_kernel_size
         @parameters.kernel_size = 10
         assert_equal 10, @parameters.kernel_size
-
-        @parameters.kernel_size = (0..100)
-        assert_equal (0..100), @parameters.kernel_size
       end
 
       def test_program_size
-        @parameters.program_size = 10
-        assert_equal 10, @parameters.program_size
-
-        @parameters.program_size = (0..100)
-        assert_equal (0..100), @parameters.program_size
+        @parameters.program_size = 4
+        assert_equal 4, @parameters.program_size
       end
 
       def test_recur_limit
