@@ -36,14 +36,13 @@ module Evoasm
       Libevoasm.program_get_size self
     end
 
-    def eliminate_introns!
-      unless Libevoasm.program_eliminate_introns self
+    def eliminate_introns
+      program = Program.new
+      unless Libevoasm.program_eliminate_introns self, program
         raise Libevoasm::Error.last
       end
-    end
 
-    def eliminate_introns
-      clone.tap(&:eliminate_introns!)
+      program
     end
 
     def disassemble_kernel(kernel_index)

@@ -107,7 +107,7 @@ module PopulationHelper
       p all_summaries
 
       all_summaries.uniq.tap do |uniq|
-        assert_equal 1, uniq.size
+        assert_equal [all_summaries.first], uniq
       end
     end
   end

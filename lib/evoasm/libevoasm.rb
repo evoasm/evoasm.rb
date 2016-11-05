@@ -120,12 +120,11 @@ module Evoasm
     attach_evoasm_function :program_free, [:pointer], :void
     attach_evoasm_function :program_run, [:pointer, :pointer], :pointer
 
-
     attach_evoasm_function :program_get_size, [:pointer], :size_t
     attach_evoasm_function :program_get_kernel_code, [:pointer, :size_t, :pointer], :size_t
     attach_evoasm_function :program_get_code, [:pointer, :bool, :pointer], :size_t
     attach_evoasm_function :program_get_jmp_off, [:pointer, :size_t], :int
-    attach_evoasm_function :program_eliminate_introns, [:pointer], :bool
+    attach_evoasm_function :program_eliminate_introns, [:pointer, :pointer], :bool
     attach_evoasm_function :program_is_input_reg, [:pointer, :size_t, :uint8], :bool
     attach_evoasm_function :program_is_output_reg, [:pointer, :size_t, :uint8], :bool
 
@@ -138,7 +137,6 @@ module Evoasm
     attach_evoasm_function :program_io_get_value_i64, [:pointer, :size_t], :int64
     attach_evoasm_function :program_io_get_type, [:pointer, :size_t], :example_type
     attach_evoasm_function :program_io_destroy, [:pointer], :void
-
 
     attach_evoasm_function :pop_seed, [:pointer], :void
     attach_evoasm_function :pop_eval, [:pointer], :bool

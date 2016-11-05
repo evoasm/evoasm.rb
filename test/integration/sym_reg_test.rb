@@ -46,12 +46,11 @@ module Evoasm
     end
 
     def test_intron_elimination
-      skip
-
       disasms = found_program.disassemble
 
       program = found_program.eliminate_introns
       assert_runs_examples program
+      refute_equal program, found_program
 
       program.disassemble.each_with_index do |disasm, index|
         assert_operator disasm.size, :<=, disasms[index].size
