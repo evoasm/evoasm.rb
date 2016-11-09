@@ -80,8 +80,8 @@ module Evoasm
 
       def convert_value(parameter_name, value)
         raise ArgumentError, 'value cannot be nil' if value.nil?
-        return 1 if value == true
-        return 0 if value == false
+        return 1 if value.equal? true
+        return 0 if value.equal? false
 
         case parameter_name
         when :disp_size

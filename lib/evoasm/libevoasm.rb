@@ -46,6 +46,12 @@ module Evoasm
       :search, 1 << 0,
     ]
 
+    enum :buf_type, [
+      :mmap,
+      :malloc,
+      :none
+    ]
+
     enum :log_level, [
       :trace,
       :debug,
@@ -70,6 +76,24 @@ module Evoasm
     attach_evoasm_function :buf_ref_alloc, [], :pointer
     attach_evoasm_function :buf_ref_init, [:pointer, :pointer, :pointer], :void
     attach_evoasm_function :buf_ref_free, [:pointer], :void
+
+    attach_evoasm_function :buf_alloc, [], :pointer
+    attach_evoasm_function :buf_init, [:pointer, :buf_type, :size_t], :void
+    attach_evoasm_function :buf_free, [:pointer], :void
+    attach_evoasm_function :buf_exec, [:pointer], :pointer
+
+    attach_evoasm_function :x64_cpu_state_alloc, [], :pointer
+    attach_evoasm_function :x64_cpu_state_init, [:pointer], :void
+    attach_evoasm_function :x64_cpu_state_free, [:pointer], :void
+    attach_evoasm_function :x64_cpu_state_destroy, [:pointer], :void
+    attach_evoasm_function :x64_cpu_state_set, [:pointer, :x64_reg_id, :pointer, :size_t], :void
+    attach_evoasm_function :x64_cpu_state_get, [:pointer, :x64_reg_id, :pointer], :size_t
+    attach_evoasm_function :x64_cpu_state_get_rflags_flag, [:pointer, :x64_rflags_flag], :bool
+    attach_evoasm_function :x64_cpu_state_clone, [:pointer, :pointer], :void
+    attach_evoasm_function :x64_cpu_state_xor, [:pointer, :pointer, :pointer], :void
+    attach_evoasm_function :x64_cpu_state_memset, [:pointer, :int], :void
+    attach_evoasm_function :x64_cpu_state_emit_load, [:pointer, :pointer], :bool
+    attach_evoasm_function :x64_cpu_state_emit_store, [:pointer, :pointer], :bool
 
     attach_evoasm_function :x64_params_alloc, [], :pointer
     attach_evoasm_function :x64_params_free, [:pointer], :void
@@ -140,7 +164,7 @@ module Evoasm
 
     attach_evoasm_function :pop_seed, [:pointer], :void
     attach_evoasm_function :pop_eval, [:pointer], :bool
-    attach_evoasm_function :pop_next_gen, [:pointer], :bool
+    attach_evoasm_function :pop_next_gen, [:pointer], :void
     attach_evoasm_function :pop_alloc, [], :pointer
     attach_evoasm_function :pop_free, [:pointer], :void
     attach_evoasm_function :pop_init, [:pointer, :arch_id, :pointer], :bool

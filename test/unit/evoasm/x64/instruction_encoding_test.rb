@@ -224,6 +224,10 @@ module Evoasm
         assert_assembles_to "\x67\x0F\x0D\x10", :prefetchwt1_m8, reg_base: :a, addr_size: 32
       end
 
+      def test_lea_rip
+        assert_disassembles_to 'lea rax, qword ptr [rip]', :lea_r64_m64, reg0: :a, reg_base: :ip
+      end
+
       SIMD_CMP_INSTRUCTION_NAMES = %i(
       vcmpps_xmm_xmm_xmmm128_imm8
       vcmppd_xmm_xmm_xmmm128_imm8

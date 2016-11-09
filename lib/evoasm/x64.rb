@@ -21,6 +21,10 @@ module Evoasm
         instruction(instruction_name).encode parameters, basic: basic
       end
 
+      def registers
+        Libevoasm.enum_type(:x64_reg_id).symbols[0..-2]
+      end
+
       def features
         feature_enum_type = Libevoasm.enum_type(:x64_feature)
         arch_info = Libevoasm.get_arch_info :x64

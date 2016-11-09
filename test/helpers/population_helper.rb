@@ -34,11 +34,18 @@ module PopulationHelper
     @found_program = nil
     @population.seed
 
+    p ['ini su', @population.summary]
+
     until @found_program
       @population.evaluate
 
+      summary = @population.summary
+      puts "#" * 100
+      pp summary
+      puts "#" * 100
+
       if block
-        block[@population.summary]
+        block[summary]
       end
 
       if @population.best_loss == 0.0
@@ -47,6 +54,8 @@ module PopulationHelper
 
       @population.next_generation!
     end
+
+    p ['end su', @population.summary]
   end
 
   module Tests
