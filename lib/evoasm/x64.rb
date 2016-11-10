@@ -17,8 +17,8 @@ module Evoasm
         Evoasm::Capstone.disassemble_x64 assembly, address
       end
 
-      def encode(instruction_name, parameters, basic: false)
-        instruction(instruction_name).encode parameters, basic: basic
+      def encode(instruction_name, parameters, buffer = nil, basic: false)
+        instruction(instruction_name).encode parameters, buffer, basic: basic
       end
 
       def registers

@@ -62,6 +62,12 @@ module Evoasm
       :none
     ]
 
+    enum :mprot_mode, [
+        :rw,
+        :rx,
+        :rwx
+    ]
+
     def self.attach_evoasm_function(name, args, returns, options = {})
       attach_function name, :"evoasm_#{name}", args, returns, options
     end
@@ -78,9 +84,16 @@ module Evoasm
     attach_evoasm_function :buf_ref_free, [:pointer], :void
 
     attach_evoasm_function :buf_alloc, [], :pointer
-    attach_evoasm_function :buf_init, [:pointer, :buf_type, :size_t], :void
+    attach_evoasm_function :buf_init, [:pointer, :buf_type, :size_t], :bool
     attach_evoasm_function :buf_free, [:pointer], :void
-    attach_evoasm_function :buf_exec, [:pointer], :pointer
+    attach_evoasm_function :buf_exec, [:pointer], :size_t
+    attach_evoasm_function :buf_log, [:pointer, :log_level], :void
+    attach_evoasm_function :buf_protect, [:pointer, :mprot_mode], :bool
+    attach_evoasm_function :buf_to_buf_ref, [:pointer, :pointer], :void
+    attach_evoasm_function :buf_get_capa, [:pointer], :size_t
+    attach_evoasm_function :buf_get_pos, [:pointer], :size_t
+    attach_evoasm_function :buf_get_data, [:pointer], :pointer
+    attach_evoasm_function :buf_get_type, [:pointer], :buf_type
 
     attach_evoasm_function :x64_cpu_state_alloc, [], :pointer
     attach_evoasm_function :x64_cpu_state_init, [:pointer], :void
