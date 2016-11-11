@@ -25,6 +25,11 @@ module Evoasm
         end
       end
 
+      def inspect
+        fields = @param_id_enum_type.symbols[0..-2].map { |s| "#{s}:#{self[s]}" }.join(' ')
+        "#<#{self.class.inspect} #{fields}>"
+      end
+
       def initialize(hash = {}, basic: false)
         if basic
           ptr = Libevoasm.x64_basic_params_alloc
@@ -45,6 +50,7 @@ module Evoasm
         @disp_size_enum_type = Libevoasm.enum_type :x64_disp_size
         @addr_size_enum_type = Libevoasm.enum_type :x64_addr_size
         @scale_enum_type = Libevoasm.enum_type :x64_scale
+        @reg_id_enum_type = Libevoasm.enum_type :x64_reg_id
 
         super(ptr)
 
@@ -58,11 +64,18 @@ module Evoasm
       end
 
       def [](parameter_name)
-        if basic?
-          Libevoasm.x64_basic_params_get self, parameter_name_to_id(parameter_name)
-        else
-          Libevoasm.x64_params_get self, parameter_name_to_id(parameter_name)
-        end
+        parameter_value =
+          if basic?
+            Libevoasm.x64_basic_params_get self, parameter_name_to_id(parameter_name)
+          else
+            Libevoasm.x64_params_get self, parameter_name_to_id(parameter_name)
+          end
+
+        convert_parameter_value parameter_name, parameter_value
+      end
+
+      def parameter?(parameter_name)
+        !@param_id_enum_type[parameter_name].nil?
       end
 
       def []=(parameter_name, value)
@@ -107,6 +120,15 @@ module Evoasm
           end
 
         @disp_size_enum_type[symbol]
+      end
+
+      def convert_parameter_value(parameter_name, parameter_value)
+        case parameter_name
+        when :reg0, :reg1, :reg2, :reg3
+          @reg_id_enum_type[parameter_value]
+        else
+          parameter_value
+        end
       end
 
       def convert_address_size(value)

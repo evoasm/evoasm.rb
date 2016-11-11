@@ -35,7 +35,7 @@ module Evoasm
 
       #@mmap_buffer.__log__ :warn
 
-      assert_equal 7, @mmap_buffer.execute
+      assert_equal 7, @mmap_buffer.execute!
     end
 
   end

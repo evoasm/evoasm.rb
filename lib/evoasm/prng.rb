@@ -7,8 +7,11 @@ module Evoasm
       Libevoasm.prng_free ptr
     end
 
-    def initialize(seed = nil)
-      seed ||= DEFAULT_SEED
+    def self.default
+      @default_prng ||= new(DEFAULT_SEED)
+    end
+
+    def initialize(seed)
       if seed.size != SEED_SIZE
         raise ArgumentError, "seed must be have exactly #{SEED_SIZE} elements"
       end

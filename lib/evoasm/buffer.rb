@@ -34,7 +34,7 @@ module Evoasm
       Libevoasm.buf_log self, log_level
     end
 
-    def execute
+    def execute!
       begin
         unless Libevoasm.buf_protect self, :rx
           raise Error.last
@@ -46,6 +46,10 @@ module Evoasm
         end
       end
       return return_value
+    end
+
+    def execute_and_return!
+
     end
   end
 end

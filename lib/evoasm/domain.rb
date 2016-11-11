@@ -1,4 +1,5 @@
 require 'evoasm/ffi_ext'
+require 'evoasm/prng'
 
 module Evoasm
   class Domain < FFI::AutoPointer
@@ -49,6 +50,10 @@ module Evoasm
           raise Error.last
         end
       end
+    end
+
+    def rand(prng = PRNG.default)
+      Libevoasm.domain_rand self, prng
     end
 
     def bounds

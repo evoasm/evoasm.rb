@@ -229,97 +229,97 @@ module Evoasm
       end
 
       SIMD_CMP_INSTRUCTION_NAMES = %i(
-      vcmpps_xmm_xmm_xmmm128_imm8
-      vcmppd_xmm_xmm_xmmm128_imm8
-      vcmpps_ymm_ymm_ymmm256_imm8
-      vcmppd_ymm_ymm_ymmm256_imm8
-      vcmpsd_xmm_xmm_xmmm64_imm8
-      vcmpss_xmm_xmm_xmmm32_imm8
-      cmpps_xmm_xmmm128_imm8
-      cmppd_xmm_xmmm128_imm8
-      cmpsd_xmm_xmmm64_imm8
-      cmpss_xmm_xmmm32_imm8
-    ).freeze
+        vcmpps_xmm_xmm_xmmm128_imm8
+        vcmppd_xmm_xmm_xmmm128_imm8
+        vcmpps_ymm_ymm_ymmm256_imm8
+        vcmppd_ymm_ymm_ymmm256_imm8
+        vcmpsd_xmm_xmm_xmmm64_imm8
+        vcmpss_xmm_xmm_xmmm32_imm8
+        cmpps_xmm_xmmm128_imm8
+        cmppd_xmm_xmmm128_imm8
+        cmpsd_xmm_xmmm64_imm8
+        cmpss_xmm_xmmm32_imm8
+      ).freeze
 
       NOP_INSTRUCTION_NAMES = %i(
-      nop_rm16
-      nop_rm32
-    ).freeze
+        nop_rm16
+        nop_rm32
+      ).freeze
 
       XCHG_IMPLICIT_INSTRUCTION_NAMES = %i(
-      xchg_ax_r16
-      xchg_eax_r32
-      xchg_rax_r64
-    ).freeze
+        xchg_ax_r16
+        xchg_eax_r32
+        xchg_rax_r64
+      ).freeze
 
       STRING_INSTRUCTION_NAMES = %i(
-      cmpsb
-      cmpsw
-      cmpsd
-      cmpsq
-      repe_cmpsb
-      repe_cmpsw
-      repe_cmpsd
-      repe_cmpsq
-      repne_cmpsb
-      repne_cmpsw
-      repne_cmpsd
-      repne_cmpsq
-      lodsb
-      lodsw
-      lodsd
-      lodsq
-      rep_lodsb
-      rep_lodsw
-      rep_lodsd
-      rep_lodsq
-      movsb
-      movsw
-      movsd
-      movsq
-      rep_movsb
-      rep_movsw
-      rep_movsd
-      rep_movsq
-      scasb
-      scasw
-      scasd
-      scasq
-      repe_scasb
-      repe_scasw
-      repe_scasd
-      repe_scasq
-      repne_scasb
-      repne_scasw
-      repne_scasd
-      repne_scasq
-      stosb
-      stosw
-      stosd
-      stosq
-      rep_stosb
-      rep_stosw
-      rep_stosd
-      rep_stosq
-    ).freeze
+        cmpsb
+        cmpsw
+        cmpsd
+        cmpsq
+        repe_cmpsb
+        repe_cmpsw
+        repe_cmpsd
+        repe_cmpsq
+        repne_cmpsb
+        repne_cmpsw
+        repne_cmpsd
+        repne_cmpsq
+        lodsb
+        lodsw
+        lodsd
+        lodsq
+        rep_lodsb
+        rep_lodsw
+        rep_lodsd
+        rep_lodsq
+        movsb
+        movsw
+        movsd
+        movsq
+        rep_movsb
+        rep_movsw
+        rep_movsd
+        rep_movsq
+        scasb
+        scasw
+        scasd
+        scasq
+        repe_scasb
+        repe_scasw
+        repe_scasd
+        repe_scasq
+        repne_scasb
+        repne_scasw
+        repne_scasd
+        repne_scasq
+        stosb
+        stosw
+        stosd
+        stosq
+        rep_stosb
+        rep_stosw
+        rep_stosd
+        rep_stosq
+     ).freeze
 
       MOVQ_MOVD_INSTRUCTION_NAMES = %i(
-      movq_mm_rm64
-      movq_rm64_mm
-      movd_mm_rm32
-      movd_rm32_mm
-      movq_xmm_rm64
-      movq_rm64_xmm
-      movd_xmm_rm32
-      movd_rm32_xmm
-      vmovq_xmm_rm64
-      vmovq_rm64_xmm
-    ).freeze
+        movq_mm_rm64
+        movq_rm64_mm
+        movd_mm_rm32
+        movd_rm32_mm
+        movq_xmm_rm64
+        movq_rm64_xmm
+        movd_xmm_rm32
+        movd_rm32_xmm
+        vmovq_xmm_rm64
+        vmovq_rm64_xmm
+      ).freeze
 
       UNSUPPORTED_INSTRUCTION_NAMES = %i(
-      prefetchwt1_m8
-      rdpid_r64
-    )
+        prefetchwt1_m8
+        rdpid_r64
+      )
 
       class InstructionTest
         attr_reader :instruction
@@ -507,11 +507,11 @@ module Evoasm
           }.freeze
 
           SKIP_IMPLICIT_XMM0_INSTRUCTION_NAMES = %i(
-          blendvpd_xmm_xmmm128_xmm0
-          blendvps_xmm_xmmm128_xmm0
-          pblendvb_xmm_xmmm128_xmm0
-          sha256rnds2_xmm_xmmm128_xmm0
-        ).freeze
+            blendvpd_xmm_xmmm128_xmm0
+            blendvps_xmm_xmmm128_xmm0
+            pblendvb_xmm_xmmm128_xmm0
+            sha256rnds2_xmm_xmmm128_xmm0
+          ).freeze
 
           IMMEDIATE_VALUES = {
             imm: 0x4a,
@@ -623,7 +623,7 @@ module Evoasm
           end
 
           def memory_size
-            # Workaround bugs in Capstone
+            # Work around bugs in Capstone
             # which sometimes reports wrong pointer sizes
             # FIXME: recheck if we really got them right
             case formal_operand.instruction.name
@@ -679,7 +679,7 @@ module Evoasm
           end
         end
 
-        def start(test, basic:)
+        def run(test, basic:)
           return if basic && !instruction.basic?
 
           # Capstone prints rm operand last
@@ -726,7 +726,7 @@ module Evoasm
         end
 
         def define!(basic:)
-          run_method = method(:start)
+          run_method = method(:run)
 
           @test_class.send :define_method, test_method_name(basic: basic) do
             run_method.call self, basic: basic

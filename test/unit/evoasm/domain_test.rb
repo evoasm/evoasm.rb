@@ -1,8 +1,13 @@
 require 'evoasm/test'
 require 'evoasm/domain'
+require 'evoasm/prng'
 
 module Evoasm
   class DomainTest < Minitest::Test
+
+    def setup
+      @prng = PRNG.new
+    end
 
     def test_enumeration_domain
       enumeration_domain = Evoasm::EnumerationDomain.new 1, 2, 3, 4
@@ -14,6 +19,11 @@ module Evoasm
       range_domain = Evoasm::RangeDomain.new -10, 100
       assert_equal -10, range_domain.min
       assert_equal 100, range_domain.max
+
+      100.times do
+        assert_operator range_domain.rand(@prng), :>=, -10
+        assert_operator range_domain.rand(@prng), :<=, 100
+      end
 
       range_domain = Evoasm::RangeDomain.new 10, 100_000
       assert_equal 10, range_domain.min

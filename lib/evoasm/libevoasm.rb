@@ -68,6 +68,10 @@ module Evoasm
         :rwx
     ]
 
+    enum :x64_abi, [
+      :sysv
+    ]
+
     def self.attach_evoasm_function(name, args, returns, options = {})
       attach_function name, :"evoasm_#{name}", args, returns, options
     end
@@ -105,8 +109,8 @@ module Evoasm
     attach_evoasm_function :x64_cpu_state_clone, [:pointer, :pointer], :void
     attach_evoasm_function :x64_cpu_state_xor, [:pointer, :pointer, :pointer], :void
     attach_evoasm_function :x64_cpu_state_memset, [:pointer, :int], :void
-    attach_evoasm_function :x64_cpu_state_emit_load, [:pointer, :pointer], :bool
-    attach_evoasm_function :x64_cpu_state_emit_store, [:pointer, :pointer], :bool
+    attach_evoasm_function :x64_cpu_state_emit_load, [:pointer, :bool, :bool, :pointer], :bool
+    attach_evoasm_function :x64_cpu_state_emit_store, [:pointer, :bool, :bool, :pointer], :bool
 
     attach_evoasm_function :x64_params_alloc, [], :pointer
     attach_evoasm_function :x64_params_free, [:pointer], :void
@@ -127,6 +131,9 @@ module Evoasm
 
     attach_evoasm_function :x64_enc, [:x64_inst_id, :pointer, :pointer], :bool
     attach_evoasm_function :x64_enc_basic, [:x64_inst_id, :pointer, :pointer], :bool
+
+    attach_evoasm_function :x64_emit_func_prolog, [:x64_abi, :pointer], :bool
+    attach_evoasm_function :x64_emit_func_epilog, [:x64_abi, :pointer], :bool
 
     attach_evoasm_function :x64_inst, [:x64_inst_id], :pointer
     attach_evoasm_function :x64_inst_get_param, [:pointer, :size_t], :pointer
@@ -238,6 +245,7 @@ module Evoasm
     attach_evoasm_function :enum_domain_get_val, [:pointer, :size_t], :int64
     attach_evoasm_function :domain_alloc, [], :pointer
     attach_evoasm_function :domain_free, [:pointer], :void
+    attach_evoasm_function :domain_rand, [:pointer, :pointer], :int64
     attach_evoasm_function :domain_init, [:pointer, :domain_type, :varargs], :bool
     attach_evoasm_function :domain_get_bounds, [:pointer, :pointer, :pointer], :void
     attach_evoasm_function :domain_get_type, [:pointer], :domain_type

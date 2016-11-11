@@ -47,7 +47,7 @@ module Evoasm
 
         buffer.__log__ :warn
 
-        buffer.execute
+        buffer.execute!
 
         assert_equal [7], @cpu_state.get(:a)
 
