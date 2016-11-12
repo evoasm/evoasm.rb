@@ -82,6 +82,7 @@ module Evoasm
 
     attach_evoasm_function :get_arch_info, [:arch_id], :pointer
     attach_evoasm_function :arch_info_get_features, [:pointer], :uint64
+    attach_evoasm_function :get_current_arch, [], :arch_id
 
     attach_evoasm_function :buf_ref_alloc, [], :pointer
     attach_evoasm_function :buf_ref_init, [:pointer, :pointer, :pointer], :void
@@ -91,6 +92,7 @@ module Evoasm
     attach_evoasm_function :buf_init, [:pointer, :buf_type, :size_t], :bool
     attach_evoasm_function :buf_free, [:pointer], :void
     attach_evoasm_function :buf_exec, [:pointer], :size_t
+    attach_evoasm_function :buf_safe_exec, [:pointer, :uint64, :pointer], :bool
     attach_evoasm_function :buf_log, [:pointer, :log_level], :void
     attach_evoasm_function :buf_protect, [:pointer, :mprot_mode], :bool
     attach_evoasm_function :buf_to_buf_ref, [:pointer, :pointer], :void

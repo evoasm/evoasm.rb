@@ -1,3 +1,5 @@
+require 'evoasm/exception_error'
+
 module Evoasm
   class Buffer < FFI::AutoPointer
     def self.release(ptr)
@@ -36,20 +38,51 @@ module Evoasm
 
     def execute!
       begin
+
         unless Libevoasm.buf_protect self, :rx
           raise Error.last
         end
-        return_value = Libevoasm.buf_exec(self)
+
+        current_arch = Libevoasm.get_current_arch
+        return_value = nil
+        exception_enum = Libevoasm.enum_type(:"#{current_arch}_exception")
+        # catch everything
+        exception_mask = exception_enum.flags(exception_enum.symbols, shift: true)
+
+        #FIXME: should be intptr_t, but FFI sucks
+        return_value_ptr = FFI::MemoryPointer.new :size_t, 1
+
+        success = Libevoasm.buf_safe_exec(self, exception_mask, return_value_ptr)
+        return_value = return_value_ptr.read_size_t
+
+
+        if success
+          return return_value
+        else
+          raise ExceptionError.new(current_arch, exception_enum[return_value])
+        end
       ensure
         unless Libevoasm.buf_protect self, :rw
           raise Error.last
         end
       end
-      return return_value
     end
 
-    def execute_and_return!
+    private
+    def safe_execute!(exceptions)
+      current_arch = Libevoasm.get_current_arch
+      exception_enum = Libevoasm.enum_type(:"#{current_arch}_exception")
 
+      exception_mask = exception_enum.flags(exceptions, shift: true)
+
+      #FIXME: should be intptr_t, but FFI sucks
+      return_value_ptr = FFI::MemoryPointer.new :size_t, 1
+
+      if Libevoasm.buf_safe_exec(self, exception_mask, return_value_ptr)
+        return_value_ptr.read_size_t
+      else
+        nil
+      end
     end
   end
 end
