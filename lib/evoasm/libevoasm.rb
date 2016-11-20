@@ -43,7 +43,8 @@ module Evoasm
     ]
 
     enum :x64_insts_flags, [
-      :search, 1 << 0,
+      :include_useless, 1 << 0,
+      :only_basic, 1 << 1
     ]
 
     enum :buf_type, [
@@ -70,6 +71,13 @@ module Evoasm
 
     enum :x64_abi, [
       :sysv
+    ]
+
+    enum :x64_cpu_state_flags, [
+      :ip, 1 << 0,
+      :sp, 1 << 1,
+      :mxcsr, 1 << 2,
+      :rflags, 1 << 3,
     ]
 
     def self.attach_evoasm_function(name, args, returns, options = {})
@@ -100,19 +108,20 @@ module Evoasm
     attach_evoasm_function :buf_get_pos, [:pointer], :size_t
     attach_evoasm_function :buf_get_data, [:pointer], :pointer
     attach_evoasm_function :buf_get_type, [:pointer], :buf_type
+    attach_evoasm_function :buf_write, [:pointer, :pointer, :size_t], :size_t
 
     attach_evoasm_function :x64_cpu_state_alloc, [], :pointer
-    attach_evoasm_function :x64_cpu_state_init, [:pointer], :void
+    attach_evoasm_function :x64_cpu_state_init, [:pointer, :int], :void
     attach_evoasm_function :x64_cpu_state_free, [:pointer], :void
     attach_evoasm_function :x64_cpu_state_destroy, [:pointer], :void
     attach_evoasm_function :x64_cpu_state_set, [:pointer, :x64_reg_id, :pointer, :size_t], :void
-    attach_evoasm_function :x64_cpu_state_get, [:pointer, :x64_reg_id, :pointer], :size_t
+    attach_evoasm_function :x64_cpu_state_get, [:pointer, :x64_reg_id, :x64_reg_word, :pointer, :size_t], :size_t
     attach_evoasm_function :x64_cpu_state_get_rflags_flag, [:pointer, :x64_rflags_flag], :bool
     attach_evoasm_function :x64_cpu_state_clone, [:pointer, :pointer], :void
     attach_evoasm_function :x64_cpu_state_xor, [:pointer, :pointer, :pointer], :void
     attach_evoasm_function :x64_cpu_state_memset, [:pointer, :int], :void
-    attach_evoasm_function :x64_cpu_state_emit_load, [:pointer, :bool, :bool, :pointer], :bool
-    attach_evoasm_function :x64_cpu_state_emit_store, [:pointer, :bool, :bool, :pointer], :bool
+    attach_evoasm_function :x64_cpu_state_emit_load, [:pointer, :pointer], :bool
+    attach_evoasm_function :x64_cpu_state_emit_store, [:pointer, :pointer], :bool
 
     attach_evoasm_function :x64_params_alloc, [], :pointer
     attach_evoasm_function :x64_params_free, [:pointer], :void
@@ -150,9 +159,11 @@ module Evoasm
     attach_evoasm_function :x64_operand_get_param_idx, [:pointer], :size_t
     attach_evoasm_function :x64_operand_is_read, [:pointer], :bool
     attach_evoasm_function :x64_operand_is_written, [:pointer], :bool
+    attach_evoasm_function :x64_operand_is_cond_written, [:pointer], :bool
     attach_evoasm_function :x64_operand_is_implicit, [:pointer], :bool
     attach_evoasm_function :x64_operand_is_mnem, [:pointer], :bool
     attach_evoasm_function :x64_operand_get_type, [:pointer], :x64_operand_type
+    attach_evoasm_function :x64_operand_get_word, [:pointer], :x64_reg_word
     attach_evoasm_function :x64_operand_get_size, [:pointer], :x64_operand_size
     attach_evoasm_function :x64_operand_get_reg_size, [:pointer], :x64_operand_size
     attach_evoasm_function :x64_operand_get_index_reg_size, [:pointer], :x64_operand_size

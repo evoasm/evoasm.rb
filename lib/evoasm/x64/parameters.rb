@@ -52,6 +52,26 @@ module Evoasm
         @scale_enum_type = Libevoasm.enum_type :x64_scale
         @reg_id_enum_type = Libevoasm.enum_type :x64_reg_id
 
+        @disp_size_map = {
+          8 =>  :disp8,
+          32 => :disp32
+        }
+        @disp_size_inv_map = @disp_size_map.invert
+
+        @addr_size_map = {
+          32 => :addr_size32,
+          64 => :addr_size64,
+        }
+        @addr_size_inv_map = @addr_size_map.invert
+
+        @scale_map = {
+          1 => :scale1,
+          2 => :scale2,
+          4 => :scale4,
+          8 => :scale8
+        }
+        @scale_inv_map = @scale_map.invert
+
         super(ptr)
 
         hash.each do |k, v|
@@ -64,14 +84,14 @@ module Evoasm
       end
 
       def [](parameter_name)
-        parameter_value =
+        ffi_value =
           if basic?
             Libevoasm.x64_basic_params_get self, parameter_name_to_id(parameter_name)
           else
             Libevoasm.x64_params_get self, parameter_name_to_id(parameter_name)
           end
 
-        convert_parameter_value parameter_name, parameter_value
+        ffi_value_to_value parameter_name, ffi_value
       end
 
       def parameter?(parameter_name)
@@ -79,88 +99,50 @@ module Evoasm
       end
 
       def []=(parameter_name, value)
-        converted_value = convert_value parameter_name, value
+        ffi_value = value_to_ffi_value parameter_name, value
         parameter_id = parameter_name_to_id(parameter_name)
 
         if basic?
-          Libevoasm.x64_basic_params_set self, parameter_id, converted_value
+          Libevoasm.x64_basic_params_set self, parameter_id, ffi_value
         else
-          Libevoasm.x64_params_set self, parameter_id, converted_value
+          Libevoasm.x64_params_set self, parameter_id, ffi_value
         end
       end
 
       private
 
-      def convert_value(parameter_name, value)
-        raise ArgumentError, 'value cannot be nil' if value.nil?
-        return 1 if value.equal? true
-        return 0 if value.equal? false
+      def value_to_ffi_value(parameter_name, parameter_value)
+        raise ArgumentError, 'value cannot be nil' if parameter_value.nil?
+        return 1 if parameter_value.equal? true
+        return 0 if parameter_value.equal? false
 
         case parameter_name
-        when :disp_size
-          convert_displacement value
-        when :addr_size
-          convert_address_size value
-        when :scale
-          convert_scale value
-        else
-          value
-        end
-      end
+        when :disp_size, :addr_size, :scale
+          ffi_value = instance_variable_get(:"@#{parameter_name}_map")[parameter_value]
 
-      def convert_displacement(value)
-        symbol =
-          case value
-          when 8
-            :disp8
-          when 32
-            :disp32
-          else
-            raise ArgumentError, "invalid displacement '#{value}'"
+          if ffi_value.nil?
+            raise ArgumentError, "#{parameter_value} is not valid for #{parameter_name}"
           end
 
-        @disp_size_enum_type[symbol]
-      end
-
-      def convert_parameter_value(parameter_name, parameter_value)
-        case parameter_name
-        when :reg0, :reg1, :reg2, :reg3
+          ffi_value
+        when :reg0, :reg1, :reg2, :reg3, :reg_base, :reg_index
           @reg_id_enum_type[parameter_value]
         else
           parameter_value
         end
       end
 
-      def convert_address_size(value)
-        symbol =
-          case value
-          when 32
-            :addr_size32
-          when 64
-            :addr_size64
-          else
-            raise ArgumentError, "invalid address size '#{value}'"
-          end
-
-        @addr_size_enum_type[symbol]
-      end
-
-      def convert_scale(value)
-        symbol =
-          case value
-          when 1
-            :scale1
-          when 2
-            :scale2
-          when 4
-            :scale4
-          when 8
-            :scale8
-          else
-            raise ArgumentError, "invalid scale '#{value}'"
-          end
-
-        @scale_enum_type[symbol]
+      def ffi_value_to_value(parameter_name, ffi_value)
+        case parameter_name
+        when :disp_size, :addr_size, :scale
+          enum_type = instance_variable_get(:"@#{parameter_name}_enum_type")
+          symbol = enum_type[ffi_value]
+          instance_variable_get(:"@#{parameter_name}_inv_map").fetch symbol
+        when :reg0, :reg1, :reg2, :reg3, :reg_base, :reg_index
+          @reg_id_enum_type[ffi_value]
+        else
+          ffi_value
+        end
       end
 
       def parameter_name_to_id(symbol)

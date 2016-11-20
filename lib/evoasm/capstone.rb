@@ -4,7 +4,7 @@ module Evoasm
   module Capstone
     class Error < StandardError; end
 
-    module LibCapstone
+    module Libcapstone
       extend FFI::Library
 
       ffi_lib ['capstone', 'libcapstone.so.3']
@@ -60,7 +60,7 @@ module Evoasm
       result = []
       handle_ptr = FFI::MemoryPointer.new(:size_t, 1)
 
-      err = LibCapstone.cs_open :arch_x86, :mode_64, handle_ptr
+      err = Libcapstone.cs_open :arch_x86, :mode_64, handle_ptr
       if err != :err_ok
         raise Error, cs_strerror(err);
       end
@@ -68,12 +68,12 @@ module Evoasm
       handle = handle_ptr.read_size_t
 
       insns_ptr = FFI::MemoryPointer.new :pointer
-      count = LibCapstone.cs_disasm(handle, asm, asm.bytesize, addr ? addr : 0, 0, insns_ptr)
+      count = Libcapstone.cs_disasm(handle, asm, asm.bytesize, addr ? addr : 0, 0, insns_ptr)
       insns = insns_ptr.read_pointer
       if count > 0
         count.times do |c|
-          insn_ptr = insns + c * LibCapstone::Insn.size
-          insn = LibCapstone::Insn.new insn_ptr
+          insn_ptr = insns + c * Libcapstone::Insn.size
+          insn = Libcapstone::Insn.new insn_ptr
           line = []
           line << insn[:address] if addr
           line << insn[:mnemonic].to_s << insn[:op_str].to_s
@@ -81,14 +81,14 @@ module Evoasm
         end
         err = :err_ok
       else
-        err = LibCapstone.cs_errno handle
+        err = Libcapstone.cs_errno handle
       end
 
-      LibCapstone.cs_free insns, count
-      LibCapstone.cs_close handle_ptr
+      Libcapstone.cs_free insns, count
+      Libcapstone.cs_close handle_ptr
 
       if err != :err_ok
-        raise Error, LibCapstone.cs_strerror(err);
+        raise Error, Libcapstone.cs_strerror(err);
       end
 
       result

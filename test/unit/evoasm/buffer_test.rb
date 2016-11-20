@@ -29,8 +29,14 @@ module Evoasm
       assert_equal @malloc_buffer.capacity, @malloc_buffer.to_s.size
     end
 
+    def test_write
+      data = "\xA\xB\xC"
+      @mmap_buffer.write data
+      assert_equal data, @mmap_buffer.to_s[0...data.size]
+    end
+
     def test_execute
-      Evoasm::X64.encode(:mov_rm32_imm32, {reg0: :a, imm: 7}, @mmap_buffer)
+      Evoasm::X64.encode(:mov_rm32_imm32, {reg0: :a, imm0: 7}, @mmap_buffer)
       Evoasm::X64.encode(:ret, {}, @mmap_buffer)
 
       #@mmap_buffer.__log__ :warn

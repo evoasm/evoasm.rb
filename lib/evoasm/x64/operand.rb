@@ -20,6 +20,10 @@ module Evoasm
         Libevoasm.x64_operand_is_written self
       end
 
+      def conditionally_written?
+        Libevoasm.x64_operand_is_cond_written self
+      end
+
       def mnemonic?
         Libevoasm.x64_operand_is_mnem self
       end
@@ -59,6 +63,10 @@ module Evoasm
 
       def size
         convert_size Libevoasm.x64_operand_get_size(self)
+      end
+
+      def word
+        Libevoasm.x64_operand_get_word(self)
       end
 
       def explicit?

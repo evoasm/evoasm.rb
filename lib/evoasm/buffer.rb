@@ -36,6 +36,15 @@ module Evoasm
       Libevoasm.buf_log self, log_level
     end
 
+    def write(data)
+      data_ptr = FFI::MemoryPointer.new :uint8, data.size
+      data_ptr.write_string data
+
+      if Libevoasm.buf_write(self, data_ptr, data.size) != 0
+        raise Error.last
+      end
+    end
+
     def execute!
       begin
 

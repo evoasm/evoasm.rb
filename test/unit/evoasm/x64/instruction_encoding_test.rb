@@ -701,6 +701,7 @@ module Evoasm
             combination.each do |operand|
               operand.parameter_names.zip(operand.parameter_values) do |name, value|
                 parameters[name] = value
+                test.assert_equal value, parameters[name]
               end
             end
 
@@ -727,10 +728,6 @@ module Evoasm
 
         def define!(basic:)
           run_method = method(:run)
-
-          @test_class.send :define_method, test_method_name(basic: basic) do
-            run_method.call self, basic: basic
-          end
 
           @test_class.send :define_method, test_method_name(basic: basic) do
             run_method.call self, basic: basic

@@ -8,9 +8,11 @@ module Evoasm
         Libevoasm.x64_cpu_state_free(ptr)
       end
 
-      def initialize
+      def initialize(*flags)
+        flags << :rflags unless flags.include?(:rflags)
+
         ptr = Libevoasm.x64_cpu_state_alloc
-        Libevoasm.x64_cpu_state_init ptr
+        Libevoasm.x64_cpu_state_init ptr, Libevoasm.enum_type(:x64_cpu_state_flags).flags(flags, shift: false)
         super(ptr)
       end
 
@@ -21,12 +23,10 @@ module Evoasm
         Libevoasm.x64_cpu_state_set self, register, ptr, data.size
       end
 
-      def get(register)
-        data_ptr_ptr = FFI::MemoryPointer.new :pointer
-        data_len = Libevoasm.x64_cpu_state_get self, register, data_ptr_ptr
-        data_ptr = data_ptr_ptr.read_pointer
-        data = data_ptr.read_array_of_uint64 data_len
-        return data
+      def get(register, word = :none)
+        data_ptr = FFI::MemoryPointer.new :uint64, 16
+        data_len = Libevoasm.x64_cpu_state_get self, register, word, data_ptr, 16
+        data_ptr.read_array_of_uint64 data_len
       end
 
       def clone
@@ -52,14 +52,14 @@ module Evoasm
         Libevoasm.x64_cpu_state_get_rflags_flag self, flag
       end
 
-      def emit_store(buffer, ip: false, sp: false)
-        unless Libevoasm.x64_cpu_state_emit_store self, ip, sp, buffer
+      def emit_store(buffer)
+        unless Libevoasm.x64_cpu_state_emit_store self, buffer
           raise Error.last
         end
       end
 
-      def emit_load(buffer, ip: false, sp: false)
-        unless Libevoasm.x64_cpu_state_emit_load self, ip, sp, buffer
+      def emit_load(buffer)
+        unless Libevoasm.x64_cpu_state_emit_load self, buffer
           raise Error.last
         end
       end

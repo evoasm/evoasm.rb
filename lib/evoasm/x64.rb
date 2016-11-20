@@ -50,7 +50,7 @@ module Evoasm
         end
       end
 
-      def instruction_names(*reg_types, operand_types: [:reg, :rm, :imm], search: true, features: nil)
+      def instruction_names(*reg_types, operand_types: [:reg, :rm, :imm], useless: false, basic: true, features: nil)
         inst_id_enum_type = Libevoasm.enum_type(:x64_inst_id)
         feature_enum_type = Libevoasm.enum_type(:x64_feature)
         insts_flags_enum_type = Libevoasm.enum_type(:x64_insts_flags)
@@ -59,7 +59,8 @@ module Evoasm
 
         flags = []
 
-        flags << :search if search
+        flags << :include_useless if useless
+        flags << :only_basic if basic
         flags_as_flags = insts_flags_enum_type.flags flags, shift: false
 
         features_as_flags =

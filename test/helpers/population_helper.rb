@@ -24,12 +24,13 @@ module PopulationHelper
       p.examples = @examples
       p.parameters = @parameters
       p.domains = @domains if @domains
+      p.seed = @seed if @seed
     end
 
     Evoasm::Population.new :x64, parameters
   end
 
-  def start(&block)
+  def start(loss = 0.0, &block)
     @population = new_population
     @found_program = nil
     @population.seed
@@ -48,7 +49,7 @@ module PopulationHelper
         block[summary]
       end
 
-      if @population.best_loss == 0.0
+      if @population.best_loss <= loss
         @found_program = @population.best_program
       end
 
