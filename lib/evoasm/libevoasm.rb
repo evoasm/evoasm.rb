@@ -159,7 +159,7 @@ module Evoasm
     attach_evoasm_function :x64_operand_get_param_idx, [:pointer], :size_t
     attach_evoasm_function :x64_operand_is_read, [:pointer], :bool
     attach_evoasm_function :x64_operand_is_written, [:pointer], :bool
-    attach_evoasm_function :x64_operand_is_cond_written, [:pointer], :bool
+    attach_evoasm_function :x64_operand_is_maybe_written, [:pointer], :bool
     attach_evoasm_function :x64_operand_is_implicit, [:pointer], :bool
     attach_evoasm_function :x64_operand_is_mnem, [:pointer], :bool
     attach_evoasm_function :x64_operand_get_type, [:pointer], :x64_operand_type
@@ -206,6 +206,7 @@ module Evoasm
     attach_evoasm_function :pop_summary_len, [:pointer], :size_t
     attach_evoasm_function :pop_load_best_program, [:pointer, :pointer], :bool
     attach_evoasm_function :pop_find_median_loss, [:pointer, :size_t], :loss
+    attach_evoasm_function :pop_get_loss_samples, [:pointer, :size_t, :pointer], :size_t
 
     attach_evoasm_function :pop_params_get_mut_rate, [:pointer], :float
     attach_evoasm_function :pop_params_get_n_params, [:pointer], :uint8

@@ -12,9 +12,18 @@ CFLAGS = ''
 
 if ARGV.include?('--debug')
   DEFS << ' -DEVOASM_MIN_LOG_LEVEL=EVOASM_LOG_LEVEL_DEBUG'
-  CFLAGS << ' -g3 -O0'
+  CFLAGS << ' -ggdb3 -O0'
 else
+  DEFS << ' -DNDEBUG'
   CFLAGS << ' -O3 -march=native'
+end
+
+if ARGV.include?('--paranoid')
+  DEFS << ' -DEVOASM_ENABLE_PARANOID_MODE'
+end
+
+unless ARGV.include?('--no-omp')
+  CFLAGS << ' -fopenmp'
 end
 
 CLEAN.include(SHARED_LIB)

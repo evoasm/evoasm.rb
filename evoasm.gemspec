@@ -8,9 +8,10 @@ Gem::Specification.new do |spec|
   spec.version       = Evoasm::VERSION
   spec.authors       = ['Julian Aron Prenner (furunkel)']
   spec.email         = ['furunkel@polyadic.com']
-  spec.summary       = %q{An AIMGP (Automatic Induction of Machine code by Genetic Programming) engine}
-  spec.homepage      = 'https://github.com/furunkel/evoasm/'
-  spec.license       = 'MPL-2.0'
+  spec.summary       = %q{An AIMGP engine}
+  spec.description   = %q{An AIMGP (Automatic Induction of Machine code by Genetic Programming) engine}
+  spec.homepage      = 'https://github.com/evoasm/evoasm/'
+  spec.license       = 'AGPL-3.0'
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.files        += Dir['ext/evoasm_ext/**/*.[ch]']

@@ -1,6 +1,8 @@
 require 'evoasm'
 require 'evoasm/x64'
 require 'tmpdir'
+require 'pp'
+require 'json'
 
 module PopulationHelper
 
@@ -13,6 +15,9 @@ module PopulationHelper
     @instruction_names = Evoasm::X64.instruction_names(:gp, :rflags)
     @deme_size = 1200
     @parameters = %i(reg0 reg1 reg2 reg3)
+    @recur_limit = 0
+    @deme_count = 1
+    @mutation_rate = 0.02
   end
 
   def new_population(architecture = :x64)
@@ -21,27 +26,31 @@ module PopulationHelper
       p.kernel_size = @kernel_size
       p.program_size = @program_size
       p.deme_size = @deme_size
+      p.deme_count = @deme_count
       p.examples = @examples
       p.parameters = @parameters
       p.domains = @domains if @domains
       p.seed = @seed if @seed
+      p.recur_limit = @recur_limit
+      p.mutation_rate = @mutation_rate
     end
 
     Evoasm::Population.new :x64, parameters
   end
 
-  def start(loss = 0.0, &block)
+  def start(loss = 0.0, min_iterations: 0, max_iterations: 10_000_000, &block)
     @population = new_population
-    @found_program = nil
     @population.seed
 
-    p ['ini su', @population.summary]
+    @found_program = nil
+    iteration = 0
 
-    until @found_program
+    until (iteration > min_iterations && @found_program) || iteration > max_iterations
+      summary = @population.summary
       @population.evaluate
 
-      summary = @population.summary
-      puts "#" * 100
+      #summary = @population.loss_samples
+      puts "#{iteration}/#{min_iterations} #{"#" * 100}"
       pp summary
       puts "#" * 100
 
@@ -49,14 +58,20 @@ module PopulationHelper
         block[summary]
       end
 
-      if @population.best_loss <= loss
-        @found_program = @population.best_program
+      best_loss = @population.best_loss
+      if best_loss == Float::INFINITY
+        p "reseeding"
+        @population.seed
+      else
+        if best_loss <= loss
+          @found_program = @population.best_program
+        end
+
+        @population.next_generation!
       end
 
-      @population.next_generation!
+      iteration += 1
     end
-
-    p ['end su', @population.summary]
   end
 
   module Tests
@@ -98,26 +113,33 @@ module PopulationHelper
     end
 
     def test_consistent_progress
-      all_summaries = []
 
-      n = 5
-      n.times do |i|
-        random_code
-        summaries = []
+      5.times do
+        @seed = Array.new(Evoasm::PRNG::SEED_SIZE) { rand(10000) }
 
-        start do |summary|
-          summaries << summary
+        run_summaries = []
+
+        run_count = 3
+        run_count.times do
+          random_code
+          summaries = []
+
+          start(0.5, min_iterations: 10, max_iterations: 20) do |summary|
+            summaries << summary
+          end
+
+          run_summaries << summaries
         end
 
-        all_summaries << summaries
-      end
+        assert_equal run_count, run_summaries.size
 
-      assert_equal n, all_summaries.size
+        #run_summaries.each_with_index do |s, i|
+        #  File.write("/tmp/t#{i}.txt", s.pretty_inspect)
+        #end
 
-      p all_summaries
-
-      all_summaries.uniq.tap do |uniq|
-        assert_equal [all_summaries.first], uniq
+        run_summaries.uniq.tap do |uniq|
+          assert_equal [run_summaries.first], uniq
+        end
       end
     end
   end
