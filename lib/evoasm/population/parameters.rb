@@ -6,12 +6,19 @@ module Evoasm
   class Population
     class Parameters < FFI::AutoPointer
 
+      # @!visibility private
       def self.release(ptr)
         Libevoasm.pop_params_free ptr
       end
 
-      attr_reader :input, :output
+      # @return [Program::Input] input examples
+      attr_reader :input
 
+      # @return [Program::Output] output examples
+      attr_reader :output
+
+      # @param architecture [Symbol] the machine architecture (currently only +:x64+ is supported)
+      # @yield [self]
       def initialize(architecture, &block)
         ptr = Libevoasm.pop_params_alloc
         Libevoasm.pop_params_init ptr
@@ -33,6 +40,8 @@ module Evoasm
         end
       end
 
+      # @!attribute mutation_rate
+      # @return [Float 0..1] the mutation rate
       def mutation_rate
         Libevoasm.pop_params_get_mut_rate(self)
       end
@@ -41,6 +50,8 @@ module Evoasm
         Libevoasm.pop_params_set_mut_rate self, mutation_rate
       end
 
+      # @!attribute deme_size
+      # @return [Integer] the number of individuals per deme
       def deme_size
         Libevoasm.pop_params_get_deme_size self
       end
@@ -49,12 +60,22 @@ module Evoasm
         Libevoasm.pop_params_set_deme_size self, deme_size
       end
 
+      # @!attribute deme_count
+      # @return [Integer] the number of demes in the population
       def deme_count
         Libevoasm.pop_params_get_n_demes self
       end
 
       def deme_count=(deme_count)
         Libevoasm.pop_params_set_n_demes self, deme_count
+      end
+
+      # @!attribute parameters
+      # @return [Array<Symbol>] the list of architecture-dependent instruction parameters to use
+      def parameters
+        Array.new(Libevoasm.pop_params_get_n_params self) do |index|
+          parameters_enum_type[Libevoasm.pop_params_get_param(self, index)]
+        end
       end
 
       def parameters=(parameter_names)
@@ -64,10 +85,14 @@ module Evoasm
         Libevoasm.pop_params_set_n_params(self, parameter_names.size)
       end
 
-      def parameters
-        Array.new(Libevoasm.pop_params_get_n_params self) do |index|
-          parameters_enum_type[Libevoasm.pop_params_get_param(self, index)]
-        end
+      # @!attribute domains
+      # @return [Hash{Symbol => Array, Range}] a hash whose values indicate user-defined domains for the parameters given as keys
+      def domains
+        parameters.map do |parameter_name|
+          domain_ptr = Libevoasm.pop_params_get_domain(self, parameter_name)
+          domain = @domains.find { |domain| domain == domain_ptr }
+          [parameter_name, domain]
+        end.to_h
       end
 
       def domains=(domains_hash)
@@ -85,12 +110,17 @@ module Evoasm
         @domains = domains
       end
 
-      def domains
-        parameters.map do |parameter_name|
-          domain_ptr = Libevoasm.pop_params_get_domain(self, parameter_name)
-          domain = @domains.find { |domain| domain == domain_ptr }
-          [parameter_name, domain]
-        end.to_h
+      # @!visibility private
+      def deme_height
+        Libevoasm.pop_params_get_deme_height self
+      end
+
+      # @!attribute seed
+      # @return [Array<Integer>] the seed for the random number generator
+      def seed
+        Array.new(PRNG::SEED_SIZE) do |index|
+          Libevoasm.pop_params_get_seed(self, index)
+        end
       end
 
       def seed=(seed)
@@ -103,18 +133,21 @@ module Evoasm
         end
       end
 
-      def seed
-        Array.new(PRNG::SEED_SIZE) do |index|
-          Libevoasm.pop_params_get_seed(self, index)
-        end
-      end
-
+      # Validate the parameters
+      # @raise [Error] if the parameters are invalid
       def validate!
         unless Libevoasm.pop_params_validate(self)
           raise Error.last
         end
       end
 
+      # @!attribute instructions
+      # @return [Symbol, Instruction] the list of instructions to use
+      def instructions
+        Array.new(Libevoasm.pop_params_get_n_insts self) do |index|
+          @inst_id_enum_type[Libevoasm.pop_params_get_inst(self, index)]
+        end
+      end
       def instructions=(instructions)
         instructions.each_with_index do |instruction, index|
           name =
@@ -128,34 +161,42 @@ module Evoasm
         Libevoasm.pop_params_set_n_insts(self, instructions.size)
       end
 
-      def instructions
-        Array.new(Libevoasm.pop_params_get_n_insts self) do |index|
-          @inst_id_enum_type[Libevoasm.pop_params_get_inst(self, index)]
-        end
+      # @!attribute kernel_size
+      # @return [Integer] the size of program kernels (number of instructions per kernel)
+      def kernel_size
+        Libevoasm.pop_params_get_kernel_size self
       end
 
       def kernel_size=(kernel_size)
         Libevoasm.pop_params_set_kernel_size self, kernel_size
       end
 
-      def kernel_size
-        Libevoasm.pop_params_get_kernel_size self
+      # @!attribute program_size
+      # @return [Integer] the size of programs (number of kernels per program)
+      def program_size
+        Libevoasm.pop_params_get_program_size self
       end
 
       def program_size=(program_size)
         Libevoasm.pop_params_set_program_size self, program_size
       end
 
-      def program_size
-        Libevoasm.pop_params_get_program_size self
-      end
-
+      # @!attribute recur_limit
+      # @return [Integer] the size of programs (number of kernels per program)
       def recur_limit
         Libevoasm.pop_params_get_recur_limit self
       end
 
       def recur_limit=(recur_limit)
         Libevoasm.pop_params_set_recur_limit self, recur_limit
+      end
+
+      # @!attribute examples
+      # @return [Hash] shorthand to set expected program input and output
+      # @see #input
+      # @see #output
+      def examples
+        input.zip(output).to_h
       end
 
       def examples=(examples)
@@ -174,10 +215,6 @@ module Evoasm
       def output=(output)
         @output = output
         Libevoasm.pop_params_set_program_output self, output
-      end
-
-      def examples
-        input.zip(output).to_h
       end
 
       private

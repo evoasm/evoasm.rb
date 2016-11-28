@@ -1925,6 +1925,19 @@ module Evoasm
       :none
     ]
 
+    enum :x64_param_type, [
+      :bool, 0,
+      :int3, 1,
+      :int4, 2,
+      :int8, 3,
+      :int32, 4,
+      :int64, 5,
+      :reg, 6,
+      :addr_size, 7,
+      :scale, 8,
+      :none
+    ]
+
 
     enum :x64_operand_size, [
       :'8',

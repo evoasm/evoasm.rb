@@ -1,12 +1,17 @@
 require 'evoasm/exception_error'
 
 module Evoasm
+  # Represents an executable area of memory
   class Buffer < FFI::AutoPointer
+
+    # @!visibility private
     def self.release(ptr)
       Libevoasm.buf_destroy(buf)
       Libevoasm.buf_free(buf)
     end
 
+    # @param type [:mmap, :malloc] the buffer type, only buffers created with +:mmap+ are executable.
+    # @param capacity [Integer] the buffer's capacity in bytes
     def initialize(type, capacity)
       ptr = Libevoasm.buf_alloc
       unless Libevoasm.buf_init ptr, type, capacity
@@ -15,27 +20,38 @@ module Evoasm
       super(ptr)
     end
 
+    # @!attribute [r] capacity
+    # @return [Integer] the buffer's capacity
     def capacity
       Libevoasm.buf_get_capa self
     end
 
+    # @!attribute [r] position
+    # @return [Integer] the buffer cursor's current position
     def position
       Libevoasm.buf_get_pos self
     end
 
+    # @!attribute [r] type
+    # @return [:mmap, :malloc] the buffer's current position
     def type
       Libevoasm.buf_get_type self
     end
 
+    # Gives the buffer's content as string
+    # @return [String]
     def to_s
       ptr = Libevoasm.buf_get_data self
       ptr.read_string capacity
     end
 
+    # @!visibility private
     def __log__(log_level)
       Libevoasm.buf_log self, log_level
     end
 
+    # Writes data into the buffer and advances the buffer position
+    # @param data [String] the data to write into the buffer
     def write(data)
       data_ptr = FFI::MemoryPointer.new :uint8, data.size
       data_ptr.write_string data
@@ -45,6 +61,8 @@ module Evoasm
       end
     end
 
+    # Executes the buffer's content.
+    # @raise [ExceptionError] if a hardware exception occurred
     def execute!
       begin
 
@@ -74,23 +92,6 @@ module Evoasm
         unless Libevoasm.buf_protect self, :rw
           raise Error.last
         end
-      end
-    end
-
-    private
-    def safe_execute!(exceptions)
-      current_arch = Libevoasm.get_current_arch
-      exception_enum = Libevoasm.enum_type(:"#{current_arch}_exception")
-
-      exception_mask = exception_enum.flags(exceptions, shift: true)
-
-      #FIXME: should be intptr_t, but FFI sucks
-      return_value_ptr = FFI::MemoryPointer.new :size_t, 1
-
-      if Libevoasm.buf_safe_exec(self, exception_mask, return_value_ptr)
-        return_value_ptr.read_size_t
-      else
-        nil
       end
     end
   end

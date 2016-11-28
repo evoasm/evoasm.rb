@@ -44,7 +44,7 @@ module Search
       @seed = SEED
       @kernel_size = 20
       @program_size = 5
-      @mutation_rate = 0.0;
+      @mutation_rate = 0.0
       @deme_count = 5
       @recur_limit = 100
       #@deme_size = 5000

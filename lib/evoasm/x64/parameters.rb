@@ -52,25 +52,45 @@ module Evoasm
         @scale_enum_type = Libevoasm.enum_type :x64_scale
         @reg_id_enum_type = Libevoasm.enum_type :x64_reg_id
 
-        @disp_size_map = {
-          8 =>  :disp8,
-          32 => :disp32
+        @type_map_enum_types = {
+          scale: @scale_enum_type,
+          addr_size: @addr_size_enum_type,
+          reg: @reg_id_enum_type
         }
-        @disp_size_inv_map = @disp_size_map.invert
 
-        @addr_size_map = {
-          32 => :addr_size32,
-          64 => :addr_size64,
-        }
-        @addr_size_inv_map = @addr_size_map.invert
+        @type_map = {
+          scale: {
+            1 => :scale1,
+            2 => :scale2,
+            4 => :scale4,
+            8 => :scale8
+          },
 
-        @scale_map = {
-          1 => :scale1,
-          2 => :scale2,
-          4 => :scale4,
-          8 => :scale8
+          addr_size: {
+            32 => :addr_size32,
+            64 => :addr_size64,
+          },
+
+          bool: {
+            true => 1,
+            false => 0
+          },
+
+          int3: proc { |v| check_int_range v, 3 },
+          int4: proc { |v| check_int_range v, 4 },
+          int8: proc { |v| check_int_range v, 5 },
+          int32: proc { |v| check_int_range v, 32 },
+          int64: proc { |v| check_int_range v, 64 },
+          reg: proc { |v| v }
         }
-        @scale_inv_map = @scale_map.invert
+
+        @inv_type_map = @type_map.map do |k, v|
+          if v.is_a? Hash
+            [k, v.invert]
+          else
+            [k, v]
+          end
+        end.to_h
 
         super(ptr)
 
@@ -111,38 +131,41 @@ module Evoasm
 
       private
 
-      def value_to_ffi_value(parameter_name, parameter_value)
-        raise ArgumentError, 'value cannot be nil' if parameter_value.nil?
-        return 1 if parameter_value.equal? true
-        return 0 if parameter_value.equal? false
+      def check_int_range(value, bitsize)
+        min = -2**bitsize
+        max = -min - 1
+        raise ArgumentError, "#{value} exceeds value range #{min}..#{max}" if value < min || value > max
 
-        case parameter_name
-        when :disp_size, :addr_size, :scale
-          ffi_value = instance_variable_get(:"@#{parameter_name}_map")[parameter_value]
+        value
+      end
 
-          if ffi_value.nil?
-            raise ArgumentError, "#{parameter_value} is not valid for #{parameter_name}"
-          end
-
-          ffi_value
-        when :reg0, :reg1, :reg2, :reg3, :reg_base, :reg_index
-          @reg_id_enum_type[parameter_value]
+      def parameter_type(parameter_name)
+        if basic?
+          Libevoasm.x64_basic_params_get_type(parameter_name)
         else
-          parameter_value
+          Libevoasm.x64_params_get_type(parameter_name)
         end
       end
 
-      def ffi_value_to_value(parameter_name, ffi_value)
-        case parameter_name
-        when :disp_size, :addr_size, :scale
-          enum_type = instance_variable_get(:"@#{parameter_name}_enum_type")
-          symbol = enum_type[ffi_value]
-          instance_variable_get(:"@#{parameter_name}_inv_map").fetch symbol
-        when :reg0, :reg1, :reg2, :reg3, :reg_base, :reg_index
-          @reg_id_enum_type[ffi_value]
-        else
-          ffi_value
+      def value_to_ffi_value(parameter_name, parameter_value)
+        raise ArgumentError, 'value cannot be nil' if parameter_value.nil?
+
+        parameter_type = parameter_type parameter_name
+        ffi_value = @type_map[parameter_type][parameter_value]
+
+        if ffi_value.nil?
+          raise ArgumentError, "value #{parameter_value} is invalid for #{parameter_name}"
         end
+
+        ffi_value
+      end
+
+      def ffi_value_to_value(parameter_name, ffi_value)
+        parameter_type = parameter_type parameter_name
+        if @type_map_enum_types.key? parameter_type
+          ffi_value = @type_map_enum_types[parameter_type][ffi_value]
+        end
+        @inv_type_map[parameter_type][ffi_value]
       end
 
       def parameter_name_to_id(symbol)

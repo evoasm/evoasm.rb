@@ -38,39 +38,28 @@ module PopulationHelper
     Evoasm::Population.new :x64, parameters
   end
 
-  def start(loss = 0.0, min_iterations: 0, max_iterations: 10_000_000, &block)
+  def start(loss = 0.0, min_generations: 0, max_generations: 1024, &block)
     @population = new_population
     @population.seed
-
     @found_program = nil
-    iteration = 0
 
-    until (iteration > min_iterations && @found_program) || iteration > max_iterations
-      summary = @population.summary
-      @population.evaluate
-
-      #summary = @population.loss_samples
-      puts "#{iteration}/#{min_iterations} #{"#" * 100}"
-      pp summary
-      puts "#" * 100
-
-      if block
-        block[summary]
-      end
-
+    @population.run(min_generations: min_generations, max_generations: max_generations) do
       best_loss = @population.best_loss
       if best_loss == Float::INFINITY
-        p "reseeding"
         @population.seed
       else
         if best_loss <= loss
           @found_program = @population.best_program
+          next true
         end
-
-        @population.next_generation!
       end
 
-      iteration += 1
+      if block
+        block[@population.summary]
+      end
+
+      @population.plot
+      false
     end
   end
 
@@ -124,7 +113,7 @@ module PopulationHelper
           random_code
           summaries = []
 
-          start(0.5, min_iterations: 10, max_iterations: 20) do |summary|
+          start(0.5, min_generations: 10, max_generations: 20) do |summary|
             summaries << summary
           end
 

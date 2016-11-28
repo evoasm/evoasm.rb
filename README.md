@@ -45,6 +45,6 @@ Please see [Getting Started](https://github.com/evoasm/evoasm/blob/master/docs/G
 
 ## License
 
-[MPL-2.0][license]
+[AGPL-3.0][license]
 
-[license]: https://github.com/furunkel/evoasm/blob/master/LICENSE.txt
+[license]: https://github.com/furunkel/evoasm/blob/master/LICENSE.md

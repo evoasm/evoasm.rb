@@ -1,6 +1,8 @@
 require 'ffi'
 
 module Evoasm
+
+  # @!visibility private
   module Capstone
     class Error < StandardError; end
 
@@ -94,6 +96,5 @@ module Evoasm
       result
     end
   end
-
 
 end

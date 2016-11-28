@@ -7,12 +7,12 @@ module Evoasm
     def test_features
       features = Evoasm::X64.features
       refute_empty features
-      assert features.all? { |i| i.is_a? Symbol }
+      assert features.all? { |feature, _| feature.is_a? Symbol }
       if RUBY_PLATFORM =~ /linux/
         cpu_info = File.read '/proc/cpuinfo'
         [:cx8, :cmov, :mmx, :sse, :sse2, :pclmulqdq, :ssse3, :fma, :cx16, :sse4_1,
          :sse4_2, :movbe, :popcnt, :aes, :avx, :f16c, :rdrand, :lahf_lm, :bmi1, :avx2, :bmi2].each do |feature|
-          assert features.include?(feature) == !!(cpu_info =~ /\b#{feature}\b/),
+          assert features[feature] == !!(cpu_info =~ /\b#{feature}\b/),
                  "availability of feature '#{feature}' does not match cpuinfo"
         end
       end
