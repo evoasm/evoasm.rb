@@ -20,7 +20,7 @@ module Evoasm
 
       # @param architecture [Symbol] the machine architecture (currently only +:x64+ is supported)
       # @yield [self]
-      def initialize(architecture, &block)
+      def initialize(architecture = Evoasm.architecture, &block)
         ptr = Libevoasm.pop_params_alloc
         Libevoasm.pop_params_init ptr
 

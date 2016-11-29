@@ -13,9 +13,9 @@ module Evoasm
       Libevoasm.pop_free(ptr)
     end
 
-    # @param architecture [Symbol] architecture, currently only +:x64+ is supported
     # @param parameters [Population::Parameters] the population parameters
-    def initialize(architecture, parameters)
+    # @param architecture [Symbol] architecture, currently only +:x64+ is supported
+    def initialize(parameters, architecture = Evoasm.architecture)
       @parameters = parameters
 
       ptr = Libevoasm.pop_alloc
@@ -98,23 +98,25 @@ module Evoasm
     end
 
     # Starts the evolutionary process on this population
+    # @param loss [Float] stop process if a program is found whose loss is less or equal than the specified loss
     # @param min_generations [Integer] minimum number of generations to run
     # @param max_generations [Integer] maximum number of generations to run
+    # @param seed [Bool] whether the population should be seeded before starting
     # @yield [self]
     # @yieldreturn a truthy value to stop the process
     # @return [Program] the best program found
 
-    def run(min_generations: 0, max_generations: 1000, &block)
+    def run(loss: nil, min_generations: 0, max_generations: 1000, seed: true, &block)
+      self.seed if seed
       best_program = nil
       generation = 0
-      best_loss = Float::INFINITY
 
       until (generation > min_generations && best_program) || generation > max_generations
         evaluate
 
-        if block
-          break if block[self]
-        end
+        best_program = self.best_program
+        break if loss && best_loss <= loss
+        break if block && block[self]
 
         next_generation!
         generation += 1

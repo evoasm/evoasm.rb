@@ -9,7 +9,7 @@ module Evoasm
 
     ffi_lib File.join(Evoasm.ext_dir, 'evoasm_ext', FFI.map_library_name('evoasm'))
 
-    enum :example_type, [
+    enum :io_val_type, [
       :i64,
       :u64,
       :f64
@@ -87,7 +87,7 @@ module Evoasm
 
     attach_evoasm_function :init, [:int, :pointer, :pointer], :void
     attach_evoasm_function :get_last_error, [], :pointer
-    attach_evoasm_function :set_min_log_level, [:log_level], :void
+    attach_evoasm_function :set_log_level, [:log_level], :void
 
     attach_evoasm_function :get_arch_info, [:arch_id], :pointer
     attach_evoasm_function :arch_info_get_features, [:pointer], :uint64
@@ -196,7 +196,7 @@ module Evoasm
     attach_evoasm_function :program_io_get_len, [:pointer], :uint16
     attach_evoasm_function :program_io_get_value_f64, [:pointer, :size_t], :double
     attach_evoasm_function :program_io_get_value_i64, [:pointer, :size_t], :int64
-    attach_evoasm_function :program_io_get_type, [:pointer, :size_t], :example_type
+    attach_evoasm_function :program_io_get_type, [:pointer, :size_t], :io_val_type
     attach_evoasm_function :program_io_destroy, [:pointer], :void
 
     attach_evoasm_function :pop_seed, [:pointer], :void

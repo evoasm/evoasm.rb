@@ -96,7 +96,7 @@ module Evoasm
       def load_tuples(ptr, flat_tuples, arity)
         var_args = flat_tuples.flat_map do |tuple_value|
           tuple_type, c_type = value_types tuple_value
-          [:tuple_type, tuple_type, c_type, tuple_value]
+          [:io_val_type, tuple_type, c_type, tuple_value]
         end
 
         success = Libevoasm.program_io_init ptr, arity, *var_args

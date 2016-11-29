@@ -11,7 +11,7 @@ DEFS = ''
 CFLAGS = ''
 
 if ARGV.include?('--debug')
-  DEFS << ' -DEVOASM_MIN_LOG_LEVEL=EVOASM_LOG_LEVEL_DEBUG'
+  DEFS << ' -DEVOASM_LOG_LEVEL=EVOASM_LOG_LEVEL_DEBUG'
   CFLAGS << ' -ggdb3 -O0'
 else
   DEFS << ' -DNDEBUG'

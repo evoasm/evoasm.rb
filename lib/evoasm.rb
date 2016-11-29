@@ -21,13 +21,18 @@ module Evoasm
     File.join root_dir, 'ext'
   end
 
-  def self.min_log_level=(log_level)
-    Libevoasm.set_min_log_level log_level
+  def self.log_level=(log_level)
+    Libevoasm.set_log_level log_level
+  end
+
+  def self.architecture
+    Libevoasm.get_current_arch
   end
 end
 
 require 'evoasm/libevoasm'
 require 'evoasm/error'
 
-
 Evoasm::Libevoasm.init(0, FFI::Pointer::NULL, FFI::Pointer::NULL)
+
+require 'evoasm/population'

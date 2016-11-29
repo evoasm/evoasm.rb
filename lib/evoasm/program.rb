@@ -108,20 +108,30 @@ module Evoasm
       io_registers false, kernel_index
     end
 
+    private def format_disassembly(disasm)
+      disasm.map do |line|
+        "0x#{line[0].to_s 16}:\t#{line[1]}\t#{line[2]}"
+      end.join("\n")
+    end
+
     # Disassembles the whole program
     # @param frame [Bool] whether to include the stack frame and
-    #   setup code in the disassembly
-    def disassemble(frame = false)
+    # @param format [Bool] whether to format the assembly
+    # @return [String, Array<String>] the formatted assembly as string
+    #   if format is set, an array of address, opcode, operands triples otherwise.
+    def disassemble(frame = false, format: false)
       code_ptr_ptr = FFI::MemoryPointer.new :pointer
       code_len = Libevoasm.program_get_code self, frame, code_ptr_ptr
       code_ptr = code_ptr_ptr.read_pointer
       code = code_ptr.read_string(code_len)
 
-      #p code.each_byte.map { |b| "%0.2x" % b }.join(' ')
-      #p input_registers
-      #p output_registers
+      disasm = X64.disassemble code, code_ptr.address
 
-      X64.disassemble code, code_ptr.address
+      if format
+        format_disassembly disasm
+      else
+        disasm
+      end
     end
 
     # Visualizes the program and its kernels using Graphviz

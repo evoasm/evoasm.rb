@@ -35,23 +35,17 @@ module PopulationHelper
       p.mutation_rate = @mutation_rate
     end
 
-    Evoasm::Population.new :x64, parameters
+    Evoasm::Population.new parameters
   end
 
   def start(loss = 0.0, min_generations: 0, max_generations: 1024, &block)
     @population = new_population
-    @population.seed
     @found_program = nil
 
-    @population.run(min_generations: min_generations, max_generations: max_generations) do
+    @found_program = @population.run(loss: loss, min_generations: min_generations, max_generations: max_generations) do
       best_loss = @population.best_loss
       if best_loss == Float::INFINITY
         @population.seed
-      else
-        if best_loss <= loss
-          @found_program = @population.best_program
-          next true
-        end
       end
 
       if block

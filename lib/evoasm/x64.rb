@@ -6,7 +6,6 @@ require 'evoasm/x64/parameters'
 
 module Evoasm
   module X64
-    Evoasm.min_log_level = :info
     unless Libevoasm.x64_init
       raise Error.last
     end

@@ -45,14 +45,9 @@ module Evoasm
         @cpu_state.emit_store buffer
         Evoasm::X64.encode(:ret, {}, buffer)
 
-
         buffer.execute!
-
         assert_equal [7], @cpu_state[:a]
-
       end
-
-
 
       def test_emit_load
         buffer = Buffer.new :mmap, 1024
