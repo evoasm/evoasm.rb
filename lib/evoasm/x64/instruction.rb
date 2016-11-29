@@ -2,6 +2,7 @@ require 'evoasm/parameter'
 
 module Evoasm
   module X64
+    # Represents an x86-64 instruction
     class Instruction < FFI::Pointer
       class Parameter < Evoasm::Parameter
         def name
@@ -9,25 +10,36 @@ module Evoasm
         end
       end
 
+      # @return [Symbol] the instruction's name
       attr_reader :name
 
+      # @!visibility private
       def initialize(ptr, name)
         super(ptr)
         @name = name
       end
 
+      # Gives a list of instruction mnemonics
+      # @return [Array<String>] mnemonics
       def mnemonics
         Libevoasm.x64_inst_get_mnem(self).split('/')
       end
 
+      # Gives the preferred instruction mnemonic
+      # @return [String] the mnemonics
+      # @see #mnemonics
       def mnemonic
         mnemonics.first
       end
 
+      # Gives the operand at the specified index
+      # @return [Operand] the operand
       def operand(index)
         Operand.new Libevoasm.x64_inst_get_operand(self, index), self
       end
 
+      # Gives the instruction's operands
+      # @return [Array<Operand>] the operands
       def operands
         n_operands = Libevoasm.x64_inst_get_n_operands self
         Array.new(n_operands) do |index|
@@ -35,6 +47,8 @@ module Evoasm
         end
       end
 
+      # Gives this instruction's parameters
+      # @return [Array<Instruction::Parameter>] the parameters
       def parameters
         n_params = Libevoasm.x64_inst_get_n_params self
         Array.new(n_params) do |param_index|
@@ -42,10 +56,17 @@ module Evoasm
         end
       end
 
+      # Returns whether this instruction is encodable with the basic encoder
+      # @return [Bool]
       def basic?
         Libevoasm.x64_inst_is_basic(self)
       end
 
+      # Encodes the instruciton with the given parameters
+      # @param parameters [X64::Parameters] parameters
+      # @param buffer [Buffer] the buffer to emit to
+      # @param basic [Bool] whether the basic encoder should be used
+      # @return [void]
       def encode(parameters, buffer = nil, basic: false)
         if basic && !basic?
           raise ArgumentError, 'instruction does not support basic mode'

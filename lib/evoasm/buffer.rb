@@ -10,7 +10,7 @@ module Evoasm
       Libevoasm.buf_free(buf)
     end
 
-    # @param type [:mmap, :malloc] the buffer type, only buffers created with +:mmap+ are executable.
+    # @param type [:mmap, :malloc] the buffer type, only buffers created with +:mmap+ are executable
     # @param capacity [Integer] the buffer's capacity in bytes
     def initialize(type, capacity)
       ptr = Libevoasm.buf_alloc

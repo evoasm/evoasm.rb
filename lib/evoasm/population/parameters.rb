@@ -4,6 +4,7 @@ require 'evoasm/domain'
 
 module Evoasm
   class Population
+
     class Parameters < FFI::AutoPointer
 
       # @!visibility private

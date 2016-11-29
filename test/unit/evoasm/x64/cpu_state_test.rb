@@ -11,31 +11,31 @@ module Evoasm
 
       def test_clean
         X64.registers.each do |reg|
-          data = @cpu_state.get(reg)
+          data = @cpu_state[reg]
           refute_empty data
           assert data.all? { |e| e == 0 }
         end
       end
 
       def test_set_get
-        @cpu_state.set :a, 0xFF
-        assert_equal [0xFF], @cpu_state.get(:a)
+        @cpu_state[:a] = 0xFF
+        assert_equal [0xFF], @cpu_state[:a]
 
-        @cpu_state.set :b, [0xDEADBEEF]
-        assert_equal [0xDEADBEEF], @cpu_state.get(:b)
+        @cpu_state[:b] = [0xDEADBEEF]
+        assert_equal [0xDEADBEEF], @cpu_state[:b]
 
         # FIXME: with AVX512 the array
         # should be of size 8
         data = (1..4).to_a
-        @cpu_state.set :xmm0, data
-        assert_equal data, @cpu_state.get(:xmm0)
+        @cpu_state[:xmm0] = data
+        assert_equal data, @cpu_state[:xmm0]
       end
 
       def test_clone
-        @cpu_state.set :b, 0xFAB
+        @cpu_state[:b] = 0xFAB
         cloned_cpu_state = @cpu_state.clone
 
-        assert_equal [0xFAB], cloned_cpu_state.get(:b)
+        assert_equal [0xFAB], cloned_cpu_state[:b]
       end
 
       def test_emit_store
@@ -48,7 +48,7 @@ module Evoasm
 
         buffer.execute!
 
-        assert_equal [7], @cpu_state.get(:a)
+        assert_equal [7], @cpu_state[:a]
 
       end
 
@@ -57,8 +57,8 @@ module Evoasm
       def test_emit_load
         buffer = Buffer.new :mmap, 1024
 
-        @cpu_state.set :a, 0xABCD
-        @cpu_state.set :rflags, [0x1]
+        @cpu_state[:a] = 0xABCD
+        @cpu_state[:rflags] = [0x1]
 
         cpu_state_after = CPUState.new
 
@@ -70,8 +70,8 @@ module Evoasm
         #buffer.__log__ :warn
         buffer.execute!
 
-        assert_equal [0xABCD], cpu_state_after.get(:a)
-        assert_equal [0x1], cpu_state_after.get(:rflags)
+        assert_equal [0xABCD], cpu_state_after[:a]
+        assert_equal [0x1], cpu_state_after[:rflags]
       end
     end
   end

@@ -2,6 +2,7 @@ require 'evoasm/ffi_ext'
 require 'evoasm/prng'
 
 module Evoasm
+  # @!visibility private
   class Domain < FFI::AutoPointer
     class << self
       def release(ptr)
@@ -76,6 +77,7 @@ module Evoasm
     end
   end
 
+  # @!visibility private
   class EnumerationDomain < Domain
     def self.new(*values)
       values = values.flatten
@@ -94,12 +96,14 @@ module Evoasm
     end
   end
 
+  # @!visibility private
   class RangeDomain < Domain
     def self.new(min, max)
       super(:range, [:int64, min, :int64, max])
     end
   end
 
+  # @!visibility private
   class TypeDomain < Domain
     def self.new(type)
       super(type, [])

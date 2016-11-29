@@ -1,11 +1,14 @@
 require 'ffi'
 
 module Evoasm
+
+  # Represents a program comprising one ore multiple kernels
   class Program < FFI::AutoPointer
 
     require_relative 'program/io.rb'
 
 
+    # @!visibility private
     def self.release(ptr)
       Libevoasm.program_destroy(ptr)
       Libevoasm.program_free(ptr)
@@ -16,10 +19,16 @@ module Evoasm
       super ptr
     end
 
-    def run(*input_example)
-      run_all(input_example).first
+    # Runs the program with the given input
+    # @param input_tuple [Array] an input tuple
+    # @return [Array] the output tuple corresponding to the given input
+    def run(*input_tuple)
+      run_all(input_tuple).first
     end
 
+    # Like {#run}, but runs multiple input tuples at once
+    # @param input_examples [Array] an array of input tuples
+    # @return [Array] an array of output tuples
     def run_all(*input_examples)
       input = Program::Input.new(input_examples)
 
@@ -32,10 +41,14 @@ module Evoasm
       Program::Output.new(output_ptr).to_a
     end
 
+    # Gives the size of the program as the number of kernels
+    # @return [Integer] size
     def size
       Libevoasm.program_get_size self
     end
 
+    # Eliminates intron instructions (instructions without effect)
+    # @return [Program] a new program with introns eliminated
     def eliminate_introns
       program = Program.new
       unless Libevoasm.program_eliminate_introns self, program
@@ -45,6 +58,9 @@ module Evoasm
       program
     end
 
+    # Gives the disassembly for the specified kernel
+    # @param kernel_index [Integer] index of kernel to disassemble
+    # @return [String] disassembly
     def disassemble_kernel(kernel_index)
       code_ptr_ptr = FFI::MemoryPointer.new :pointer
       code_len = Libevoasm.program_get_kernel_code self, kernel_index, code_ptr_ptr
@@ -54,6 +70,8 @@ module Evoasm
       X64.disassemble code, code_ptr.address
     end
 
+    # Gives the disassembly for all kernels in the program
+    # @return [Array<String>] array of disassembly
     def disassemble_kernels
       Array.new(size) do |kernel_index|
         disassemble_kernel kernel_index
@@ -76,27 +94,38 @@ module Evoasm
       end
     end
 
+    # Gives the input registers of the specified kernel
+    # @param kernel_index [Integer]
+    # @return [Array<Symbol>] input registers
     def input_registers(kernel_index = 0)
       io_registers true, kernel_index
     end
 
+    # Gives the output registers of the specified kernel
+    # @param kernel_index [Integer]
+    # @return [Array<Symbol>] output registers
     def output_registers(kernel_index = size - 1)
       io_registers false, kernel_index
     end
 
+    # Disassembles the whole program
+    # @param frame [Bool] whether to include the stack frame and
+    #   setup code in the disassembly
     def disassemble(frame = false)
       code_ptr_ptr = FFI::MemoryPointer.new :pointer
       code_len = Libevoasm.program_get_code self, frame, code_ptr_ptr
       code_ptr = code_ptr_ptr.read_pointer
       code = code_ptr.read_string(code_len)
 
-      p code.each_byte.map { |b| "%0.2x" % b }.join(' ')
-      p input_registers
-      p output_registers
+      #p code.each_byte.map { |b| "%0.2x" % b }.join(' ')
+      #p input_registers
+      #p output_registers
 
       X64.disassemble code, code_ptr.address
     end
 
+    # Visualizes the program and its kernels using Graphviz
+    # @return [GV::Graph]
     def to_gv
       require 'gv'
 

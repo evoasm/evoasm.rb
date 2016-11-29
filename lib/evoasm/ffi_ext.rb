@@ -1,5 +1,6 @@
 require 'ffi'
 
+# @!visibility private
 module FFI
   class Enum
     def flags(flags, shift: false)

@@ -2,62 +2,74 @@ require 'evoasm/program'
 
 module Evoasm
   class Program
+    # Represents one or multiple input/output tuples.
     class IO < FFI::AutoPointer
+
+      # Maximum arity for tuples
       MAX_ARITY = 8
 
       include Enumerable
 
+      # @!visibility private
       def self.release(ptr)
         Libevoasm.program_io_free(ptr)
       end
 
-      def initialize(examples_or_ptr)
-        if examples_or_ptr.is_a?(FFI::Pointer)
-          super(examples_or_ptr)
+      # @param tuples [Array] array of input or output tuples
+      def initialize(tuples)
+        if tuples.is_a?(FFI::Pointer)
+          super(tuples)
         else
-          examples = examples_or_ptr
-          arity = determine_arity examples
+          tuples = tuples
+          arity = determine_arity tuples
 
           if arity > MAX_ARITY
             raise ArgumentError, "maximum arity exceeded (#{arity} > #{MAX_ARITY})"
           end
 
-          flat_examples = examples.flatten
+          flat_tuples = tuples.flatten
 
-          ptr = Libevoasm.program_io_alloc flat_examples.size
-          load_examples ptr, flat_examples, arity
+          ptr = Libevoasm.program_io_alloc flat_tuples.size
+          load_tuples ptr, flat_tuples, arity
 
           super(ptr)
         end
       end
 
+      # @return [Integer] arity of tuples
       def arity
         Libevoasm.program_io_get_arity self
       end
 
+      # @yield [Array] tuple
       def each
         return enum_for(:each) unless block_given?
-        size.times do |example_index|
-          yield self[example_index]
+        size.times do |tuple_index|
+          yield self[tuple_index]
         end
       end
 
+      # Converts to array of tuples
       def to_a
-        Array.new(size) do |example_index|
-          self[example_index]
+        Array.new(size) do |tuple_index|
+          self[tuple_index]
         end
       end
 
+      # @return [Integer] the number of input/output values
       def length
         Libevoasm.program_io_get_len self
       end
 
+      # @return [Integer] the number of input/output pairs
       def size
         length / arity
       end
 
-      def [](example_index)
-        absolute_index = arity * example_index
+      # @param tuple_index [Integer]
+      # @return [Array] returns the tuple at tuple_index
+      def [](tuple_index)
+        absolute_index = arity * tuple_index
         if arity > 1
           Array.new(arity) do |value_index|
             value_at(absolute_index + value_index)
@@ -81,10 +93,10 @@ module Evoasm
         end
       end
 
-      def load_examples(ptr, flat_examples, arity)
-        var_args = flat_examples.flat_map do |example_value|
-          example_type, c_type = value_types example_value
-          [:example_type, example_type, c_type, example_value]
+      def load_tuples(ptr, flat_tuples, arity)
+        var_args = flat_tuples.flat_map do |tuple_value|
+          tuple_type, c_type = value_types tuple_value
+          [:tuple_type, tuple_type, c_type, tuple_value]
         end
 
         success = Libevoasm.program_io_init ptr, arity, *var_args
@@ -103,27 +115,29 @@ module Evoasm
           [:i64, :int64]
         else
           raise ArgumentError,
-                "invalid example value '#{value}' of type '#{value.class}'"
+                "invalid tuple value '#{value}' of type '#{value.class}'"
         end
       end
 
-      def determine_arity(examples)
+      def determine_arity(tuples)
         arity = nil
-        examples.each do |example|
-          example_arity = Array(example).size
-          if arity && arity != example_arity
+        tuples.each do |tuple|
+          tuple_arity = Array(tuple).size
+          if arity && arity != tuple_arity
             raise ArgumentError,
-                  "invalid arity for example '#{example}' (#{example_arity} for #{arity})"
+                  "invalid arity for tuple '#{tuple}' (#{tuple_arity} for #{arity})"
           end
-          arity = example_arity
+          arity = tuple_arity
         end
         arity || 0
       end
     end
 
+    # Represents a program's input
     class Input < IO
     end
 
+    # Represents a program's output
     class Output < IO
     end
   end

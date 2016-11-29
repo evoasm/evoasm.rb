@@ -37,7 +37,7 @@ module Evoasm
           word = instruction.operands.find do |operand|
             case mode
             when :write
-              next false unless operand.written? || operand.conditionally_written?
+              next false unless operand.written? || operand.maybe_written?
             when :read
               next false unless operand.read?
             else
@@ -105,7 +105,7 @@ module Evoasm
             cpu_state_before = CPUState.new
             read_registers = accessed_registers(X64.registers, instruction, parameters, :read)
             read_registers.each do |read_register, _|
-              cpu_state_before.set(read_register, Array.new(4) { rand(999999999) })
+              cpu_state_before[read_register] = Array.new(4) { rand(999999999) }
             end
             #p [instruction.name, accessed_registers(X64.registers, instruction, parameters, :read)]
 
@@ -118,7 +118,7 @@ module Evoasm
                 value = Array.new(4) { rand(999999999) }
                 #next if non_read_register == :rflags
                 #p [non_read_register, value]
-                cpu_state_before.set(non_read_register, value)
+                cpu_state_before[non_read_register] = value
               end
               buffer = Evoasm::Buffer.new :mmap, 1024
               #parameters = random_parameters(instruction)
@@ -139,10 +139,10 @@ module Evoasm
                 if expected_cpu_state_after
                   written_registers.each do |written_register, written_word|
                     next if written_register == :rflags
-                    message = "#{written_register} mismatch (#{cpu_state_before.get(written_register)})"\
+                    message = "#{written_register} mismatch (#{cpu_state_before[written_register]})"\
                               "#{non_read_registers}"
                     #p [instruction.name, parameters, cpu_state_after.to_h]
-                    assert_equal expected_cpu_state_after.get(written_register, written_word), cpu_state_after.get(written_register, written_word), message
+                    assert_equal expected_cpu_state_after[written_register, written_word], cpu_state_after[written_register, written_word], message
                   end
                 else
                   #p ["pre", instruction.name, parameters, cpu_state_after.to_h]

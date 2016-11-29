@@ -1,12 +1,16 @@
 module Evoasm
   class Population
+
+    # Visualizes the population loss functions using {http://gnuplot.sourceforge.net Gnuplot}
     class Plotter
       MAX_SAMPLE_COUNT = 1024
 
+      # @!visibility private
       def self.__open__
         @pipe ||= IO.popen('gnuplot -persist', 'w')
       end
 
+      # @param population [Population] the population to plot
       def initialize(population)
         @population = population
 
@@ -19,6 +23,8 @@ module Evoasm
         @pipe.puts 'set datafile missing "Infinity"'
       end
 
+      # Updates data points
+      # @return [nil]
       def update
         @data ||= Array.new(@population.parameters.deme_count) { Array.new(@population.parameters.deme_height) { [] } }
         summary = @population.summary
@@ -31,6 +37,8 @@ module Evoasm
         end
       end
 
+      # Plots (or replots) the current data points
+      # @return [nil]
       def plot
         @pipe.puts "set multiplot layout #{@data[0].size}, #{@data.size}"
 

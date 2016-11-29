@@ -20,8 +20,8 @@ module Evoasm
         Libevoasm.x64_operand_is_written self
       end
 
-      def conditionally_written?
-        Libevoasm.x64_operand_is_cond_written self
+      def maybe_written?
+        Libevoasm.x64_operand_is_maybe_written self
       end
 
       def mnemonic?
