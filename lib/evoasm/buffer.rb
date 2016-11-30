@@ -6,8 +6,8 @@ module Evoasm
 
     # @!visibility private
     def self.release(ptr)
-      Libevoasm.buf_destroy(buf)
-      Libevoasm.buf_free(buf)
+      Libevoasm.buf_destroy(ptr)
+      Libevoasm.buf_free(ptr)
     end
 
     # @param capacity [Integer] the buffer's capacity in bytes
@@ -15,6 +15,7 @@ module Evoasm
     def initialize(capacity, type = :mmap)
       ptr = Libevoasm.buf_alloc
       unless Libevoasm.buf_init ptr, type, capacity
+        Libevoasm.buf_free ptr
         raise Error.last
       end
       super(ptr)

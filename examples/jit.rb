@@ -24,5 +24,3 @@ rescue Evoasm::ExceptionError => e
   puts "Execution failed with exception `#{e.exception_name}'"
 end
 
-
-

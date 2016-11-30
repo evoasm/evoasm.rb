@@ -1,8 +1,11 @@
 require 'evoasm/test'
+
+Evoasm.log_level = :info
 require 'evoasm/x64'
 
 module Evoasm
   class X64Test < Minitest::Test
+    self.make_my_diffs_pretty!
 
     def test_features
       features = Evoasm::X64.features
@@ -11,11 +14,15 @@ module Evoasm
 
       if RUBY_PLATFORM =~ /linux/
         cpu_info = File.read '/proc/cpuinfo'
-        [:cx8, :cmov, :mmx, :sse, :sse2, :pclmulqdq, :ssse3, :fma, :cx16, :sse4_1,
-         :sse4_2, :movbe, :popcnt, :aes, :avx, :f16c, :rdrand, :lahf_lm, :bmi1, :avx2, :bmi2].each do |feature|
-          assert features[feature] == !!(cpu_info =~ /\b#{feature}\b/),
-                 "availability of feature '#{feature}' does not match cpuinfo"
-        end
+
+        feature_keys =[:cx8, :cmov, :mmx, :sse, :sse2, :pclmulqdq, :ssse3, :fma, :cx16, :sse4_1,
+                       :sse4_2, :movbe, :popcnt, :aes, :avx, :f16c, :rdrand, :lahf_lm, :bmi1, :avx2, :bmi2]
+
+        cpu_info_features = feature_keys.map do |feature|
+          [feature, !!(cpu_info =~ /\b#{feature}\b/)]
+        end.sort.to_h
+
+        assert_equal cpu_info_features, features.sort.select { |feature, support| feature_keys.include? feature}.to_h
       end
     end
 

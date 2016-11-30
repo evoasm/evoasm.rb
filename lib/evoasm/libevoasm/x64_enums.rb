@@ -1927,14 +1927,15 @@ module Evoasm
 
     enum :x64_param_type, [
       :bool, 0,
-      :int3, 1,
-      :int4, 2,
-      :int8, 3,
-      :int32, 4,
-      :int64, 5,
-      :reg, 6,
-      :addr_size, 7,
-      :scale, 8,
+      :uint1, 1,
+      :int3, 2,
+      :int4, 3,
+      :int8, 4,
+      :int32, 5,
+      :int64, 6,
+      :reg, 7,
+      :addr_size, 8,
+      :scale, 9,
       :none
     ]
 
@@ -1950,7 +1951,7 @@ module Evoasm
       :none
     ]
 
-    enum :x64_reg_word, [
+    enum :x64_operand_word, [
       :lb,
       :hb,
       :w,

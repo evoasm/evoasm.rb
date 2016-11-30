@@ -61,7 +61,7 @@ module Evoasm
       # @return [Hash] the hash
       def to_h
         X64.registers.each_with_object({}) do |register, hash|
-          hash[register] = [register]
+          hash[register] = self[register]
         end
       end
 

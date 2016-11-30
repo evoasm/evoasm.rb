@@ -39,7 +39,7 @@ module Evoasm
       end
 
       def test_emit_store
-        buffer = Buffer.new :mmap, 1024
+        buffer = Buffer.new 1024
         Evoasm::X64.encode(:mov_rm32_imm32, {reg0: :a, imm0: 7}, buffer)
 
         @cpu_state.emit_store buffer
@@ -50,7 +50,7 @@ module Evoasm
       end
 
       def test_emit_load
-        buffer = Buffer.new :mmap, 1024
+        buffer = Buffer.new 1024
 
         @cpu_state[:a] = 0xABCD
         @cpu_state[:rflags] = [0x1]

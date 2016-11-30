@@ -33,9 +33,12 @@ module Evoasm
     ]
 
     enum :error_type, [
-      :argument,
-      :memory,
-      :encoding,
+      :buf,
+      :alloc,
+      :arch,
+      :program,
+      :pop_params,
+      :pop
     ]
 
     enum :error_code, [
@@ -100,6 +103,7 @@ module Evoasm
     attach_evoasm_function :buf_alloc, [], :pointer
     attach_evoasm_function :buf_init, [:pointer, :buf_type, :size_t], :bool
     attach_evoasm_function :buf_free, [:pointer], :void
+    attach_evoasm_function :buf_destroy, [:pointer], :void
     attach_evoasm_function :buf_exec, [:pointer], :size_t
     attach_evoasm_function :buf_safe_exec, [:pointer, :uint64, :pointer], :bool
     attach_evoasm_function :buf_log, [:pointer, :log_level], :void
@@ -117,7 +121,7 @@ module Evoasm
     attach_evoasm_function :x64_cpu_state_free, [:pointer], :void
     attach_evoasm_function :x64_cpu_state_destroy, [:pointer], :void
     attach_evoasm_function :x64_cpu_state_set, [:pointer, :x64_reg_id, :pointer, :size_t], :void
-    attach_evoasm_function :x64_cpu_state_get, [:pointer, :x64_reg_id, :x64_reg_word, :pointer, :size_t], :size_t
+    attach_evoasm_function :x64_cpu_state_get, [:pointer, :x64_reg_id, :x64_operand_word, :pointer, :size_t], :size_t
     attach_evoasm_function :x64_cpu_state_get_rflags_flag, [:pointer, :x64_rflags_flag], :bool
     attach_evoasm_function :x64_cpu_state_clone, [:pointer, :pointer], :void
     attach_evoasm_function :x64_cpu_state_xor, [:pointer, :pointer, :pointer], :void
@@ -168,7 +172,7 @@ module Evoasm
     attach_evoasm_function :x64_operand_is_implicit, [:pointer], :bool
     attach_evoasm_function :x64_operand_is_mnem, [:pointer], :bool
     attach_evoasm_function :x64_operand_get_type, [:pointer], :x64_operand_type
-    attach_evoasm_function :x64_operand_get_word, [:pointer], :x64_reg_word
+    attach_evoasm_function :x64_operand_get_word, [:pointer], :x64_operand_word
     attach_evoasm_function :x64_operand_get_size, [:pointer], :x64_operand_size
     attach_evoasm_function :x64_operand_get_reg_size, [:pointer], :x64_operand_size
     attach_evoasm_function :x64_operand_get_index_reg_size, [:pointer], :x64_operand_size
@@ -204,6 +208,7 @@ module Evoasm
     attach_evoasm_function :pop_eval, [:pointer], :bool
     attach_evoasm_function :pop_next_gen, [:pointer], :void
     attach_evoasm_function :pop_alloc, [], :pointer
+    attach_evoasm_function :pop_destroy, [:pointer], :void
     attach_evoasm_function :pop_free, [:pointer], :void
     attach_evoasm_function :pop_init, [:pointer, :arch_id, :pointer], :bool
     attach_evoasm_function :pop_calc_summary, [:pointer, :pointer], :bool

@@ -57,13 +57,15 @@ module Evoasm
 
       def self.define_write_test(instruction)
         define_method :"test_#{instruction.name}_writes" do
+          buffer = Evoasm::Buffer.new 1024, :mmap
+
           100.times do
             parameters = random_parameters(instruction)
-            buffer = Evoasm::Buffer.new 1024, :mmap
 
             cpu_state_before = CPUState.new
             cpu_state_after = CPUState.new
 
+            buffer.reset
             X64.emit_stack_frame buffer do
               cpu_state_before.emit_store buffer
               instruction.encode parameters, buffer, basic: true
@@ -98,8 +100,9 @@ module Evoasm
 
       def self.define_read_test(instruction)
         define_method :"test_#{instruction.name}_reads" do
+          buffer = Evoasm::Buffer.new 1024, :mmap
+
           20.times do
-            buffer = Evoasm::Buffer.new 1024, :mmap
             parameters = random_parameters(instruction)
 
             cpu_state_before = CPUState.new
@@ -120,10 +123,11 @@ module Evoasm
                 #p [non_read_register, value]
                 cpu_state_before[non_read_register] = value
               end
-              buffer = Evoasm::Buffer.new 1024, :mmap
               #parameters = random_parameters(instruction)
 
               #p cpu_state_before.get :rflags
+
+              buffer.reset
 
               cpu_state_after = CPUState.new
               X64.emit_stack_frame buffer do
@@ -163,6 +167,9 @@ module Evoasm
         next if instruction.name == :std
 
         define_write_test instruction
+
+        next if instruction.name =~ /^cmov/
+        #next if instruction.name =~ /^pins/
         define_read_test instruction
       end
     end

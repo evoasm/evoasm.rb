@@ -81,12 +81,13 @@ module Evoasm
             false => 0
           },
 
+          uint1: proc { |v| check_uint_range v, 1 },
           int3: proc { |v| check_int_range v, 3 },
           int4: proc { |v| check_int_range v, 4 },
-          int8: proc { |v| check_int_range v, 5 },
+          int8: proc { |v| check_int_range v, 8 },
           int32: proc { |v| check_int_range v, 32 },
           int64: proc { |v| check_int_range v, 64 },
-          reg: proc { |v| v }
+          reg: proc { |v| @reg_id_enum_type[v] }
         }
 
         @inv_type_map = @type_map.map do |k, v|
@@ -96,6 +97,8 @@ module Evoasm
             [k, v]
           end
         end.to_h
+
+        @inv_type_map[:reg] = proc { |v| v }
 
         super(ptr)
 
@@ -147,6 +150,14 @@ module Evoasm
 
       private
 
+      def check_uint_range(value, bitsize)
+        min = 0
+        max = 2**bitsize - 1
+        raise ArgumentError, "#{value} exceeds value range #{min}..#{max}" if value < min || value > max
+
+        value
+      end
+
       def check_int_range(value, bitsize)
         min = -2**bitsize
         max = -min - 1
@@ -178,9 +189,11 @@ module Evoasm
 
       def ffi_value_to_value(parameter_name, ffi_value)
         parameter_type = parameter_type parameter_name
+
         if @type_map_enum_types.key? parameter_type
           ffi_value = @type_map_enum_types[parameter_type][ffi_value]
         end
+
         @inv_type_map[parameter_type][ffi_value]
       end
 

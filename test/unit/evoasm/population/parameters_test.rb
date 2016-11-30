@@ -33,7 +33,7 @@ module Evoasm
         end
 
         # while at it, let's test Error
-        assert_equal :argument, error.type
+        assert_equal :pop_params, error.type
         assert_kind_of Integer, error.line
         assert_match /pop-params/, error.filename
       end
