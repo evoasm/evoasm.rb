@@ -36,3 +36,4 @@ require 'evoasm/error'
 Evoasm::Libevoasm.init(0, FFI::Pointer::NULL, FFI::Pointer::NULL)
 
 require 'evoasm/population'
+require 'evoasm/buffer'

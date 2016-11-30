@@ -42,7 +42,7 @@ module PopulationHelper
     @population = new_population
     @found_program = nil
 
-    @found_program = @population.run(loss: loss, min_generations: min_generations, max_generations: max_generations) do
+    @found_program, loss = @population.run(loss: loss, min_generations: min_generations, max_generations: max_generations) do
       best_loss = @population.best_loss
       if best_loss == Float::INFINITY
         @population.seed
@@ -53,7 +53,6 @@ module PopulationHelper
       end
 
       @population.plot
-      false
     end
   end
 

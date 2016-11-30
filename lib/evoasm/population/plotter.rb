@@ -11,16 +11,31 @@ module Evoasm
       end
 
       # @param population [Population] the population to plot
-      def initialize(population)
+      def initialize(population, filename = nil)
         @population = population
 
         @pipe = self.class.__open__
         #@pipe = File.open('/tmp/test.txt', 'w')
+
+        if filename
+          case filename
+          when /\.gif$/
+            @pipe.puts 'set term gif animate delay 20 size 1280, 1024 crop'
+            @pipe.puts %Q{set output "#{filename}"}
+          else
+            raise ArgumentError, "unknown output filetype"
+          end
+        end
+
         @pipe.puts 'set xtics'
         @pipe.puts 'set ytics'
         @pipe.puts 'set grid'
         @pipe.puts 'set style fill transparent solid 0.2 noborder'
         @pipe.puts 'set datafile missing "Infinity"'
+        @pipe.puts 'set lmargin 0.5'
+        @pipe.puts 'set rmargin 0.5'
+        @pipe.puts 'set tmargin 0.5'
+        @pipe.puts 'set bmargin 0.5'
       end
 
       # Updates data points
@@ -42,8 +57,12 @@ module Evoasm
       def plot
         @pipe.puts "set multiplot layout #{@data[0].size}, #{@data.size}"
 
+        key = true
+
         @data.each do |deme_summary|
           deme_summary.each do |layer_summary|
+            @pipe.puts "set key #{key ? 'on' : 'off'}"
+            key = false
             @pipe.write  %Q{plot '-' using 1:2:3 with filledcurves title 'IQR',}
             @pipe.write %Q{      '-' using 1:2 with lp title 'Min',}
             @pipe.puts  %Q{      '-' using 1:2 with lp lt 1 pt 5 ps 1.5 lw 2 title 'Median'}

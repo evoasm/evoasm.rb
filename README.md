@@ -28,6 +28,7 @@ Currently, the only supported architecture is **x86-64**.
 * Ruby (MRI >= 2.3, JRuby >= 9.1.2)
 * [Capstone](http://www.capstone-engine.org/) for disassembling (*optional*).
 * [Graphviz](http://www.graphviz.org/) (libgraphviz) for visualizing programs (*optional*).
+* [Gnuplot](http://gnuplot.sourceforge.net) for visualizing loss functions (*optional*)
 * POSIX-compliant OS (Linux and Mac OS X should both work).
 
 ## Usage

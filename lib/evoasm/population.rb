@@ -89,10 +89,16 @@ module Evoasm
       Libevoasm.pop_next_gen self
     end
 
+    # Stops the process started by {#run}
+    # @return [void]
+    def stop
+      @stop = true
+    end
+
     # Plots the loss function
     # @return [void]
-    def plot
-      @plotter ||= Plotter.new self
+    def plot(filename = nil)
+      @plotter ||= Plotter.new self, filename
       @plotter.update
       @plotter.plot
     end
@@ -106,23 +112,31 @@ module Evoasm
     # @yieldreturn a truthy value to stop the process
     # @return [Program] the best program found
 
-    def run(loss: nil, min_generations: 0, max_generations: 1000, seed: true, &block)
+    def run(loss: nil, min_generations: nil, max_generations: 10, seed: true, &block)
       self.seed if seed
       best_program = nil
-      generation = 0
+      best_loss = nil
+      generation = 1
 
-      until (generation > min_generations && best_program) || generation > max_generations
+      loop do
         evaluate
 
         best_program = self.best_program
-        break if loss && best_loss <= loss
-        break if block && block[self]
+        best_loss = self.best_loss
+
+        block[self]
+
+        break if @stop
+        min_generations_reached = min_generations.nil? || generation >= min_generations
+        break if min_generations_reached && loss && best_loss <= loss
+        break if generation >= max_generations
 
         next_generation!
         generation += 1
       end
 
-      best_program
+      @stop = false
+      return best_program, best_loss
     end
   end
 end

@@ -59,7 +59,7 @@ module Evoasm
         define_method :"test_#{instruction.name}_writes" do
           100.times do
             parameters = random_parameters(instruction)
-            buffer = Evoasm::Buffer.new :mmap, 1024
+            buffer = Evoasm::Buffer.new 1024, :mmap
 
             cpu_state_before = CPUState.new
             cpu_state_after = CPUState.new
@@ -99,7 +99,7 @@ module Evoasm
       def self.define_read_test(instruction)
         define_method :"test_#{instruction.name}_reads" do
           20.times do
-            buffer = Evoasm::Buffer.new :mmap, 1024
+            buffer = Evoasm::Buffer.new 1024, :mmap
             parameters = random_parameters(instruction)
 
             cpu_state_before = CPUState.new
@@ -120,7 +120,7 @@ module Evoasm
                 #p [non_read_register, value]
                 cpu_state_before[non_read_register] = value
               end
-              buffer = Evoasm::Buffer.new :mmap, 1024
+              buffer = Evoasm::Buffer.new 1024, :mmap
               #parameters = random_parameters(instruction)
 
               #p cpu_state_before.get :rflags

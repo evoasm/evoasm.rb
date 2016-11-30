@@ -1,7 +1,9 @@
 module Evoasm
   module X64
+    # Represents x86-64 instruction parameters.
     class Parameters < FFI::AutoPointer
 
+      # @!visibility private
       def self.release(ptr)
         if ptr.basic?
           Libevoasm.x64_basic_params_free ptr
@@ -10,6 +12,7 @@ module Evoasm
         end
       end
 
+      # @!visibility private
       def self.for(parameters, basic: false)
         case parameters
         when self
@@ -30,6 +33,8 @@ module Evoasm
         "#<#{self.class.inspect} #{fields}>"
       end
 
+      # @param hash [Hash] a
+      # @param basic [Bool] whether to use the basic encoder
       def initialize(hash = {}, basic: false)
         if basic
           ptr = Libevoasm.x64_basic_params_alloc
@@ -99,10 +104,14 @@ module Evoasm
         end
       end
 
+      # Returns whether this parameters are for basic encodning
+      # @return [Bool]
       def basic?
         @basic
       end
 
+      # @param parameter_name [Symbol] the parameter's name
+      # @return [Symbol, Integer] the parameter value
       def [](parameter_name)
         ffi_value =
           if basic?
@@ -114,10 +123,17 @@ module Evoasm
         ffi_value_to_value parameter_name, ffi_value
       end
 
+      # Checks the existence of a parameter
+      # @param parameter_name [Symbol] the parameter name
+      # @return [Bool] whether the parameter exists or nor
       def parameter?(parameter_name)
         !@param_id_enum_type[parameter_name].nil?
       end
 
+      # Set a parameter
+      # @param parameter_name [Symbol] the parameter's name
+      # @param value [Symbol, Integer] the parameter's value
+      # @return [void]
       def []=(parameter_name, value)
         ffi_value = value_to_ffi_value parameter_name, value
         parameter_id = parameter_name_to_id(parameter_name)

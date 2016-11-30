@@ -43,7 +43,7 @@ end
 puts
 
 population = Evoasm::Population.new parameters
-program = population.run
+program, loss = population.run
 
 puts program.disassemble format: true
 

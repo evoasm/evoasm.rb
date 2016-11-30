@@ -5,8 +5,8 @@ require 'evoasm/buffer'
 module Evoasm
   class BufferTest < Minitest::Test
     def setup
-      @mmap_buffer = Buffer.new(:mmap, 1024)
-      @malloc_buffer = Buffer.new(:malloc, 1024)
+      @mmap_buffer = Buffer.new(1024, :mmap)
+      @malloc_buffer = Buffer.new(1024, :malloc)
     end
 
     def test_type

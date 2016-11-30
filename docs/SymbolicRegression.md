@@ -4,8 +4,25 @@
 A classical application of genetic programming is [symbolic regression](https://en.wikipedia.org/wiki/Symbolic_regression).
 Symbolic regression is the task of finding a mathematical expression that approximates a given set of data points as closely as possible.
 
+## Example Data
+
 For purposes of illustration, assume we are given the following
-table of data points, sampled from the function `y = sqrt(x**3 + 2 * x)`.
+table of data points, sampled from the function
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mi>y</mi>
+  <mo>=</mo>
+  <msqrt>
+    <msup>
+      <mi>x</mi>
+      <mn>3</mn>
+    </msup>
+    <mo>+</mo>
+    <mrow>
+      <mn>2</mn>
+      <mi>x</mi>
+    </mrow>
+  </msqrt>
+</math>.
 
 | x  | y |
 | ------- | ----- |
@@ -22,8 +39,10 @@ table of data points, sampled from the function `y = sqrt(x**3 + 2 * x)`.
 | 5.0 | 11.61895003862225  |
 
 Using only the points in this table, we now want *Evoasm*
-to come up with a program that, given `x`, will output the
- corresponding `y = sqrt(x**3 + 2 * x)` for all `x` (i.e. not only those listed in the table).
+to come up with a program that, given *x*, will output the corresponding
+*y* for all *x* (i.e. not only those listed in the table).
+
+## Finding a Solution Program
 
 Here is how it is done:
  
@@ -44,15 +63,17 @@ On my machine, *Evoasm* will find a solution in less than a second:
 0x555556b9e298:	vmulsd	xmm0, xmm2, xmm2
 ```
 
-You can now experiment with the found program (Automatically Defined Function).
+## Examining the Solution
+You can now experiment with the found program.
+Use the {Evoasm::Program#run Program#run} method to run the found program with arbitrary input.
 
 ```ruby
-> program.run 1.0  # => [1.7320508075688772]
+program.run 1.0  # => [1.7320508075688772]
 # test for values not given in table
-> program.run 10.0 # => [31.937438845342623]
+program.run 10.0 # => [31.937438845342623]
 ```
 
-### Intron Elimination
+## Intron Elimination
 The solutions found by *Evoasm* will usually contain large 
 portions of noneffective code (so-called introns).
 
@@ -60,8 +81,7 @@ Introns can be removed using the `eliminate_introns!` method.
 This will considerably shorten the size of the solution:
 
 ```ruby
-> program.eliminate_introns!
-> program.disassemble format: true
+program.eliminate_introns.disassembly format: true
 ```
 gives
 

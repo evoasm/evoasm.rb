@@ -22,7 +22,7 @@ end
 parameters.examples = count_1s
 
 population = Evoasm::Population.new parameters
-program = population.run
+program, loss = population.run
 
 puts "#{program.disassemble.first[1]}"
 
@@ -39,6 +39,6 @@ count_trailing_0s = {
 parameters.examples = count_trailing_0s
 
 population = Evoasm::Population.new parameters
-program = population.run
+program, loss = population.run
 
 puts "#{program.disassemble.first[1]}"

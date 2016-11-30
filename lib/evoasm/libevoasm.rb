@@ -103,6 +103,7 @@ module Evoasm
     attach_evoasm_function :buf_exec, [:pointer], :size_t
     attach_evoasm_function :buf_safe_exec, [:pointer, :uint64, :pointer], :bool
     attach_evoasm_function :buf_log, [:pointer, :log_level], :void
+    attach_evoasm_function :buf_reset, [:pointer], :void
     attach_evoasm_function :buf_protect, [:pointer, :mprot_mode], :bool
     attach_evoasm_function :buf_to_buf_ref, [:pointer, :pointer], :void
     attach_evoasm_function :buf_get_capa, [:pointer], :size_t

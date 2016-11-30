@@ -10,9 +10,9 @@ module Evoasm
       Libevoasm.buf_free(buf)
     end
 
-    # @param type [:mmap, :malloc] the buffer type, only buffers created with +:mmap+ are executable
     # @param capacity [Integer] the buffer's capacity in bytes
-    def initialize(type, capacity)
+    # @param type [:mmap, :malloc] the buffer type, only buffers created with +:mmap+ are executable
+    def initialize(capacity, type = :mmap)
       ptr = Libevoasm.buf_alloc
       unless Libevoasm.buf_init ptr, type, capacity
         raise Error.last
@@ -30,6 +30,12 @@ module Evoasm
     # @return [Integer] the buffer cursor's current position
     def position
       Libevoasm.buf_get_pos self
+    end
+
+    # Resets the buffers position to zero
+    # @return [void]
+    def reset
+      Libevoasm.buf_reset self
     end
 
     # @!attribute [r] type

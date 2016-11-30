@@ -5,6 +5,8 @@ module Evoasm
     # Represents an x86-64 instruction
     class Instruction < FFI::Pointer
       class Parameter < Evoasm::Parameter
+        # Returns the parameter's name
+        # @return [Symbol] the parameter name
         def name
           Libevoasm.enum_type(:x64_param_id).find id
         end

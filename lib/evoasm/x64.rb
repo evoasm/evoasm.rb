@@ -14,6 +14,7 @@ module Evoasm
       # Disassembles x86-64 machine code
       # @param assembly [String] assembly
       # @param address [Integer] optional address to show in the disassembly
+      # @return [String] disassembly
       def disassemble(assembly, address = nil)
         Evoasm::Capstone.disassemble_x64 assembly, address
       end
