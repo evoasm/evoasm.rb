@@ -8,6 +8,7 @@ module Evoasm
       features = Evoasm::X64.features
       refute_empty features
       assert features.all? { |feature, _| feature.is_a? Symbol }
+
       if RUBY_PLATFORM =~ /linux/
         cpu_info = File.read '/proc/cpuinfo'
         [:cx8, :cmov, :mmx, :sse, :sse2, :pclmulqdq, :ssse3, :fma, :cx16, :sse4_1,
@@ -31,8 +32,8 @@ module Evoasm
       refute_includes xmm_insts, :xor_rax_imm32
       assert_includes xmm_insts, :vfmadd213pd_xmm_xmm_xmmm128
 
-      search_insts = Evoasm::X64.instruction_names :xmm, :gp, :rflags, search: true
-      assert_equal search_insts, Evoasm::X64.instruction_names(:xmm, :gp, :rflags, search: true, operand_types: [:reg, :imm, :rm])
+      search_insts = Evoasm::X64.instruction_names :xmm, :gp, :rflags
+      assert_equal search_insts, Evoasm::X64.instruction_names(:xmm, :gp, :rflags, operand_types: [:reg, :imm, :rm])
       refute_empty search_insts
       refute_includes search_insts, :jmp_rel32
       refute_includes search_insts, :call_rm32

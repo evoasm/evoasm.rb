@@ -21,7 +21,7 @@ module Evoasm
 
     # @param seed [Array<Integer>] the seed, must have exactly {SEED_SIZE} elements
     # @return [PRNG] new {PRNG} instance
-    def initialize(seed)
+    def initialize(seed = DEFAULT_SEED)
       if seed.size != SEED_SIZE
         raise ArgumentError, "seed must be have exactly #{SEED_SIZE} elements"
       end
