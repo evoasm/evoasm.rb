@@ -1,4 +1,5 @@
 'lib/**/*.rb'
+--asset docs/examples:examples
 -
 'docs/**/*.md'
 LICENSE.md
