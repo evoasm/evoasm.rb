@@ -46,7 +46,7 @@ to come up with a program that, given *x*, will output the corresponding
 
 Here is how it is done:
  
-{include:file:examples/sym_reg.rb}
+{include:file:docs/examples/sym_reg.rb}
 
 On my machine, *Evoasm* will find a solution in less than a second:
 

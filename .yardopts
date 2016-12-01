@@ -1,5 +1,4 @@
 'lib/**/*.rb'
 -
 'docs/**/*.md'
-'examples/*.rb'
 LICENSE.md
