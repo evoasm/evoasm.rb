@@ -21,8 +21,8 @@ Currently, the only supported architecture is **x86-64**.
 
 ## Installation
 
-    $ gem install evoasm
-    
+    $ gem install evoasm --pre
+
 ### Requirements
 
 * Ruby (MRI >= 2.3, JRuby >= 9.1.2)
