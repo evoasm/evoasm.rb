@@ -17,7 +17,6 @@ module PopulationHelper
     @parameters = %i(reg0 reg1 reg2 reg3)
     @recur_limit = 0
     @deme_count = 1
-    @mutation_rate = 0.02
   end
 
   def new_population(architecture = :x64)
@@ -32,7 +31,6 @@ module PopulationHelper
       p.domains = @domains if @domains
       p.seed = @seed if @seed
       p.recur_limit = @recur_limit
-      p.mutation_rate = @mutation_rate
     end
 
     Evoasm::Population.new parameters

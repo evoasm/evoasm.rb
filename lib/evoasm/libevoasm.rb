@@ -7,7 +7,17 @@ module Evoasm
 
     require 'evoasm/libevoasm/x64_enums'
 
-    ffi_lib File.join(Evoasm.ext_dir, 'evoasm_ext', FFI.map_library_name('evoasm'))
+    GEM_LIBEVOASM_FILENAME = File.join(Evoasm.ext_dir, 'evoasm_ext', FFI.map_library_name('evoasm'))
+    DEV_LIBEVOASM_FILENAME = File.join(Evoasm.root_dir, '..', 'libevoasm', 'cmake-build-debug', FFI.map_library_name('evoasm'))
+
+    lib_filename =
+      if File.exist?(DEV_LIBEVOASM_FILENAME)
+        DEV_LIBEVOASM_FILENAME
+      else
+        GEM_LIBEVOASM_FILENAME
+      end
+
+    ffi_lib lib_filename
 
     enum :io_val_type, [
       :i64,
@@ -68,9 +78,9 @@ module Evoasm
     ]
 
     enum :mprot_mode, [
-        :rw,
-        :rx,
-        :rwx
+      :rw,
+      :rx,
+      :rwx
     ]
 
     enum :x64_abi, [
@@ -218,9 +228,9 @@ module Evoasm
     attach_evoasm_function :pop_find_median_loss, [:pointer, :size_t], :loss
     attach_evoasm_function :pop_get_loss_samples, [:pointer, :size_t, :pointer], :size_t
 
-    attach_evoasm_function :pop_params_get_mut_rate, [:pointer], :float
+    # attach_evoasm_function :pop_params_get_mut_rate, [:pointer], :float
     attach_evoasm_function :pop_params_get_n_params, [:pointer], :uint8
-    attach_evoasm_function :pop_params_set_mut_rate, [:pointer, :float], :void
+    # attach_evoasm_function :pop_params_set_mut_rate, [:pointer, :float], :void
     attach_evoasm_function :pop_params_set_n_params, [:pointer, :uint8], :void
     attach_evoasm_function :pop_params_set_domain, [:pointer, :uint8, :pointer], :bool
     attach_evoasm_function :pop_params_get_domain, [:pointer, :uint8], :pointer

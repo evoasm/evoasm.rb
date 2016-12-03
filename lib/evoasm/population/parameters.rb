@@ -41,16 +41,6 @@ module Evoasm
         end
       end
 
-      # @!attribute mutation_rate
-      # @return [Float 0..1] the mutation rate
-      def mutation_rate
-        Libevoasm.pop_params_get_mut_rate(self)
-      end
-
-      def mutation_rate=(mutation_rate)
-        Libevoasm.pop_params_set_mut_rate self, mutation_rate
-      end
-
       # @!attribute deme_size
       # @return [Integer] the number of individuals per deme
       def deme_size

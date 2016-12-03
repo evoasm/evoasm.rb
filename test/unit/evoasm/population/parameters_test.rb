@@ -9,14 +9,6 @@ module Evoasm
         @parameters = Evoasm::Population::Parameters.new :x64
       end
 
-      def test_mutation_rate
-        @parameters.mutation_rate = 0.001
-        assert_in_epsilon 0.001, @parameters.mutation_rate, 0.0001
-
-        @parameters.mutation_rate = 0.5
-        assert_in_epsilon 0.5, @parameters.mutation_rate, 0.0001
-      end
-
       def test_deme_size
         @parameters.deme_size = 100
         assert_equal 100, @parameters.deme_size
