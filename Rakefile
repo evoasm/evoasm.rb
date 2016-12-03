@@ -37,3 +37,24 @@ begin
 rescue LoadError
 end
 
+namespace :yard do
+  require 'yard'
+  YARD::Rake::YardocTask.new :build do |t|
+    t.files   = %w(lib/**/*.rb - docs/**/*.md)
+    t.options = %w(--asset docs/examples:examples)
+  end
+
+  desc "Push YARD documentation to GitHub Pages"
+  task :push => :build do
+    cp_r 'doc', Dir.tmpdir
+    sh 'git checkout gh-pages'
+    rm_r 'doc'
+    mv File.join(Dir.tmpdir, 'doc'), 'doc'
+    sh 'git commit doc -m "Update documentation"'
+    sh 'git push origin gh-pages'
+    sh 'git checkout master'
+  end
+
+end
+
+

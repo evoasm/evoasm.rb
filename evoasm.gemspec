@@ -31,4 +31,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop', '~> 0.41'
   spec.add_development_dependency 'minitest', '~> 5.8'
   spec.add_development_dependency 'minitest-reporters', '~> 1.1'
+  spec.add_development_dependency 'redcarpet', '~> 3.3'
+  spec.add_development_dependency 'yard', '~> 0.9'
 end

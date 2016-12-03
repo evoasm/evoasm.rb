@@ -21,8 +21,8 @@ Currently, the only supported architecture is **x86-64**.
 
 ## Installation
 
-    $ gem install evoasm
-    
+    $ gem install evoasm --pre
+
 ### Requirements
 
 * Ruby (MRI >= 2.3, JRuby >= 9.1.2)
@@ -31,10 +31,10 @@ Currently, the only supported architecture is **x86-64**.
 * [Gnuplot](http://gnuplot.sourceforge.net) for visualizing loss functions (*optional*)
 * POSIX-compliant OS (Linux and Mac OS X should both work).
 
-## Usage
+## Documentation
 
-Please see [Getting Started](https://github.com/evoasm/evoasm/blob/master/docs/GettingStarted.md).
-
+Please see the [API documentation](https://evoasm.github.io/evoasm/doc/) or
+have a look at the [examples](https://evoasm.github.io/evoasm/doc/file.SymbolicRegression.html).
 
 ## Contributing
 

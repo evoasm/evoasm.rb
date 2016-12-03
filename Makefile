@@ -3,4 +3,4 @@ all:
 clean:
 	rake clean
 debug:
-	rake compile -- --enable-debug
+	rake compile -- --debug

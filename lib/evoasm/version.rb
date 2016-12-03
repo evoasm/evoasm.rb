@@ -1,3 +1,3 @@
 module Evoasm
-  VERSION = "0.0.2.pre7"
+  VERSION = "0.1.0.pre2"
 end
