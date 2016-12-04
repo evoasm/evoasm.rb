@@ -52,7 +52,7 @@ module Evoasm
     def eliminate_introns
       program = Program.new
       unless Libevoasm.program_eliminate_introns self, program
-        raise Libevoasm::Error.last
+        raise Error.last
       end
 
       program

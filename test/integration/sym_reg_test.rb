@@ -45,18 +45,6 @@ module Evoasm
       assert_equal 1, found_program.size
     end
 
-    def test_intron_elimination
-      disasms = found_program.disassemble
-
-      program = found_program.eliminate_introns
-      assert_runs_examples program
-      refute_equal program, found_program
-
-      program.disassemble.each_with_index do |disasm, index|
-        assert_operator disasm.size, :<=, disasms[index].size
-      end
-    end
-
     def test_program_run
       # should generalize (i.e. give correct answer for non-training data)
       p found_program.run_all(*@examples.keys)

@@ -59,6 +59,21 @@ module PopulationHelper
       @found_program
     end
 
+    def test_intron_elimination
+      disasms = found_program.disassemble
+
+      found_program.to_gv.save '/tmp/orig.png'
+      program = found_program.eliminate_introns
+      program.to_gv.save '/tmp/intron.png'
+
+      assert_runs_examples program
+      refute_equal program, found_program
+
+      program.disassemble.each_with_index do |disasm, index|
+        assert_operator disasm.size, :<=, disasms[index].size
+      end
+    end
+
     def examples
       @examples
     end
