@@ -84,9 +84,9 @@ module Evoasm
         unless k == :none
           io =
             if input
-              Libevoasm.program_is_input_reg(self, kernel_index, v)
+              Libevoasm.program_is_kernel_input_reg(self, kernel_index, v)
             else
-              Libevoasm.program_is_output_reg(self, kernel_index, v)
+              Libevoasm.program_is_kernel_output_reg(self, kernel_index, v)
             end
 
           acc << k if io
@@ -97,15 +97,22 @@ module Evoasm
     # Gives the input registers of the specified kernel
     # @param kernel_index [Integer]
     # @return [Array<Symbol>] input registers
-    def input_registers(kernel_index = 0)
+    def kernel_input_registers(kernel_index = 0)
       io_registers true, kernel_index
     end
 
     # Gives the output registers of the specified kernel
     # @param kernel_index [Integer]
     # @return [Array<Symbol>] output registers
-    def output_registers(kernel_index = size - 1)
+    def kernel_output_registers(kernel_index = size - 1)
       io_registers false, kernel_index
+    end
+
+    def output_registers
+      reg_enum_type = Libevoasm.enum_type(:x64_reg_id)
+      Array.new(Libevoasm.program_get_arity self) do |index|
+        reg_enum_type[Libevoasm.program_get_output_reg(self, index)]
+      end
     end
 
     private def format_disassembly(disasm)
@@ -141,6 +148,9 @@ module Evoasm
 
       graph = GV::Graph.open 'g'
 
+      graph[:labelloc] = 't'
+      graph[:label] = output_registers.join(', ')
+
       disasms = disassemble_kernels
       addrs = disasms.map do |disasm|
         disasm.first&.first
@@ -150,7 +160,7 @@ module Evoasm
         label = '<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">'
 
         label << '<TR>'
-        label << %Q{<TD COLSPAN="3"><B>Kernel #{kernel_index}</B></TD>}
+        label << %Q{<TD COLSPAN="3"><B>Kernel #{kernel_index}</B>(#{kernel_input_registers(kernel_index).join ', '})</TD>}
         label << '</TR>'
 
         disasm = disasms[kernel_index]
@@ -174,15 +184,21 @@ module Evoasm
           label << %Q{<TD ALIGN="LEFT" PORT="#{port}">#{op_str}</TD>}
           label << '</TR>'
         end
+
+        label << '<TR>'
+        label << %Q{<TD COLSPAN="3">(#{kernel_output_registers(kernel_index).join ', '})</TD>}
+        label << '</TR>'
         label << '</TABLE>'
 
         node = graph.node addr.to_s,
                           shape: :none,
                           label: graph.html(label)
 
-        succs = [kernel_index + 1, kernel_index + Libevoasm.program_get_jmp_off(self, kernel_index)].select do |succ|
-          succ < size
+        succs = [kernel_index + 1, Libevoasm.program_get_branch_kernel_idx(self, kernel_index)].select do |succ|
+          succ != -1 && succ < size
         end
+
+        p [kernel_index, succs]
 
         succs.each do |succ|
           succ_addr = addrs[succ]

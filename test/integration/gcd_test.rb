@@ -26,7 +26,7 @@ module Search
         [16, 8] => 8
       }
 
-      @seed = SEED
+      #@seed = SEED
       @kernel_size = 20
       @program_size = 5
       @deme_count = 5

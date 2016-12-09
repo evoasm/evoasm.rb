@@ -26,6 +26,7 @@ module Evoasm
     ]
 
     typedef :uint16, :inst_id
+    typedef :uint8, :reg_id
     typedef :uint8, :param_id
     typedef :float, :loss
 
@@ -199,10 +200,14 @@ module Evoasm
     attach_evoasm_function :program_get_size, [:pointer], :size_t
     attach_evoasm_function :program_get_kernel_code, [:pointer, :size_t, :pointer], :size_t
     attach_evoasm_function :program_get_code, [:pointer, :bool, :pointer], :size_t
-    attach_evoasm_function :program_get_jmp_off, [:pointer, :size_t], :int
+    attach_evoasm_function :program_get_jmp_off, [:pointer, :size_t], :size_t
+    attach_evoasm_function :program_get_branch_kernel_idx, [:pointer, :size_t], :ssize_t
+
     attach_evoasm_function :program_eliminate_introns, [:pointer, :pointer], :bool
-    attach_evoasm_function :program_is_input_reg, [:pointer, :size_t, :uint8], :bool
-    attach_evoasm_function :program_is_output_reg, [:pointer, :size_t, :uint8], :bool
+    attach_evoasm_function :program_is_kernel_input_reg, [:pointer, :size_t, :uint8], :bool
+    attach_evoasm_function :program_is_kernel_output_reg, [:pointer, :size_t, :uint8], :bool
+    attach_evoasm_function :program_get_output_reg, [:pointer, :size_t], :reg_id
+    attach_evoasm_function :program_get_arity, [:pointer], :size_t
 
     attach_evoasm_function :program_io_alloc, [:size_t], :pointer
     attach_evoasm_function :program_io_free, [:pointer], :void
