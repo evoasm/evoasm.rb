@@ -66,16 +66,12 @@ module PopulationHelper
 
       puts found_program.disassemble(true, format: true)
 
-      found_program.to_gv.save '/tmp/orig.png'
       program = found_program.eliminate_introns
 
-      program.run(6, 8)
-
-      puts "DIS PROG"
-      puts program.disassemble(true, format: true)
-      puts "/DIS PROG"
-
-      program.to_gv.save '/tmp/intron.png'
+      # program.run(6, 8)
+      # puts program.disassemble(true, format: true)
+      # found_program.to_gv.save '/tmp/orig.png'
+      # program.to_gv.save '/tmp/intron.png'
 
       assert_runs_examples program
       refute_equal program, found_program

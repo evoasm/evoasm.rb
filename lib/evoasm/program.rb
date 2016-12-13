@@ -51,7 +51,7 @@ module Evoasm
     # @return [Program] a new program with introns eliminated
     def eliminate_introns
       program = Program.new
-      unless Libevoasm.program_eliminate_introns self, program
+      unless Libevoasm.program_elim_introns self, program
         raise Error.last
       end
 

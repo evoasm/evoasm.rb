@@ -203,7 +203,7 @@ module Evoasm
     attach_evoasm_function :program_get_jmp_off, [:pointer, :size_t], :size_t
     attach_evoasm_function :program_get_branch_kernel_idx, [:pointer, :size_t], :ssize_t
 
-    attach_evoasm_function :program_eliminate_introns, [:pointer, :pointer], :bool
+    attach_evoasm_function :program_elim_introns, [:pointer, :pointer], :bool
     attach_evoasm_function :program_is_kernel_input_reg, [:pointer, :size_t, :uint8], :bool
     attach_evoasm_function :program_is_kernel_output_reg, [:pointer, :size_t, :uint8], :bool
     attach_evoasm_function :program_get_output_reg, [:pointer, :size_t], :reg_id
