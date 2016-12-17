@@ -12,7 +12,7 @@ module Evoasm
     def setup
       set_default_parameters
 
-      @instruction_names = Evoasm::X64.instruction_names(:xmm).grep /(add|mul|sqrt).*?sd/
+      @instruction_names = Evoasm::X64.instruction_names(:xmm) #.grep /(add|mul|sqrt).*?sd/
       @examples = {
         0.0 => 0.0,
         0.5 => 1.0606601717798212,
@@ -27,7 +27,7 @@ module Evoasm
         5.0 => 11.61895003862225
       }
 
-      @kernel_size = 10
+      @kernel_size = 4
       @program_size = 1
       @parameters = %i(reg0 reg1 reg2 reg3)
       regs = %i(xmm0 xmm1 xmm2 xmm3)

@@ -228,6 +228,7 @@ module Evoasm
     attach_evoasm_function :pop_init, [:pointer, :arch_id, :pointer], :bool
     attach_evoasm_function :pop_calc_summary, [:pointer, :pointer], :bool
     attach_evoasm_function :pop_get_best_loss, [:pointer], :loss
+    attach_evoasm_function :pop_get_gen_counter, [:pointer], :size_t
     attach_evoasm_function :pop_summary_len, [:pointer], :size_t
     attach_evoasm_function :pop_load_best_program, [:pointer, :pointer], :bool
     attach_evoasm_function :pop_find_median_loss, [:pointer, :size_t], :loss

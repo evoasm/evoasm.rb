@@ -3,7 +3,7 @@ module Evoasm
 
     # Visualizes the population loss functions using {http://gnuplot.sourceforge.net Gnuplot}
     class Plotter
-      MAX_SAMPLE_COUNT = 1024
+      MAX_SAMPLE_COUNT = 64
 
       # @!visibility private
       def self.__open__
@@ -36,31 +36,40 @@ module Evoasm
         @pipe.puts 'set rmargin 0.5'
         @pipe.puts 'set tmargin 0.5'
         @pipe.puts 'set bmargin 0.5'
+
+        @deme_count = @population.parameters.deme_count
+        @deme_height = @population.parameters.deme_height
+        @sample_index = 0
+        @data = Array.new(@deme_count) { Array.new(@deme_height) { Array.new MAX_SAMPLE_COUNT } }
       end
 
       # Updates data points
       # @return [nil]
       def update
-        @data ||= Array.new(@population.parameters.deme_count) { Array.new(@population.parameters.deme_height) { [] } }
         summary = @population.summary
 
         summary.each_with_index do |deme_summary, deme_index|
           deme_summary.each_with_index do |layer_summary, layer_index|
             samples = @data[deme_index][layer_index]
-            samples[samples.size % MAX_SAMPLE_COUNT] = layer_summary
+            samples[@sample_index] = [@population.generation] + layer_summary
           end
         end
+
+        @sample_index = (@sample_index + 1) % MAX_SAMPLE_COUNT
       end
 
       # Plots (or replots) the current data points
-      # @return [nil]
+      # @return [void]
       def plot
-        @pipe.puts "set multiplot layout #{@data[0].size}, #{@data.size}"
+        @pipe.puts "set multiplot layout #{@deme_height}, #{@deme_count}"
 
         key = true
 
-        @data.each do |deme_summary|
-          deme_summary.each do |layer_summary|
+        @deme_count.times do |deme_index|
+          @deme_height.times do |layer_index|
+
+            layer_summary = @data[deme_index][layer_index]
+
             @pipe.puts "set key #{key ? 'on' : 'off'}"
             key = false
             @pipe.write %Q{plot '-' using 1:2:3 with filledcurves title 'IQR'}
@@ -70,30 +79,29 @@ module Evoasm
             @pipe.write %Q{    ,'-' using 1:2:(sprintf("%.2f", $2)) with labels center offset 2,1 notitle}
             @pipe.puts
 
-            layer_summary.each_with_index do |sample, sample_index|
-              @pipe.puts "#{sample_index} #{sample[1]} #{sample[3]}"
-            end
-            @pipe.puts 'e'
+            write_samples layer_summary, 0, 2, 4
 
-            2.times do
-              layer_summary.each_with_index do |sample, sample_index|
-                @pipe.puts "#{sample_index} #{sample[0]}"
-              end
-              @pipe.puts 'e'
-            end
+            write_samples layer_summary, 0, 1
+            write_samples layer_summary, 0, 1
 
-            2.times do
-              layer_summary.each_with_index do |sample, sample_index|
-                @pipe.puts "#{sample_index} #{sample[2]}"
-              end
-              @pipe.puts 'e'
-            end
-
+            write_samples layer_summary, 0, 3
+            write_samples layer_summary, 0, 3
           end
         end
         @pipe.puts "unset multiplot"
         @pipe.flush
       end
+
+      private
+
+      def write_samples(layer_summary, *value_indexes)
+        @sample_index.times do |sample_index|
+          line = value_indexes.map { |value_index| layer_summary[sample_index][value_index] }.join(' ')
+          @pipe.puts line
+        end
+        @pipe.puts 'e'
+      end
+
     end
   end
 end

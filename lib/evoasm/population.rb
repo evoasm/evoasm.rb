@@ -34,6 +34,11 @@ module Evoasm
       end
     end
 
+    # @return [Integer] the current generation
+    def generation
+      Libevoasm.pop_get_gen_counter self
+    end
+
     # Seeds the population with random individuals
     # @return [void]
     def seed
@@ -123,8 +128,9 @@ module Evoasm
 
         best_program = self.best_program
         best_loss = self.best_loss
+        generation = self.generation
 
-        block[self]
+        block[self, generation]
 
         break if @stop
         min_generations_reached = min_generations.nil? || generation >= min_generations
