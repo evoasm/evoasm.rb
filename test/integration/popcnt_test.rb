@@ -25,14 +25,14 @@ module Evoasm
         0b101011 => 4
       }
       @kernel_size = 1
-      @program_size = 1
+      @topology_size = 1
       @parameters = %i(reg0 reg1 reg2 reg3)
 
       start
     end
 
 
-    def test_program_size
+    def test_topology_size
       assert_equal 1, found_program.size
     end
 

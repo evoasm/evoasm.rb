@@ -156,6 +156,11 @@ module Evoasm
         disasm.first&.first
       end
 
+      arch_info = Libevoasm.get_arch_info Libevoasm.get_current_arch
+      condition_count = Libevoasm.arch_info_get_n_conds arch_info
+
+      topology = Libevoasm.program_get_topology self
+
       size.times do |kernel_index|
         label = '<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">'
 
@@ -194,9 +199,10 @@ module Evoasm
                           shape: :none,
                           label: graph.html(label)
 
-        succs = [kernel_index + 1, Libevoasm.program_get_branch_kernel_idx(self, kernel_index)].select do |succ|
-          succ != -1 && succ < size
-        end
+
+        succs = Array.new(condition_count) do |condition_index|
+          Libevoasm.program_topology_get_kernel_succ_idx(topology, kernel_index, condition_index)
+        end.select {|succ_kernel_index| succ_kernel_index != -1 }
 
         p [kernel_index, succs]
 

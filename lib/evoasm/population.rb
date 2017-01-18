@@ -62,14 +62,14 @@ module Evoasm
     end
 
     # @!visibility private
-    def loss_samples
-      Array.new(@parameters.deme_count) do |deme_index|
-        data_ptr_ptr = FFI::MemoryPointer.new :pointer, 1
-        len = Libevoasm.pop_get_loss_samples self, deme_index, data_ptr_ptr
-        data_ptr = data_ptr_ptr.read_pointer
-        data_ptr.read_array_of_float len
-      end
-    end
+    # def loss_samples
+    #   Array.new(@parameters.deme_count) do |deme_index|
+    #     data_ptr_ptr = FFI::MemoryPointer.new :pointer, 1
+    #     len = Libevoasm.pop_get_loss_samples self, deme_index, data_ptr_ptr
+    #     data_ptr = data_ptr_ptr.read_pointer
+    #     data_ptr.read_array_of_float len
+    #   end
+    # end
 
     # Gives a five-number summary for each deme, program and kernel.
     # @return [Array] a 2-dimensional array of summaries.
@@ -81,9 +81,9 @@ module Evoasm
       end
 
       summary = summary_ptr.read_array_of_float(summary_len).each_slice(summary_len / @parameters.deme_count).to_a
-      unless flat
-        summary.map!{|deme_summary| deme_summary.each_slice(5).to_a}
-      end
+      # unless flat
+      #   summary.map!{|deme_summary| deme_summary.each_slice(5).to_a}
+      # end
 
       summary
     end

@@ -22,7 +22,7 @@ module Evoasm
         0b00000110 => 0b01100000,
       }
       @kernel_size = 30
-      @program_size = 2
+      @topology_size = 2
       @deme_count = 2
       @parameters = %i(reg0 reg1 reg2 reg3)
       @mutation_rate = 0.5
@@ -31,7 +31,7 @@ module Evoasm
     end
 
 
-    def test_program_size
+    def test_topology_size
       assert_equal 1, found_program.size
     end
 

@@ -26,10 +26,10 @@ module Search
         [16, 8] => 8
       }
 
-      #@seed = SEED
+      # @seed = SEED
       @kernel_size = 20
-      @program_size = 5
-      @deme_count = 5
+      @topology_size = 5
+      @deme_count = 1
       @recur_limit = 100
       #@deme_size = 5000
       @parameters = %i(reg0 reg1 reg2 reg3)

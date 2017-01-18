@@ -35,9 +35,9 @@ module Evoasm
         assert_equal 10, @parameters.kernel_size
       end
 
-      def test_program_size
-        @parameters.program_size = 4
-        assert_equal 4, @parameters.program_size
+      def test_topology_size
+        @parameters.topology_size = 4
+        assert_equal 4, @parameters.topology_size
       end
 
       def test_recur_limit

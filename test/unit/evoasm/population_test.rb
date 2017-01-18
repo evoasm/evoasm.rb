@@ -9,7 +9,7 @@ module Evoasm
     def setup
       set_default_parameters
       @kernel_size = 2
-      @program_size = 1
+      @topology_size = 1
     end
 
     def test_unseeded
@@ -23,19 +23,6 @@ module Evoasm
 
     def test_no_error
       start
-    end
-
-    def test_find_median
-      [8, 16].each do |size|
-        ary = Array.new(size) { rand(0..1000) }
-        median = ary.sort.at((ary.size / 2) - 1)
-
-        p ary.sort
-
-        data_ptr = FFI::MemoryPointer.new :float, ary.size
-        data_ptr.write_array_of_float ary
-        assert_equal median, Libevoasm.pop_find_median_loss(data_ptr, ary.size)
-      end
     end
 
     def test_no_instructions
@@ -73,13 +60,13 @@ module Evoasm
       assert_match /deme size/i, error.message
     end
 
-    def test_invalid_program_size
-      [0, 2**32].each do |program_size|
-        @program_size = program_size
+    def test_invalid_topology_size
+      [0, 2**32].each do |topology_size|
+        @topology_size = topology_size
         error = assert_raises Evoasm::Error do
           start
         end
-        assert_match /program size/i, error.message
+        assert_match /topology size/i, error.message
       end
     end
 

@@ -105,6 +105,7 @@ module Evoasm
 
     attach_evoasm_function :get_arch_info, [:arch_id], :pointer
     attach_evoasm_function :arch_info_get_features, [:pointer], :uint64
+    attach_evoasm_function :arch_info_get_n_conds, [:pointer], :size_t
     attach_evoasm_function :get_current_arch, [], :arch_id
 
     attach_evoasm_function :buf_ref_alloc, [], :pointer
@@ -200,8 +201,7 @@ module Evoasm
     attach_evoasm_function :program_get_size, [:pointer], :size_t
     attach_evoasm_function :program_get_kernel_code, [:pointer, :size_t, :pointer], :size_t
     attach_evoasm_function :program_get_code, [:pointer, :bool, :pointer], :size_t
-    attach_evoasm_function :program_get_jmp_off, [:pointer, :size_t], :size_t
-    attach_evoasm_function :program_get_branch_kernel_idx, [:pointer, :size_t], :ssize_t
+    attach_evoasm_function :program_get_succ_kernel_idx, [:pointer, :size_t, :size_t], :ssize_t
 
     attach_evoasm_function :program_elim_introns, [:pointer, :pointer], :bool
     attach_evoasm_function :program_is_kernel_input_reg, [:pointer, :size_t, :uint8], :bool
@@ -231,8 +231,6 @@ module Evoasm
     attach_evoasm_function :pop_get_gen_counter, [:pointer], :size_t
     attach_evoasm_function :pop_summary_len, [:pointer], :size_t
     attach_evoasm_function :pop_load_best_program, [:pointer, :pointer], :bool
-    attach_evoasm_function :pop_find_median_loss, [:pointer, :size_t], :loss
-    attach_evoasm_function :pop_get_loss_samples, [:pointer, :size_t, :pointer], :size_t
 
     # attach_evoasm_function :pop_params_get_mut_rate, [:pointer], :float
     attach_evoasm_function :pop_params_get_n_params, [:pointer], :uint8
@@ -249,14 +247,13 @@ module Evoasm
     attach_evoasm_function :pop_params_get_n_insts, [:pointer], :size_t
     attach_evoasm_function :pop_params_get_inst, [:pointer, :size_t], :inst_id
     attach_evoasm_function :pop_params_get_deme_size, [:pointer], :size_t
-    attach_evoasm_function :pop_params_get_deme_height, [:pointer], :size_t
     attach_evoasm_function :pop_params_set_deme_size, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_get_n_demes, [:pointer], :size_t
     attach_evoasm_function :pop_params_set_n_demes, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_set_kernel_size, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_get_kernel_size, [:pointer], :size_t
-    attach_evoasm_function :pop_params_set_program_size, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_get_program_size, [:pointer], :size_t
+    attach_evoasm_function :pop_params_set_topology_size, [:pointer, :size_t], :void
+    attach_evoasm_function :pop_params_get_topology_size, [:pointer], :size_t
     attach_evoasm_function :pop_params_set_recur_limit, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_set_n_insts, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_set_program_input, [:pointer, :pointer], :void

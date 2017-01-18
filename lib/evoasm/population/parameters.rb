@@ -101,11 +101,6 @@ module Evoasm
         @domains = domains
       end
 
-      # @!visibility private
-      def deme_height
-        Libevoasm.pop_params_get_deme_height self
-      end
-
       # @!attribute seed
       # @return [Array<Integer>] the seed for the random number generator
       def seed
@@ -162,14 +157,14 @@ module Evoasm
         Libevoasm.pop_params_set_kernel_size self, kernel_size
       end
 
-      # @!attribute program_size
+      # @!attribute topology_size
       # @return [Integer] the size of programs (number of kernels per program)
-      def program_size
-        Libevoasm.pop_params_get_program_size self
+      def topology_size
+        Libevoasm.pop_params_get_topology_size self
       end
 
-      def program_size=(program_size)
-        Libevoasm.pop_params_set_program_size self, program_size
+      def topology_size=(topology_size)
+        Libevoasm.pop_params_set_topology_size self, topology_size
       end
 
       # @!attribute recur_limit
