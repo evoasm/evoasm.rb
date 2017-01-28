@@ -7,16 +7,16 @@ module Evoasm
 
     require_relative 'program/io.rb'
 
+    private_class_method :new
+
+    def self.wrap(ptr)
+      new ptr
+    end
 
     # @!visibility private
     def self.release(ptr)
       Libevoasm.program_destroy(ptr)
       Libevoasm.program_free(ptr)
-    end
-
-    def initialize
-      ptr = Libevoasm.program_alloc
-      super ptr
     end
 
     # Runs the program with the given input
@@ -50,12 +50,12 @@ module Evoasm
     # Eliminates intron instructions (instructions without effect)
     # @return [Program] a new program with introns eliminated
     def eliminate_introns
-      program = Program.new
+      program = Libevoasm.program_alloc
       unless Libevoasm.program_elim_introns self, program
         raise Error.last
       end
 
-      program
+      self.class.wrap program
     end
 
     # Gives the disassembly for the specified kernel
@@ -158,8 +158,7 @@ module Evoasm
 
       arch_info = Libevoasm.get_arch_info Libevoasm.get_current_arch
       condition_count = Libevoasm.arch_info_get_n_conds arch_info
-
-      topology = Libevoasm.program_get_topology self
+      jmp_cond_enum_type = Libevoasm.enum_type :x64_jmp_cond
 
       size.times do |kernel_index|
         label = '<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">'
@@ -200,25 +199,27 @@ module Evoasm
                           label: graph.html(label)
 
 
-        succs = Array.new(condition_count) do |condition_index|
-          Libevoasm.program_topology_get_kernel_succ_idx(topology, kernel_index, condition_index)
-        end.select {|succ_kernel_index| succ_kernel_index != -1 }
+        successors = Array.new(condition_count) do |condition_index|
+          [
+            Libevoasm.program_get_succ_kernel_idx(self, kernel_index, condition_index),
+           jmp_cond_enum_type[condition_index]
+          ]
+        end.select {|succ_kernel_index, _| succ_kernel_index != -1 }
 
-        p [kernel_index, succs]
+        p successors
 
-        succs.each do |succ|
-          succ_addr = addrs[succ]
-          tail_port =
-            if jmp_addrs.include? succ_addr
-              # Remove, in case we have the same
-              # successor multiple times
-              # only one of which goes through the jump
-              jmp_addrs.delete succ_addr
-              succ_addr.to_s
-            else
-              's'
-            end
-          graph.edge 'e', node, graph.node(succ_addr.to_s), tailport: tail_port, headport: 'n'
+        successors.each do |successor, condition|
+          succ_addr = addrs[successor]
+          tail_port = succ_addr.to_s
+            # if jmp_addrs.include? succ_addr
+            #   # Remove, in case we have the same
+            #   # successor multiple times
+            #   # only one of which goes through the jump
+            #   jmp_addrs.delete succ_addr
+            # else
+            #   's'
+            # end
+          graph.edge 'e', node, graph.node(succ_addr.to_s), tailport: tail_port, headport: 'n', label: condition
         end
       end
 

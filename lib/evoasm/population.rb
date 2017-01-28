@@ -53,12 +53,12 @@ module Evoasm
 
     # @return [Program] the best program found so far
     def best_program
-      program = Program.new
+      program = Libevoasm.program_alloc
       unless Libevoasm.pop_load_best_program self, program
         raise Error.last
       end
 
-      program
+      Program.wrap program
     end
 
     # @!visibility private

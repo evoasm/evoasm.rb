@@ -39,3 +39,17 @@ define print_evald_programs
     continue
   end
 end
+
+define shallow
+  set breakpoint pending on
+  break evoasm_pop_init
+  commands
+     delete 2-100
+     watch -l pop->params
+     commands $bpnum
+       bt 4
+       continue
+     end
+     continue
+  end
+end

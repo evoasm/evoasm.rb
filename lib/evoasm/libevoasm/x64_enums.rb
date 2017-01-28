@@ -1940,28 +1940,5 @@ module Evoasm
     ]
 
 
-    enum :x64_operand_size, [
-      :'8',
-      :'16',
-      :'32',
-      :'64',
-      :'128',
-      :'256',
-      :'512',
-      :none
-    ]
-
-    enum :x64_operand_word, [
-      :lb,
-      :hb,
-      :w,
-      :dw,
-      :lqw,
-      :hqw,
-      :dqw,
-      :vw,
-      :none,
-    ]
-
   end
 end

@@ -95,6 +95,50 @@ module Evoasm
       :rflags, 1 << 3,
     ]
 
+    enum :x64_operand_size, [
+      :'8',
+      :'16',
+      :'32',
+      :'64',
+      :'128',
+      :'256',
+      :'512',
+      :none
+    ]
+
+    enum :x64_operand_word, [
+      :lb,
+      :hb,
+      :w,
+      :dw,
+      :lqw,
+      :hqw,
+      :dqw,
+      :vw,
+      :none,
+    ]
+
+    enum :x64_jmp_cond, [
+      :ja,
+      :jae,
+      :jb,
+      :jbe,
+      :je,
+      :jg,
+      :jge,
+      :jl,
+      :jle,
+      :jne,
+      :jno,
+      :jnp,
+      :jns,
+      :jo,
+      :jp,
+      :js,
+      :none
+    ]
+
+
     def self.attach_evoasm_function(name, args, returns, options = {})
       attach_function name, :"evoasm_#{name}", args, returns, options
     end

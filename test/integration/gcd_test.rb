@@ -5,6 +5,7 @@ require 'population_helper'
 
 Evoasm.log_level = :warn
 require 'pp'
+
 module Search
   class GCDTest < Minitest::Test
     include PopulationHelper
