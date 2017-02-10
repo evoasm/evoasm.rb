@@ -11,7 +11,7 @@ module Evoasm
     DEV_LIBEVOASM_FILENAME = File.join(Evoasm.root_dir, '..', 'libevoasm', 'cmake-build-debug', FFI.map_library_name('evoasm'))
 
     lib_filename =
-      if File.exist?(DEV_LIBEVOASM_FILENAME)
+      if !ARGV.include?('--use-gem-libevoasm') && File.exist?(DEV_LIBEVOASM_FILENAME)
         DEV_LIBEVOASM_FILENAME
       else
         GEM_LIBEVOASM_FILENAME
