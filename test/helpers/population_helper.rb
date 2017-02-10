@@ -47,7 +47,7 @@ module PopulationHelper
       end
 
       if block
-        block[@population.summary]
+        block[@population]
       end
 
       if generation % 10
@@ -63,25 +63,20 @@ module PopulationHelper
     end
 
     def test_intron_elimination
-      disasm = found_program.disassemble
-
       assert_runs_examples found_program
-
-      # puts found_program.disassemble(true, format: true)
-
       intron_eliminated_program = found_program.eliminate_introns
+      assert_runs_examples intron_eliminated_program
 
-      # program.run(6, 8)
-      # puts program.disassemble(true, format: true)
+      # FIXME: possible, no ?
+      refute_equal intron_eliminated_program, found_program
+
       # found_program.to_gv.save '/tmp/orig.png'
       # program.to_gv.save '/tmp/intron.png'
 
-      assert_runs_examples intron_eliminated_program
-      refute_equal intron_eliminated_program, found_program
+      found_program.size.times do |index|
+        assert_operator found_program.kernel_size(index), :>=, intron_eliminated_program.kernel_size(index)
+      end
 
-      intron_eliminated_disasm = intron_eliminated_program.disassemble
-
-      assert_operator disasm.size, :>=, intron_eliminated_disasm.size
     end
 
     def examples
@@ -129,7 +124,8 @@ module PopulationHelper
           random_code
           summaries = []
 
-          start(0.5, min_generations: 10, max_generations: 20) do |summary|
+          start(0.5, min_generations: 10, max_generations: 20) do |population|
+            summary = population.summary
             summaries << summary
           end
 
@@ -138,9 +134,9 @@ module PopulationHelper
 
         assert_equal run_count, run_summaries.size
 
-        #run_summaries.each_with_index do |s, i|
-        #  File.write("/tmp/t#{i}.txt", s.pretty_inspect)
-        #end
+        run_summaries.each_with_index do |s, i|
+          File.write("/tmp/t#{i}.txt", s.pretty_inspect)
+        end
 
         run_summaries.uniq.tap do |uniq|
           assert_equal [run_summaries.first], uniq

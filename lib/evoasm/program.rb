@@ -101,6 +101,13 @@ module Evoasm
       io_registers true, kernel_index
     end
 
+    # Gives the size of the specified kernel
+    # @param kernel_index [Integer]
+    # @return [Integer] kernel size in number of instructions
+    def kernel_size(kernel_index = 0)
+      Libevoasm.program_get_kernel_size self, kernel_index
+    end
+
     # Gives the output registers of the specified kernel
     # @param kernel_index [Integer]
     # @return [Array<Symbol>] output registers
@@ -164,7 +171,7 @@ module Evoasm
         label = '<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">'
 
         label << '<TR>'
-        label << %Q{<TD COLSPAN="3"><B>Kernel #{kernel_index}</B>(#{kernel_input_registers(kernel_index).join ', '})</TD>}
+        label << %Q{<TD COLSPAN="3"><B>Kernel #{kernel_index}</B> #{kernel_size kernel_index} (#{kernel_input_registers(kernel_index).join ', '})</TD>}
         label << '</TR>'
 
         disasm = disasms[kernel_index]

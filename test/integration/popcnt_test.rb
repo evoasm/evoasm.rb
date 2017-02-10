@@ -27,7 +27,7 @@ module Evoasm
       @kernel_size = 1
       @topology_size = 1
       @parameters = %i(reg0 reg1 reg2 reg3)
-
+      @deme_size = @instruction_names.size
       start
     end
 

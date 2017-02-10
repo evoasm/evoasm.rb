@@ -2,7 +2,7 @@ require 'evoasm/test'
 require 'evoasm/population'
 require 'population_helper'
 
-#Evoasm.min_log_level = :info
+Evoasm.log_level = :info
 
 module Evoasm
   class SymRegTest < Minitest::Test
@@ -12,7 +12,8 @@ module Evoasm
     def setup
       set_default_parameters
 
-      @instruction_names = Evoasm::X64.instruction_names(:xmm) #.grep /(add|mul|sqrt).*?sd/
+      @instruction_names = Evoasm::X64.instruction_names(:xmm).grep(/.*?sd/).grep_v /pack|mov|cvt|aes|cmp/ #.grep /(add|mul|sqrt).*?sd/
+      p @instruction_names
       @examples = {
         0.0 => 0.0,
         0.5 => 1.0606601717798212,
@@ -27,16 +28,17 @@ module Evoasm
         5.0 => 11.61895003862225
       }
 
-      @kernel_size = 4
+      @kernel_size = 100
+      @deme_size = 3000
       @topology_size = 1
       @parameters = %i(reg0 reg1 reg2 reg3)
-      regs = %i(xmm0 xmm1 xmm2 xmm3)
-      @domains = {
-        reg0: regs,
-        reg1: regs,
-        reg2: regs,
-        reg3: regs
-      }
+      #regs = %i(xmm0 xmm1 xmm2 xmm3)
+      #@domains = {
+      #  reg0: regs,
+      #  reg1: regs,
+      #  reg2: regs,
+      #  reg3: regs
+      #}
 
       start
     end

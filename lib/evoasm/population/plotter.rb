@@ -1,13 +1,17 @@
+require 'open3'
+
 module Evoasm
   class Population
 
     # Visualizes the population loss functions using {http://gnuplot.sourceforge.net Gnuplot}
     class Plotter
-      MAX_SAMPLE_COUNT = 32
+      MAX_SAMPLE_COUNT = 16
 
       # @!visibility private
       def self.__open__
-        @pipe ||= IO.popen('gnuplot', 'w')
+        return @pipe if @pipe
+        @pipe, = Open3.popen3('gnuplot')
+        @pipe
       end
 
       # @param population [Population] the population to plot
@@ -46,7 +50,6 @@ module Evoasm
       # @return [nil]
       def update
         summary = @population.summary
-
 
         summary.each_with_index do |deme_summary, deme_index|
           deme_samples = @data[deme_index]

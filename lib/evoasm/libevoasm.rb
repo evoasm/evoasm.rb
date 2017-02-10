@@ -243,6 +243,7 @@ module Evoasm
     attach_evoasm_function :program_run, [:pointer, :pointer], :pointer
 
     attach_evoasm_function :program_get_size, [:pointer], :size_t
+    attach_evoasm_function :program_get_kernel_size, [:pointer, :size_t], :size_t
     attach_evoasm_function :program_get_kernel_code, [:pointer, :size_t, :pointer], :size_t
     attach_evoasm_function :program_get_code, [:pointer, :bool, :pointer], :size_t
     attach_evoasm_function :program_get_succ_kernel_idx, [:pointer, :size_t, :size_t], :ssize_t
