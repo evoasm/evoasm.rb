@@ -134,9 +134,9 @@ module PopulationHelper
 
         assert_equal run_count, run_summaries.size
 
-        run_summaries.each_with_index do |s, i|
-          File.write("/tmp/t#{i}.txt", s.pretty_inspect)
-        end
+        # run_summaries.each_with_index do |s, i|
+        #   File.write("/tmp/t#{i}.txt", s.pretty_inspect)
+        # end
 
         run_summaries.uniq.tap do |uniq|
           assert_equal [run_summaries.first], uniq
