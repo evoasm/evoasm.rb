@@ -90,8 +90,6 @@ module PopulationHelper
 
     def assert_runs_examples(program)
       assert_equal examples.values, program.run_all(*examples.keys)
-      p examples.keys
-      p program.run_all(*examples.keys)
     end
 
     def test_program_to_gv
