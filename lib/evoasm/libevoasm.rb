@@ -265,8 +265,9 @@ module Evoasm
     attach_evoasm_function :program_io_destroy, [:pointer], :void
 
     attach_evoasm_function :pop_seed, [:pointer], :void
-    attach_evoasm_function :pop_eval, [:pointer], :bool
+    attach_evoasm_function :pop_eval, [:pointer, :size_t], :bool
     attach_evoasm_function :pop_next_gen, [:pointer], :void
+
     attach_evoasm_function :pop_alloc, [], :pointer
     attach_evoasm_function :pop_destroy, [:pointer], :void
     attach_evoasm_function :pop_free, [:pointer], :void
@@ -295,6 +296,8 @@ module Evoasm
     attach_evoasm_function :pop_params_set_deme_size, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_get_n_demes, [:pointer], :size_t
     attach_evoasm_function :pop_params_set_n_demes, [:pointer, :size_t], :void
+    attach_evoasm_function :pop_params_get_example_win_size, [:pointer], :size_t
+    attach_evoasm_function :pop_params_set_example_win_size, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_set_kernel_size, [:pointer, :size_t], :void
     attach_evoasm_function :pop_params_get_kernel_size, [:pointer], :size_t
     attach_evoasm_function :pop_params_set_topology_size, [:pointer, :size_t], :void

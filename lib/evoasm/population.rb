@@ -28,8 +28,8 @@ module Evoasm
 
     # Evaluates all programs and kernels in the population
     # @return [void]
-    def evaluate
-      unless Libevoasm.pop_eval self
+    def evaluate(minor_generations = 5)
+      unless Libevoasm.pop_eval self, minor_generations
         raise Error.last
       end
     end

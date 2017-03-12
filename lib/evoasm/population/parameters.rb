@@ -6,6 +6,7 @@ module Evoasm
   class Population
 
     class Parameters < FFI::AutoPointer
+      DEFAULT_EXAMPLE_WINDOW_SIZE = 128
 
       # @!visibility private
       def self.release(ptr)
@@ -35,6 +36,7 @@ module Evoasm
         super(ptr)
 
         self.seed = PRNG::DEFAULT_SEED
+        self.example_window_size = DEFAULT_EXAMPLE_WINDOW_SIZE
 
         if block
           block[self]
@@ -49,6 +51,16 @@ module Evoasm
 
       def deme_size=(deme_size)
         Libevoasm.pop_params_set_deme_size self, deme_size
+      end
+
+      # @!attribute example_window_size
+      # @return [Integer] the size of the example window
+      def example_window_size
+        Libevoasm.pop_params_get_example_win_size self
+      end
+
+      def example_window_size=(example_window_size)
+        Libevoasm.pop_params_set_example_win_size self, example_window_size
       end
 
       # @!attribute deme_count
@@ -91,7 +103,7 @@ module Evoasm
         domains_hash.each do |parameter_name, domain_value|
           domain = Domain.for domain_value
           success = Libevoasm.pop_params_set_domain(self, parameter_name, domain)
-          if !success
+          unless success
             raise ArgumentError, "no such parameter #{parameter_name}"
           end
           domains << domain
