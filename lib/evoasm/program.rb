@@ -206,14 +206,12 @@ module Evoasm
                           label: graph.html(label)
 
 
-        successors = Array.new(condition_count) do |condition_index|
+        successors = Array.new(condition_count + 1) do |condition_index|
           [
             Libevoasm.program_get_succ_kernel_idx(self, kernel_index, condition_index),
            jmp_cond_enum_type[condition_index]
           ]
         end.select {|succ_kernel_index, _| succ_kernel_index != -1 }
-
-        p successors
 
         successors.each do |successor, condition|
           succ_addr = addrs[successor]

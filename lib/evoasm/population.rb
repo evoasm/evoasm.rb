@@ -17,9 +17,10 @@ module Evoasm
     # @param architecture [Symbol] architecture, currently only +:x64+ is supported
     def initialize(parameters, architecture = Evoasm.architecture)
       @parameters = parameters
+      @architecture = architecture
 
       ptr = Libevoasm.pop_alloc
-      unless Libevoasm.pop_init ptr, architecture, @parameters
+      unless Libevoasm.pop_init ptr, @architecture, @parameters
         raise Error.last
       end
 
@@ -41,8 +42,14 @@ module Evoasm
 
     # Seeds the population with random individuals
     # @return [void]
-    def seed
-      Libevoasm.pop_seed self
+    def seed(&block)
+      if block
+        seed_builder = SeedBuilder.new @architecture, self.parameters.instructions, &block
+        p seed_builder
+      else
+        raise
+      end
+      Libevoasm.pop_seed self, FFI::Pointer::NULL, 0, FFI::Pointer::NULL, 0
     end
 
     # @return [Float] the loss of the best program found so far
@@ -148,4 +155,5 @@ module Evoasm
 end
 
 require 'evoasm/population/parameters'
+require 'evoasm/population/seed_builder'
 require 'evoasm/population/plotter'

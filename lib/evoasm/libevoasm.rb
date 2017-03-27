@@ -264,7 +264,7 @@ module Evoasm
     attach_evoasm_function :program_io_get_type, [:pointer, :size_t], :io_val_type
     attach_evoasm_function :program_io_destroy, [:pointer], :void
 
-    attach_evoasm_function :pop_seed, [:pointer], :void
+    attach_evoasm_function :pop_seed, [:pointer, :pointer, :size_t, :pointer, :size_t], :bool
     attach_evoasm_function :pop_eval, [:pointer, :size_t], :bool
     attach_evoasm_function :pop_next_gen, [:pointer], :void
 

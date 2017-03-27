@@ -146,6 +146,7 @@ module Evoasm
           @inst_id_enum_type[Libevoasm.pop_params_get_inst(self, index)]
         end
       end
+
       def instructions=(instructions)
         instructions.each_with_index do |instruction, index|
           name =
