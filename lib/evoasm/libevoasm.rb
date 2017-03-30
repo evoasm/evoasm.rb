@@ -190,14 +190,14 @@ module Evoasm
     attach_evoasm_function :x64_params_free, [:pointer], :void
     attach_evoasm_function :x64_params_set, [:pointer, :x64_param_id, :int64], :void
     attach_evoasm_function :x64_params_get, [:pointer, :x64_param_id], :int64
-    attach_evoasm_function :x64_params_get_type, [:x64_param_id], :x64_param_type
+    attach_evoasm_function :x64_get_param_type, [:x64_param_id], :x64_param_type
 
     attach_evoasm_function :x64_basic_params_init, [:pointer], :void
     attach_evoasm_function :x64_basic_params_alloc, [], :pointer
     attach_evoasm_function :x64_basic_params_free, [:pointer], :void
     attach_evoasm_function :x64_basic_params_set, [:pointer, :x64_basic_param_id, :int64], :void
     attach_evoasm_function :x64_basic_params_get, [:pointer, :x64_basic_param_id], :int64
-    attach_evoasm_function :x64_basic_params_get_type, [:x64_basic_param_id], :x64_param_type
+    attach_evoasm_function :x64_get_basic_param_type, [:x64_basic_param_id], :x64_param_type
 
     attach_evoasm_function :param_get_id, [:pointer], :int
     attach_evoasm_function :param_get_domain, [:pointer], :pointer

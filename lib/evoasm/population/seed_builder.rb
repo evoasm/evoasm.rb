@@ -14,7 +14,7 @@ module Evoasm
           instance_eval &block
         end
 
-        def kernel(name, &block)
+        def kernel(name = @kernels.size, &block)
           @kernels[name] = Kernel.new self, &block
         end
       end
@@ -25,7 +25,7 @@ module Evoasm
         def initialize(program, &block)
           @program = program
           @instructions = []
-          @j
+          @topology = []
           instance_eval &block
         end
 
@@ -35,9 +35,15 @@ module Evoasm
         end
 
         def method_missing(name, *args, **kwargs, &block)
-          if program.builder.instructions.include? name
-            @instructions << [name, kwargs]
-          elsif program.
+          if program.builder.instruction_name? name
+            if program.builder.allowed_instruction_name? name
+              @instructions << [name, kwargs]
+            else
+              raise ArgumentError, "'#{name}' is not in the current instruction set"
+            end
+          elsif program.builder.jump_condition? name
+            @topology << [name, *args]
+          else
             super
           end
         end
@@ -47,16 +53,36 @@ module Evoasm
         @architecture = architecture
         @instructions = instructions
 
+        case architecture
+        when :x64
+          @jmp_cond_enum_type = Libevoasm.enum_type :x64_jmp_cond
+          @inst_id_enum_type = Libevoasm.enum_type :x64_inst_id
+        else
+          raise
+        end
+
         @programs = {}
 
         instance_eval &block
+      end
+
+      def jump_condition?(name)
+        !@jmp_cond_enum_type[name].nil?
+      end
+
+      def instruction_name?(name)
+        !@inst_id_enum_type[name].nil?
+      end
+
+      def allowed_instruction_name?(name)
+        @instructions.include? name
       end
 
       def build
 
       end
 
-      def program(name, &block)
+      def program(name = @programs.size, &block)
         @programs[name] = Program.new self, &block
       end
     end
