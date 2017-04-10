@@ -46,6 +46,10 @@ module Evoasm
         end
       end
 
+      def id
+        :x64
+      end
+
       # Gives an {Instruction} object for the given instruction name.
       # @param instruction_name [Symbol] instruction name
       # @return [Instruction]

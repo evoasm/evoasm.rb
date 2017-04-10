@@ -9,7 +9,6 @@ module Evoasm
     def setup
       set_default_parameters
       @kernel_size = 2
-      @topology_size = 1
     end
 
     def test_unseeded
@@ -58,16 +57,6 @@ module Evoasm
         start
       end
       assert_match /deme size/i, error.message
-    end
-
-    def test_invalid_topology_size
-      [0, 2**32].each do |topology_size|
-        @topology_size = topology_size
-        error = assert_raises Evoasm::Error do
-          start
-        end
-        assert_match /topology size/i, error.message
-      end
     end
 
     def test_invalid_kernel_size

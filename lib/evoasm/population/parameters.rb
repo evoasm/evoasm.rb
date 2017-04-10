@@ -1,5 +1,5 @@
 require 'evoasm/prng'
-require 'evoasm/program/io'
+require 'evoasm/kernel/io'
 require 'evoasm/domain'
 
 module Evoasm
@@ -13,10 +13,10 @@ module Evoasm
         Libevoasm.pop_params_free ptr
       end
 
-      # @return [Program::Input] input examples
+      # @return [Kernel::Input] input examples
       attr_reader :input
 
-      # @return [Program::Output] output examples
+      # @return [Kernel::Output] output examples
       attr_reader :output
 
       # @param architecture [Symbol] the machine architecture (currently only +:x64+ is supported)
@@ -161,37 +161,29 @@ module Evoasm
       end
 
       # @!attribute kernel_size
-      # @return [Integer] the size of program kernels (number of instructions per kernel)
+      # @return [Range,Integer] range of possible kernel sizes
       def kernel_size
-        Libevoasm.pop_params_get_kernel_size self
+        min = Libevoasm.pop_params_get_min_kernel_size self
+        max = Libevoasm.pop_params_get_max_kernel_size self
+
+        return (min..max)
       end
 
       def kernel_size=(kernel_size)
-        Libevoasm.pop_params_set_kernel_size self, kernel_size
-      end
-
-      # @!attribute topology_size
-      # @return [Integer] the size of programs (number of kernels per program)
-      def topology_size
-        Libevoasm.pop_params_get_topology_size self
-      end
-
-      def topology_size=(topology_size)
-        Libevoasm.pop_params_set_topology_size self, topology_size
-      end
-
-      # @!attribute recur_limit
-      # @return [Integer] the size of programs (number of kernels per program)
-      def recur_limit
-        Libevoasm.pop_params_get_recur_limit self
-      end
-
-      def recur_limit=(recur_limit)
-        Libevoasm.pop_params_set_recur_limit self, recur_limit
+        case kernel_size
+        when Range
+          Libevoasm.pop_params_set_min_kernel_size self, kernel_size.min
+          Libevoasm.pop_params_set_max_kernel_size self, kernel_size.max
+        when Integer
+          Libevoasm.pop_params_set_min_kernel_size self, kernel_size
+          Libevoasm.pop_params_set_max_kernel_size self, kernel_size
+        else
+          raise ArumgentError, 'kernel size must be range or integer'
+        end
       end
 
       # @!attribute examples
-      # @return [Hash] shorthand to set expected program input and output
+      # @return [Hash] shorthand to set expected kernel input and output
       # @see #input
       # @see #output
       def examples
@@ -202,18 +194,18 @@ module Evoasm
         input_examples = examples.keys.map { |k| Array(k) }
         output_examples = examples.values.map { |k| Array(k) }
 
-        self.input = Program::Input.new input_examples
-        self.output = Program::Output.new output_examples
+        self.input = Kernel::Input.new input_examples
+        self.output = Kernel::Output.new output_examples
       end
 
       def input=(input)
         @input = input
-        Libevoasm.pop_params_set_program_input self, input
+        Libevoasm.pop_params_set_kernel_input self, input
       end
 
       def output=(output)
         @output = output
-        Libevoasm.pop_params_set_program_output self, output
+        Libevoasm.pop_params_set_kernel_output self, output
       end
 
       private

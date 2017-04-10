@@ -29,9 +29,7 @@ module Search
 
       # @seed = SEED
       @kernel_size = 20
-      @topology_size = 5
       @deme_count = 1
-      @recur_limit = 100
       #@deme_size = 5000
       @parameters = %i(reg0 reg1 reg2 reg3)
 
@@ -42,10 +40,10 @@ module Search
 
     make_my_diffs_pretty!
 
-    def test_program_run
+    def test_kernel_run
       # should generalize (i.e. give correct answer for non-training data)
-      #assert_equal 2, found_program.run(16, 6)
-      #assert_equal 1, found_program.run(15, 2)
+      #assert_equal 2, found_kernel.run(16, 6)
+      #assert_equal 1, found_kernel.run(15, 2)
     end
   end
 end

@@ -30,7 +30,6 @@ module Evoasm
 
       @kernel_size = 100
       @deme_size = 3000
-      @topology_size = 1
       @parameters = %i(reg0 reg1 reg2 reg3)
       #regs = %i(xmm0 xmm1 xmm2 xmm3)
       #@domains = {
@@ -43,16 +42,12 @@ module Evoasm
       start
     end
 
-    def test_topology_size
-      assert_equal 1, found_program.size
-    end
-
-    def test_program_run
+    def test_kernel_run
       # should generalize (i.e. give correct answer for non-training data)
-      p found_program.run_all(*@examples.keys)
-      assert_equal 31.937438845342623, found_program.run(10.0)
-      assert_equal 36.78314831549904, found_program.run(11.0)
-      assert_equal 41.8568990729127, found_program.run(12.0)
+      p found_kernel.run_all(*@examples.keys)
+      assert_equal 31.937438845342623, found_kernel.run(10.0)
+      assert_equal 36.78314831549904, found_kernel.run(11.0)
+      assert_equal 41.8568990729127, found_kernel.run(12.0)
     end
   end
 end

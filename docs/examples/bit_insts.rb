@@ -15,16 +15,15 @@ parameters = Evoasm::Population::Parameters.new do |p|
   p.deme_size = 1024
   p.deme_count = 1
   p.kernel_size = 1
-  p.topology_size = 1
   p.parameters = %i(reg0 reg1 reg2 reg3)
 end
 
 parameters.examples = count_1s
 
 population = Evoasm::Population.new parameters
-program, loss = population.run
+kernel, loss = population.run
 
-puts "#{program.disassemble.first[1]}"
+puts "#{kernel.disassemble.first[1]}"
 
 puts
 
@@ -39,6 +38,6 @@ count_trailing_0s = {
 parameters.examples = count_trailing_0s
 
 population = Evoasm::Population.new parameters
-program, loss = population.run
+kernel, loss = population.run
 
-puts "#{program.disassemble.first[1]}"
+puts "#{kernel.disassemble.first[1]}"

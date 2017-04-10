@@ -1,7 +1,7 @@
-require 'evoasm/program'
+require 'evoasm/kernel'
 
 module Evoasm
-  class Program
+  class Kernel
     # Represents one or multiple input/output tuples.
     class IO < FFI::AutoPointer
 
@@ -12,7 +12,7 @@ module Evoasm
 
       # @!visibility private
       def self.release(ptr)
-        Libevoasm.program_io_free(ptr)
+        Libevoasm.kernel_io_free(ptr)
       end
 
       # @param tuples [Array] array of input or output tuples
@@ -29,7 +29,7 @@ module Evoasm
 
           flat_tuples = tuples.flatten
 
-          ptr = Libevoasm.program_io_alloc flat_tuples.size
+          ptr = Libevoasm.kernel_io_alloc flat_tuples.size
           load_tuples ptr, flat_tuples, arity
 
           super(ptr)
@@ -38,7 +38,7 @@ module Evoasm
 
       # @return [Integer] arity of tuples
       def arity
-        Libevoasm.program_io_get_arity self
+        Libevoasm.kernel_io_get_arity self
       end
 
       # @yield [Array] tuple
@@ -58,7 +58,7 @@ module Evoasm
 
       # @return [Integer] the number of input/output values
       def length
-        Libevoasm.program_io_get_len self
+        Libevoasm.kernel_io_get_len self
       end
 
       # @return [Integer] the number of input/output pairs
@@ -82,12 +82,12 @@ module Evoasm
       private
 
       def value_at(index)
-        type = Libevoasm.program_io_get_type self, index
+        type = Libevoasm.kernel_io_get_type self, index
         case type
         when :i64
-          Libevoasm.program_io_get_value_i64 self, index
+          Libevoasm.kernel_io_get_value_i64 self, index
         when :f64
-          Libevoasm.program_io_get_value_f64 self, index
+          Libevoasm.kernel_io_get_value_f64 self, index
         else
           raise "unknown value type #{type}"
         end
@@ -99,10 +99,10 @@ module Evoasm
           [:io_val_type, tuple_type, c_type, tuple_value]
         end
 
-        success = Libevoasm.program_io_init ptr, arity, *var_args
+        success = Libevoasm.kernel_io_init ptr, arity, *var_args
 
         unless success
-          Libevoasm.program_io_unref ptr
+          Libevoasm.kernel_io_unref ptr
           raise Error.last
         end
       end
@@ -133,11 +133,11 @@ module Evoasm
       end
     end
 
-    # Represents a program's input
+    # Represents a kernel's input
     class Input < IO
     end
 
-    # Represents a program's output
+    # Represents a kernel's output
     class Output < IO
     end
   end

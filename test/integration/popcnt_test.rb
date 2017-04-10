@@ -25,22 +25,16 @@ module Evoasm
         0b101011 => 4
       }
       @kernel_size = 1
-      @topology_size = 1
       @parameters = %i(reg0 reg1 reg2 reg3)
       @deme_size = @instruction_names.size
       start
     end
 
-
-    def test_topology_size
-      assert_equal 1, found_program.size
-    end
-
-    def test_program_run
+    def test_kernel_run
       # should generalize (i.e. give correct answer for non-training data)
-      assert_equal 2, found_program.run(0b1001)
-      assert_equal 1, found_program.run(0b1000)
-      assert_equal 3, found_program.run(0b1101)
+      assert_equal 2, found_kernel.run(0b1001)
+      assert_equal 1, found_kernel.run(0b1000)
+      assert_equal 3, found_kernel.run(0b1101)
     end
   end
 end

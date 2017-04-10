@@ -15,7 +15,6 @@ module PopulationHelper
     @instruction_names = Evoasm::X64.instruction_names(:gp, :rflags)
     @deme_size = 1200
     @parameters = %i(reg0 reg1 reg2 reg3)
-    @recur_limit = 0
     @deme_count = 1
   end
 
@@ -23,14 +22,12 @@ module PopulationHelper
     parameters = Evoasm::Population::Parameters.new architecture do |p|
       p.instructions = @instruction_names
       p.kernel_size = @kernel_size
-      p.topology_size = @topology_size
       p.deme_size = @deme_size
       p.deme_count = @deme_count
       p.examples = @examples
       p.parameters = @parameters
       p.domains = @domains if @domains
       p.seed = @seed if @seed
-      p.recur_limit = @recur_limit
     end
 
     Evoasm::Population.new parameters
@@ -38,9 +35,9 @@ module PopulationHelper
 
   def start(loss = 0.0, min_generations: 0, max_generations: 1024, &block)
     @population = new_population
-    @found_program = nil
+    @found_kernel = nil
 
-    @found_program, loss = @population.run(loss: loss, min_generations: min_generations, max_generations: max_generations) do |population, generation|
+    @found_kernel, loss = @population.run(loss: loss, min_generations: min_generations, max_generations: max_generations) do |population, generation|
       best_loss = @population.best_loss
       if best_loss == Float::INFINITY
         @population.seed
@@ -58,48 +55,36 @@ module PopulationHelper
   end
 
   module Tests
-    def found_program
-      @found_program
+    def found_kernel
+      @found_kernel
     end
 
     def test_intron_elimination
-      assert_runs_examples found_program
-      intron_eliminated_program = found_program.eliminate_introns
-      assert_runs_examples intron_eliminated_program
+      assert_runs_examples found_kernel
+      intron_eliminated_kernel = found_kernel.eliminate_introns
+      assert_runs_examples intron_eliminated_kernel
 
       # FIXME: possible, no ?
-      refute_equal intron_eliminated_program, found_program
+      refute_equal intron_eliminated_kernel, found_kernel
 
-      # found_program.to_gv.save '/tmp/orig.png'
-      # program.to_gv.save '/tmp/intron.png'
-
-      found_program.size.times do |index|
-        assert_operator found_program.kernel_size(index), :>=, intron_eliminated_program.kernel_size(index)
-      end
-
+      assert_operator found_kernel.size, :>=, intron_eliminated_kernel.size
     end
 
     def examples
       @examples
     end
 
-    def test_program_found
-      refute_nil found_program, "no solution found"
-      assert_kind_of Evoasm::Program, found_program
+    def test_kernel_found
+      refute_nil found_kernel, "no solution found"
+      assert_kind_of Evoasm::Kernel, found_kernel
     end
 
-    def assert_runs_examples(program)
-      assert_equal examples.values, program.run_all(*examples.keys)
+    def assert_runs_examples(kernel)
+      assert_equal examples.values, kernel.run_all(*examples.keys)
     end
 
-    def test_program_to_gv
-      filename = Dir::Tmpname.create(['evoasm_gv_test', '.png']) {}
-      found_program.to_gv.save(filename)
-      assert File.exist?(filename)
-    end
-
-    def test_program_run_all
-      assert_runs_examples found_program
+    def test_kernel_run_all
+      assert_runs_examples found_kernel
     end
 
     def random_code

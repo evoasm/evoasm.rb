@@ -35,16 +35,6 @@ module Evoasm
         assert_equal 10, @parameters.kernel_size
       end
 
-      def test_topology_size
-        @parameters.topology_size = 4
-        assert_equal 4, @parameters.topology_size
-      end
-
-      def test_recur_limit
-        @parameters.recur_limit = 1000
-        assert_equal 1000, @parameters.recur_limit
-      end
-
       def test_examples
         examples = {
           [0, 1] => 0,

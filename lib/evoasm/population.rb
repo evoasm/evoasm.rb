@@ -6,6 +6,7 @@ module Evoasm
 
     # @return [Population::Parameters] population parameters
     attr_reader :parameters
+    attr_reader :architecture
 
     # @!visibility private
     def self.release(ptr)
@@ -27,7 +28,7 @@ module Evoasm
       super(ptr)
     end
 
-    # Evaluates all programs and kernels in the population
+    # Evaluates all kernels and kernels in the population
     # @return [void]
     def evaluate(minor_generations = 5)
       unless Libevoasm.pop_eval self, minor_generations
@@ -44,28 +45,28 @@ module Evoasm
     # @return [void]
     def seed(&block)
       if block
-        seed_builder = SeedBuilder.new @architecture, self.parameters.instructions, &block
-        p seed_builder
+        seed_builder = SeedBuilder.new self, self.parameters.instructions, &block
+        seed_builder.seed_population!
       else
-        raise
+        Libevoasm.pop_seed self, FFI::Pointer::NULL
       end
-      Libevoasm.pop_seed self, FFI::Pointer::NULL, 0, FFI::Pointer::NULL, 0
+
     end
 
-    # @return [Float] the loss of the best program found so far
-    # @see #best_program
+    # @return [Float] the loss of the best kernel found so far
+    # @see #best_kernel
     def best_loss
       Libevoasm.pop_get_best_loss self
     end
 
-    # @return [Program] the best program found so far
-    def best_program
-      program = Libevoasm.program_alloc
-      unless Libevoasm.pop_load_best_program self, program
+    # @return [Kernel] the best kernel found so far
+    def best_kernel
+      kernel = Libevoasm.kernel_alloc
+      unless Libevoasm.pop_load_best_kernel self, kernel
         raise Error.last
       end
 
-      Program.wrap program
+      Kernel.wrap kernel
     end
 
     # @!visibility private
@@ -78,7 +79,7 @@ module Evoasm
     #   end
     # end
 
-    # Gives a five-number summary for each deme, program and kernel.
+    # Gives a five-number summary for each deme, kernel and kernel.
     # @return [Array] a 2-dimensional array of summaries.
     def summary(flat: false)
       summary_len = Libevoasm.pop_summary_len self
@@ -116,24 +117,24 @@ module Evoasm
     end
 
     # Starts the evolutionary process on this population
-    # @param loss [Float] stop process if a program is found whose loss is less or equal than the specified loss
+    # @param loss [Float] stop process if a kernel is found whose loss is less or equal than the specified loss
     # @param min_generations [Integer] minimum number of generations to run
     # @param max_generations [Integer] maximum number of generations to run
     # @param seed [Bool] whether the population should be seeded before starting
     # @yield [self]
     # @yieldreturn a truthy value to stop the process
-    # @return [Program] the best program found
+    # @return [Kernel] the best kernel found
 
     def run(loss: nil, min_generations: nil, max_generations: 10, seed: true, &block)
       self.seed if seed
-      best_program = nil
+      best_kernel = nil
       best_loss = nil
       generation = 1
 
       loop do
         evaluate
 
-        best_program = self.best_program
+        best_kernel = self.best_kernel
         best_loss = self.best_loss
         generation = self.generation
 
@@ -141,6 +142,7 @@ module Evoasm
 
         break if @stop
         min_generations_reached = min_generations.nil? || generation >= min_generations
+        p ['best loss ', best_loss]
         break if min_generations_reached && loss && best_loss <= loss
         break if max_generations && generation >= max_generations
 
@@ -149,7 +151,7 @@ module Evoasm
       end
 
       @stop = false
-      return best_program, best_loss
+      return best_kernel, best_loss
     end
   end
 end

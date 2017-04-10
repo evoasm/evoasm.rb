@@ -3,54 +3,74 @@ module Evoasm
     class SeedBuilder
 
       attr_reader :instructions
+      attr_reader :population
 
-      class Program
-        attr_reader :builder
+      class Kernel
+        attr_reader :instructions
 
         def initialize(builder, &block)
           @builder = builder
-          @kernels = {}
-
-          instance_eval &block
-        end
-
-        def kernel(name = @kernels.size, &block)
-          @kernels[name] = Kernel.new self, &block
-        end
-      end
-
-      class Kernel
-        attr_reader :program
-
-        def initialize(program, &block)
-          @program = program
           @instructions = []
-          @topology = []
-          instance_eval &block
+
+          instance_eval &block if block
         end
 
         def respond_to_missing?(name, *args, **kwargs, &block)
-          return true if program.builder.instructions.include? name
+          return true if builder.instructions.include? name
           false
         end
 
+        def default(default = nil)
+          return @default if default.nil?
+          @default = default
+        end
+
         def method_missing(name, *args, **kwargs, &block)
-          if program.builder.instruction_name? name
-            if program.builder.allowed_instruction_name? name
+          if builder.instruction_name? name
+            if builder.allowed_instruction_name? name
               @instructions << [name, kwargs]
             else
               raise ArgumentError, "'#{name}' is not in the current instruction set"
             end
-          elsif program.builder.jump_condition? name
-            @topology << [name, *args]
           else
             super
           end
         end
       end
 
-      def initialize(architecture, instructions, &block)
-        @architecture = architecture
+      def seed_population!
+        kernels = Libevoasm.deme_kernels_alloc
+        success = Libevoasm.deme_kernels_init kernels, @population.parameters, architecture, @kernels.size
+
+        unless success
+          Libevoasm.deme_kernels_free kernels
+          raise Error.last
+        end
+
+        @kernels.each do |kernel, kernel_index|
+          kernel.instructions.each_with_index do |instruction, instruction_index|
+            inst_id, params_hash = instruction
+            parameters = Evoasm::X64::Parameters.new(params_hash, basic: true)
+            Libevoasm.deme_kernels_set_inst kernels, kernel_index, instruction_index, inst_id, parameters
+          end
+          Libevoasm.deme_kernels_set_size kernels, kernel_index, kernel.instructions.size
+        end
+
+        success = Libevoasm.pop_seed @population, kernels
+
+        Libevoasm.deme_kernels_free kernels
+
+        unless success
+          raise Error.last
+        end
+      end
+
+      def architecture
+        @population.architecture
+      end
+
+      def initialize(population, instructions, &block)
+        @population = population
         @instructions = instructions
 
         case architecture
@@ -61,13 +81,9 @@ module Evoasm
           raise
         end
 
-        @programs = {}
+        @kernels = []
 
         instance_eval &block
-      end
-
-      def jump_condition?(name)
-        !@jmp_cond_enum_type[name].nil?
       end
 
       def instruction_name?(name)
@@ -78,12 +94,8 @@ module Evoasm
         @instructions.include? name
       end
 
-      def build
-
-      end
-
-      def program(name = @programs.size, &block)
-        @programs[name] = Program.new self, &block
+      def kernel(&block)
+        @kernels << Kernel.new(self, &block)
       end
     end
   end
