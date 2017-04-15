@@ -168,9 +168,9 @@ module Evoasm
 
       def parameter_type(parameter_name)
         if basic?
-          Libevoasm.x64_get_basic_param_type(parameter_name)
+          Libevoasm.x64_basic_param_get_type(parameter_name)
         else
-          Libevoasm.x64_get_param_type(parameter_name)
+          Libevoasm.x64_param_get_type(parameter_name)
         end
       end
 

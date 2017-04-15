@@ -20,19 +20,23 @@ module Evoasm
         if tuples.is_a?(FFI::Pointer)
           super(tuples)
         else
-          tuples = tuples
-          arity = determine_arity tuples
+          arity, types = determine_arity_and_types tuples
 
           if arity > MAX_ARITY
             raise ArgumentError, "maximum arity exceeded (#{arity} > #{MAX_ARITY})"
           end
 
-          flat_tuples = tuples.flatten
+          kernel_io_val_type_enum_type = Libevoasm.enum_type :kernel_io_val_type
+          types_array = FFI::MemoryPointer.new :int, arity
+          ffi_types = types.map {|t| kernel_io_val_type_enum_type[t]}
+          types_array.write_array_of :int, ffi_types
 
-          ptr = Libevoasm.kernel_io_alloc flat_tuples.size
-          load_tuples ptr, flat_tuples, arity
+          ptr = Libevoasm.kernel_io_alloc
+          Libevoasm.kernel_io_init ptr, arity, tuples.size, types_array
 
           super(ptr)
+
+          load! tuples, arity, types
         end
       end
 
@@ -58,78 +62,130 @@ module Evoasm
 
       # @return [Integer] the number of input/output values
       def length
-        Libevoasm.kernel_io_get_len self
+        Libevoasm.kernel_io_get_n_vals self
       end
 
-      # @return [Integer] the number of input/output pairs
+      # @return [Integer] the number of input/output tuples
       def size
-        length / arity
+        Libevoasm.kernel_io_get_n_tuples self
       end
 
       # @param tuple_index [Integer]
       # @return [Array] returns the tuple at tuple_index
       def [](tuple_index)
-        absolute_index = arity * tuple_index
-        if arity > 1
-          Array.new(arity) do |value_index|
-            value_at(absolute_index + value_index)
-          end
-        else
-          value_at(absolute_index)
+        Array.new(arity) do |value_index|
+          read_write_value(tuple_index, value_index)
         end
       end
 
       private
 
-      def value_at(index)
-        type = Libevoasm.kernel_io_get_type self, index
-        case type
-        when :i64
-          Libevoasm.kernel_io_get_value_i64 self, index
-        when :f64
-          Libevoasm.kernel_io_get_value_f64 self, index
+      def load!(tuples, arity, types)
+        tuples.each_with_index do |tuple, tuple_index|
+          Array(tuple).each_with_index do |value, value_index|
+            read_write_value tuple_index, value_index, value
+          end
+        end
+      end
+
+      def read_write_value(tuple_index, value_index, value = nil)
+        type = Libevoasm.kernel_io_get_type self, value_index
+        len = Libevoasm.kernel_io_val_type_get_len type
+        elem_type = Libevoasm.kernel_io_val_type_get_elem_type type
+
+        ffi_type =
+          case elem_type
+          when :i64x1
+            :int64
+          when :u64x1
+            :uint64
+          when :i32x1
+            :int32
+          when :u32x1
+            :uint32
+          when :i16x1
+            :int16
+          when :u16x1
+            :uint16
+          when :f64x1
+            :double
+          when :f32x1
+            :float
+          else
+            raise "unknown value type #{type}"
+          end
+
+        val_ptr = Libevoasm.kernel_io_get_val self, tuple_index, value_index
+
+        if value
+          value = Array(value)
+          val_ptr.write_array_of ffi_type, value
+          nil
         else
-          raise "unknown value type #{type}"
+          value = val_ptr.read_array_of ffi_type, len
+          if len == 1
+            value.first
+          else
+            value
+          end
         end
       end
 
-      def load_tuples(ptr, flat_tuples, arity)
-        var_args = flat_tuples.flat_map do |tuple_value|
-          tuple_type, c_type = value_types tuple_value
-          [:io_val_type, tuple_type, c_type, tuple_value]
-        end
-
-        success = Libevoasm.kernel_io_init ptr, arity, *var_args
-
-        unless success
-          Libevoasm.kernel_io_unref ptr
-          raise Error.last
+      def tuple_types(tuple)
+        Array(tuple).map do |value|
+          value_type value
         end
       end
 
-      def value_types(value)
+      def element_value_type(value, size)
         case value
         when Float
-          [:f64, :double]
+          :"f64x#{size}"
         when Integer
-          [:i64, :int64]
-        else
-          raise ArgumentError,
-                "invalid tuple value '#{value}' of type '#{value.class}'"
+          :"i64x#{size}"
         end
       end
 
-      def determine_arity(tuples)
+      def value_type(value)
+        value_type =
+          case value
+          when Array
+            types = value.map(&:class).uniq
+            unless types.size == 1
+              raise ArgumentError, "invalid mixed type vector value #{value}"
+            end
+            element_value_type value.first, value.size
+          else
+            element_value_type value, 1
+          end
+
+        value_type or
+          raise ArgumentError, "invalid tuple value '#{value}' of type '#{value.class}'"
+      end
+
+      def determine_arity_and_types(tuples)
         arity = nil
+        types = nil
+
         tuples.each do |tuple|
           tuple_arity = Array(tuple).size
+          tuple_types = tuple_types tuple
+
           if arity && arity != tuple_arity
             raise ArgumentError,
                   "invalid arity for tuple '#{tuple}' (#{tuple_arity} for #{arity})"
           end
+
+          if types && types != tuple_types
+            raise ArgumentError,
+                  "invalid types for tuple '#{tuple}' (#{tuple_types} for #{types})"
+          end
+
           arity = tuple_arity
+          types = tuple_types
         end
-        arity || 0
+
+        [arity || 0, types || []]
       end
     end
 

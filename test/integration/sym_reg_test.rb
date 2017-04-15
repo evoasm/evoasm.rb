@@ -45,9 +45,9 @@ module Evoasm
     def test_kernel_run
       # should generalize (i.e. give correct answer for non-training data)
       p found_kernel.run_all(*@examples.keys)
-      assert_equal 31.937438845342623, found_kernel.run(10.0)
-      assert_equal 36.78314831549904, found_kernel.run(11.0)
-      assert_equal 41.8568990729127, found_kernel.run(12.0)
+      assert_equal [31.937438845342623], found_kernel.run(10.0)
+      assert_equal [36.78314831549904], found_kernel.run(11.0)
+      assert_equal [41.8568990729127], found_kernel.run(12.0)
     end
   end
 end

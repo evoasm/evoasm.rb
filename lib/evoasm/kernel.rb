@@ -32,9 +32,10 @@ module Evoasm
     def run_all(*input_examples)
       input = Kernel::Input.new(input_examples)
 
-      output_ptr = Libevoasm.kernel_run self, input
+      output_ptr = Libevoasm.kernel_io_alloc
+      success = Libevoasm.kernel_run self, input, output_ptr
 
-      if output_ptr.null?
+      unless success
         raise Error.last
       end
 

@@ -32,9 +32,9 @@ module Evoasm
 
     def test_kernel_run
       # should generalize (i.e. give correct answer for non-training data)
-      assert_equal 2, found_kernel.run(0b1001)
-      assert_equal 1, found_kernel.run(0b1000)
-      assert_equal 3, found_kernel.run(0b1101)
+      assert_equal [2], found_kernel.run(0b1001)
+      assert_equal [1], found_kernel.run(0b1000)
+      assert_equal [3], found_kernel.run(0b1101)
     end
   end
 end

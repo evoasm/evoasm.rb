@@ -127,14 +127,11 @@ module Evoasm
 
     def run(loss: nil, min_generations: nil, max_generations: 10, seed: true, &block)
       self.seed if seed
-      best_kernel = nil
       best_loss = nil
-      generation = 1
 
       loop do
         evaluate
 
-        best_kernel = self.best_kernel
         best_loss = self.best_loss
         generation = self.generation
 
@@ -142,15 +139,15 @@ module Evoasm
 
         break if @stop
         min_generations_reached = min_generations.nil? || generation >= min_generations
-        p ['best loss ', best_loss]
         break if min_generations_reached && loss && best_loss <= loss
         break if max_generations && generation >= max_generations
 
         next_generation!
-        generation += 1
       end
 
       @stop = false
+
+      best_kernel = self.best_kernel
       return best_kernel, best_loss
     end
   end

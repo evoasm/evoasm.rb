@@ -19,11 +19,30 @@ module Evoasm
 
     ffi_lib lib_filename
 
-    enum :io_val_type, [
-      :i64,
-      :u64,
-      :f64
-    ]
+    enum :kernel_io_val_type, %i(
+      u8x1
+      i8x1
+      u16x1
+      i16x1
+      u32x1
+      i32x1
+      f32x1
+      i64x1
+      u64x1
+      f64x1
+      i64x2
+      u64x2
+      f64x2
+      i32x4
+      u32x4
+      f32x4
+      f64x4
+      i16x8
+      u16x8
+      f32x8
+      i8x16
+      u8x16
+    )
 
     typedef :uint16, :inst_id
     typedef :uint8, :reg_id
@@ -190,14 +209,14 @@ module Evoasm
     attach_evoasm_function :x64_params_free, [:pointer], :void
     attach_evoasm_function :x64_params_set, [:pointer, :x64_param_id, :int64], :void
     attach_evoasm_function :x64_params_get, [:pointer, :x64_param_id], :int64
-    attach_evoasm_function :x64_get_param_type, [:x64_param_id], :x64_param_type
+    attach_evoasm_function :x64_param_get_type, [:x64_param_id], :x64_param_type
 
     attach_evoasm_function :x64_basic_params_init, [:pointer], :void
     attach_evoasm_function :x64_basic_params_alloc, [], :pointer
     attach_evoasm_function :x64_basic_params_free, [:pointer], :void
     attach_evoasm_function :x64_basic_params_set, [:pointer, :x64_basic_param_id, :int64], :void
     attach_evoasm_function :x64_basic_params_get, [:pointer, :x64_basic_param_id], :int64
-    attach_evoasm_function :x64_get_basic_param_type, [:x64_basic_param_id], :x64_param_type
+    attach_evoasm_function :x64_basic_param_get_type, [:x64_basic_param_id], :x64_param_type
 
     attach_evoasm_function :param_get_id, [:pointer], :int
     attach_evoasm_function :param_get_domain, [:pointer], :pointer
@@ -240,7 +259,7 @@ module Evoasm
     attach_evoasm_function :kernel_destroy, [:pointer], :bool
     attach_evoasm_function :kernel_alloc, [], :pointer
     attach_evoasm_function :kernel_free, [:pointer], :void
-    attach_evoasm_function :kernel_run, [:pointer, :pointer], :pointer
+    attach_evoasm_function :kernel_run, [:pointer, :pointer, :pointer], :bool
 
     attach_evoasm_function :kernel_get_size, [:pointer], :size_t
     attach_evoasm_function :kernel_get_code, [:pointer, :bool, :pointer], :size_t
@@ -251,15 +270,17 @@ module Evoasm
     attach_evoasm_function :kernel_get_output_reg, [:pointer, :size_t], :reg_id
     attach_evoasm_function :kernel_get_arity, [:pointer], :size_t
 
-    attach_evoasm_function :kernel_io_alloc, [:size_t], :pointer
+    attach_evoasm_function :kernel_io_alloc, [], :pointer
     attach_evoasm_function :kernel_io_free, [:pointer], :void
-    attach_evoasm_function :kernel_io_init, [:pointer, :size_t, :varargs], :bool
-    attach_evoasm_function :kernel_io_get_arity, [:pointer], :uint8
-    attach_evoasm_function :kernel_io_get_len, [:pointer], :uint16
-    attach_evoasm_function :kernel_io_get_value_f64, [:pointer, :size_t], :double
-    attach_evoasm_function :kernel_io_get_value_i64, [:pointer, :size_t], :int64
-    attach_evoasm_function :kernel_io_get_type, [:pointer, :size_t], :io_val_type
+    attach_evoasm_function :kernel_io_init, [:pointer, :size_t, :size_t, :pointer], :bool
+    attach_evoasm_function :kernel_io_get_arity, [:pointer], :size_t
+    attach_evoasm_function :kernel_io_get_n_vals, [:pointer], :size_t
+    attach_evoasm_function :kernel_io_get_n_tuples, [:pointer], :size_t
+    attach_evoasm_function :kernel_io_get_type, [:pointer, :size_t], :kernel_io_val_type
+    attach_evoasm_function :kernel_io_get_val, [:pointer, :size_t, :size_t], :pointer
     attach_evoasm_function :kernel_io_destroy, [:pointer], :void
+    attach_evoasm_function :kernel_io_val_type_get_len, [:kernel_io_val_type], :size_t
+    attach_evoasm_function :kernel_io_val_type_get_elem_type, [:kernel_io_val_type], :kernel_io_val_type
 
     attach_evoasm_function :pop_seed, [:pointer, :pointer], :bool
     attach_evoasm_function :pop_eval, [:pointer, :size_t], :bool
@@ -326,9 +347,6 @@ module Evoasm
     attach_evoasm_function :prng_rand8, [:pointer], :uint8
     attach_evoasm_function :prng_randf, [:pointer], :float
     attach_evoasm_function :prng_rand_between, [:pointer, :int64, :int64], :int64
-
-    attach_evoasm_function :kernel_io_alloc, [:size_t], :pointer
-    attach_evoasm_function :kernel_io_init, [:pointer, :uint16, :varargs], :bool
 
     attach_evoasm_function :enum_domain_get_len, [:pointer], :size_t
     attach_evoasm_function :enum_domain_get_val, [:pointer, :size_t], :int64

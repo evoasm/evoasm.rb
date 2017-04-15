@@ -77,10 +77,11 @@ module PopulationHelper
     def test_kernel_found
       refute_nil found_kernel, "no solution found"
       assert_kind_of Evoasm::Kernel, found_kernel
+      puts found_kernel.disassemble format: true
     end
 
     def assert_runs_examples(kernel)
-      assert_equal examples.values, kernel.run_all(*examples.keys)
+      assert_equal @population.parameters.examples.values, kernel.run_all(*examples.keys)
     end
 
     def test_kernel_run_all
