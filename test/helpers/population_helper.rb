@@ -7,15 +7,11 @@ require 'json'
 module PopulationHelper
 
   def set_default_parameters
-    @examples = {
-      1 => 2,
-      2 => 3,
-      3 => 4
-    }
+    @validation_examples = {}
     @instruction_names = Evoasm::X64.instruction_names(:gp, :rflags)
-    @deme_size = 1200
+    @deme_size = 1024
     @parameters = %i(reg0 reg1 reg2 reg3)
-    @deme_count = 1
+    @deme_count = 2
   end
 
   def new_population(architecture = :x64)
@@ -68,6 +64,9 @@ module PopulationHelper
       refute_equal intron_eliminated_kernel, found_kernel
 
       assert_operator found_kernel.size, :>=, intron_eliminated_kernel.size
+
+      puts intron_eliminated_kernel.disassemble format: true
+
     end
 
     def examples
@@ -81,11 +80,19 @@ module PopulationHelper
     end
 
     def assert_runs_examples(kernel)
-      assert_equal @population.parameters.examples.values, kernel.run_all(*examples.keys)
+      examples = @population.parameters.examples
+      assert @examples.size - examples.size <= 1
+      assert_equal examples.values, kernel.run_all(*examples.keys)
     end
 
     def test_kernel_run_all
       assert_runs_examples found_kernel
+    end
+
+    def test_validation_examples
+      @validation_examples.each do |example|
+        assert_equal example[1], found_kernel.run(*example[0])
+      end
     end
 
     def random_code

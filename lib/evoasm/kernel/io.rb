@@ -16,11 +16,13 @@ module Evoasm
       end
 
       # @param tuples [Array] array of input or output tuples
-      def initialize(tuples)
+      def initialize(tuples, types = nil)
         if tuples.is_a?(FFI::Pointer)
           super(tuples)
         else
-          arity, types = determine_arity_and_types tuples
+          tuples = canonicalize_tuples tuples, types
+          types = check_types tuples, types
+          arity = types.size
 
           if arity > MAX_ARITY
             raise ArgumentError, "maximum arity exceeded (#{arity} > #{MAX_ARITY})"
@@ -73,16 +75,53 @@ module Evoasm
       # @param tuple_index [Integer]
       # @return [Array] returns the tuple at tuple_index
       def [](tuple_index)
-        Array.new(arity) do |value_index|
-          read_write_value(tuple_index, value_index)
+        if arity > 1
+          Array.new(arity) do |value_index|
+            read_write_value(tuple_index, value_index)
+          end
+        else
+          read_write_value(tuple_index, 0)
         end
+
       end
 
       private
 
+      def canonicalize_tuples(tuples, types)
+        vector_value = false
+
+        if types && types.size == 1
+          vector_size = Libevoasm.kernel_io_val_type_get_len types.first
+          vector_value = vector_size > 1
+        end
+
+        tuples.map do |tuple|
+          # each tuple should be an array
+          # if it is a scalar or an array representing
+          # a vector wrap in array
+          tuple =
+            case tuple
+            when Array
+              if vector_value && !tuple.first.is_a?(Array)
+                [tuple]
+              else
+                tuple
+              end
+            else
+              [tuple]
+            end
+
+          # each value should be an array
+          # scalar values are handled like singleton vectors
+          tuple = tuple.map do |value|
+            Array(value)
+          end
+        end
+      end
+
       def load!(tuples, arity, types)
         tuples.each_with_index do |tuple, tuple_index|
-          Array(tuple).each_with_index do |value, value_index|
+          tuple.each_with_index do |value, value_index|
             read_write_value tuple_index, value_index, value
           end
         end
@@ -118,7 +157,6 @@ module Evoasm
         val_ptr = Libevoasm.kernel_io_get_val self, tuple_index, value_index
 
         if value
-          value = Array(value)
           val_ptr.write_array_of ffi_type, value
           nil
         else
@@ -131,61 +169,61 @@ module Evoasm
         end
       end
 
-      def tuple_types(tuple)
-        Array(tuple).map do |value|
-          value_type value
+      def check_tuple_type(tuple, types)
+        tuple.zip(types.to_a).map do |value, type|
+          check_value_type value, type
         end
       end
 
-      def element_value_type(value, size)
-        case value
-        when Float
-          :"f64x#{size}"
-        when Integer
-          :"i64x#{size}"
-        end
-      end
-
-      def value_type(value)
-        value_type =
-          case value
-          when Array
-            types = value.map(&:class).uniq
-            unless types.size == 1
-              raise ArgumentError, "invalid mixed type vector value #{value}"
-            end
-            element_value_type value.first, value.size
+      def check_element_value_type(element_value, type)
+        if type.nil?
+          case element_value
+          when Float
+            :f64x1
+          when Integer
+            :i64x1
           else
-            element_value_type value, 1
+            raise ArgumentError, "unknown value type #{element_value}"
           end
-
-        value_type or
-          raise ArgumentError, "invalid tuple value '#{value}' of type '#{value.class}'"
+        else
+          case type
+          when :i8x1, :u8x1,
+            :i16x1, :u16x1,
+            :i32x1, :u32x1,
+            :i64x1, :u64x1
+            unless element_value.is_a? Integer
+              raise ArgumentError, "#{element_value} is not an integer"
+            end
+          when :f32x1, :f64x1
+            unless element_value.is_a? Float
+              raise ArgumentError, "#{element_value} is not a floating-point number"
+            end
+          end
+          type
+        end
       end
 
-      def determine_arity_and_types(tuples)
-        arity = nil
-        types = nil
-
-        tuples.each do |tuple|
-          tuple_arity = Array(tuple).size
-          tuple_types = tuple_types tuple
-
-          if arity && arity != tuple_arity
-            raise ArgumentError,
-                  "invalid arity for tuple '#{tuple}' (#{tuple_arity} for #{arity})"
-          end
-
-          if types && types != tuple_types
-            raise ArgumentError,
-                  "invalid types for tuple '#{tuple}' (#{tuple_types} for #{types})"
-          end
-
-          arity = tuple_arity
-          types = tuple_types
+      def check_value_type(value, type)
+        if type
+          element_type = Libevoasm.kernel_io_val_type_get_elem_type type
         end
 
-        [arity || 0, types || []]
+        element_types = Array(value).map do |element_value|
+          check_element_value_type element_value, element_type
+        end
+
+        unless element_types.uniq.size == 1
+          raise ArgumentError, "invalid mixed type vector value #{value}"
+        end
+
+        Libevoasm.kernel_io_val_type_make element_types.first, element_types.size
+      end
+
+      def check_types(tuples, types)
+        tuples.each do |tuple|
+          types = check_tuple_type tuple, types
+        end
+        types
       end
     end
 

@@ -14,7 +14,6 @@ Currently, the only supported architecture is **x86-64**.
 ## Features
 
 * Fast JIT
-* Non-linear control flow
 * [x86-64](https://github.com/evoasm/evoasm-gen/blob/master/data/tables/x64.csv) up to AVX2 (no FPU)
 * Lightweight backend [C library](https://github.com/evoasm/libevoasm) with no third-party dependencies
 * Ruby bindings
@@ -27,7 +26,6 @@ Currently, the only supported architecture is **x86-64**.
 
 * Ruby (MRI >= 2.3, JRuby >= 9.1.2)
 * [Capstone](http://www.capstone-engine.org/) for disassembling (*optional*).
-* [Graphviz](http://www.graphviz.org/) (libgraphviz) for visualizing programs (*optional*).
 * [Gnuplot](http://gnuplot.sourceforge.net) for visualizing loss functions (*optional*)
 * POSIX-compliant OS (Linux and Mac OS X should both work).
 

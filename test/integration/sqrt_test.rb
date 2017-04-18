@@ -5,7 +5,7 @@ require 'population_helper'
 Evoasm.log_level = :info
 
 module Evoasm
-  class SymRegTest < Minitest::Test
+  class SqrtTest < Minitest::Test
     include PopulationHelper
     include PopulationHelper::Tests
 
@@ -13,7 +13,6 @@ module Evoasm
       set_default_parameters
 
       @instruction_names = Evoasm::X64.instruction_names(:xmm).grep(/.*?sd/).grep_v /pack|mov|cvt|aes|cmp/ #.grep /(add|mul|sqrt).*?sd/
-      p @instruction_names
       @examples = {
         0.0 => 0.0,
         0.5 => 1.0606601717798212,
@@ -28,8 +27,14 @@ module Evoasm
         5.0 => 11.61895003862225
       }
 
-      @kernel_size = 100
+      @validation_examples = {
+        10.0 => 31.937438845342623,
+        11.0 => 36.78314831549904,
+        12.0 => 41.8568990729127
+      }
+
       @deme_size = 3000
+      @kernel_size = 100
       @parameters = %i(reg0 reg1 reg2 reg3)
       #regs = %i(xmm0 xmm1 xmm2 xmm3)
       #@domains = {
@@ -40,14 +45,6 @@ module Evoasm
       #}
 
       start
-    end
-
-    def test_kernel_run
-      # should generalize (i.e. give correct answer for non-training data)
-      p found_kernel.run_all(*@examples.keys)
-      assert_equal [31.937438845342623], found_kernel.run(10.0)
-      assert_equal [36.78314831549904], found_kernel.run(11.0)
-      assert_equal [41.8568990729127], found_kernel.run(12.0)
     end
   end
 end

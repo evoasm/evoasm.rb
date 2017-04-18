@@ -22,26 +22,47 @@ module Evoasm
     enum :kernel_io_val_type, %i(
       u8x1
       i8x1
-      u16x1
-      i16x1
-      u32x1
-      i32x1
-      f32x1
-      i64x1
-      u64x1
-      f64x1
-      i64x2
-      u64x2
-      f64x2
-      i32x4
-      u32x4
-      f32x4
-      f64x4
-      i16x8
-      u16x8
-      f32x8
+      u8x2
+      i8x2
+      u8x4
+      i8x4
+      u8x8
+      i8x8
       i8x16
       u8x16
+      i8x32
+      u8x32
+      u16x1
+      i16x1
+      u16x2
+      i16x2
+      u16x4
+      i16x4
+      u16x8
+      i16x8
+      u16x16
+      i16x16
+      u32x1
+      i32x1
+      u32x2
+      i32x2
+      u32x4
+      i32x4
+      u32x8
+      i32x8
+      i64x1
+      u64x1
+      i64x2
+      u64x2
+      i64x4
+      u64x4
+      f32x1
+      f32x2
+      f32x4
+      f32x8
+      f64x1
+      f64x2
+      f64x4
     )
 
     typedef :uint16, :inst_id
@@ -264,6 +285,11 @@ module Evoasm
     attach_evoasm_function :kernel_get_size, [:pointer], :size_t
     attach_evoasm_function :kernel_get_code, [:pointer, :bool, :pointer], :size_t
 
+    attach_evoasm_function :kernel_get_input_type, [:pointer, :size_t], :kernel_io_val_type
+    attach_evoasm_function :kernel_get_output_type, [:pointer, :size_t], :kernel_io_val_type
+    attach_evoasm_function :kernel_get_input_arity, [:pointer], :size_t
+    attach_evoasm_function :kernel_get_output_arity, [:pointer], :size_t
+
     attach_evoasm_function :kernel_elim_introns, [:pointer, :pointer], :bool
     attach_evoasm_function :kernel_is_input_reg, [:pointer, :size_t, :uint8], :bool
     attach_evoasm_function :kernel_is_output_reg, [:pointer, :size_t, :uint8], :bool
@@ -281,6 +307,7 @@ module Evoasm
     attach_evoasm_function :kernel_io_destroy, [:pointer], :void
     attach_evoasm_function :kernel_io_val_type_get_len, [:kernel_io_val_type], :size_t
     attach_evoasm_function :kernel_io_val_type_get_elem_type, [:kernel_io_val_type], :kernel_io_val_type
+    attach_evoasm_function :kernel_io_val_type_make, [:kernel_io_val_type, :size_t], :kernel_io_val_type
 
     attach_evoasm_function :pop_seed, [:pointer, :pointer], :bool
     attach_evoasm_function :pop_eval, [:pointer, :size_t], :bool

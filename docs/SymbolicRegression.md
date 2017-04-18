@@ -92,11 +92,15 @@ gives
 0x555556ba59fd:	vsqrtsd	xmm1, xmm1, xmm3
 ```
 
-For comparison, here is what GCC 6.2 outputs with `-O3 -march=core-avx2`
+For comparison, here is what GCC 7 outputs with `-O3 -march=core-avx2 -ffast-math`
 ```
-vmulsd  %xmm0, %xmm0, %xmm2
-vaddsd  %xmm0, %xmm0, %xmm1
-vfmadd132sd     %xmm2, %xmm1, %xmm0
-vsqrtsd %xmm0, %xmm1, %xmm1
+        vmovapd xmm1, xmm0
+        vfmadd213sd xmm1, xmm0, QWORD PTR .LC0[rip]
+        vmulsd  xmm0, xmm1, xmm0
+        vsqrtsd xmm0, xmm0, xmm0
+
+.LC0:
+        .long   0
+        .long   1073741824
 ```        
 

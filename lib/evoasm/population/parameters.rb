@@ -194,8 +194,13 @@ module Evoasm
         input_examples = examples.keys.map { |k| Array(k) }
         output_examples = examples.values.map { |k| Array(k) }
 
-        self.input = Kernel::Input.new input_examples
-        self.output = Kernel::Output.new output_examples
+        if input_examples.first.first.is_a? Symbol
+          input_types = input_examples.shift
+          output_types = output_examples.shift
+        end
+
+        self.input = Kernel::Input.new input_examples, input_types
+        self.output = Kernel::Output.new output_examples, output_types
       end
 
       def input=(input)

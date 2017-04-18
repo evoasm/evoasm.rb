@@ -18,12 +18,3 @@ rows kernel losses.
 
 ![Loss functions](examples/loss.gif)
 
-
-## Programs
-
-In a similar fashion, programs can be visualized using [Graphviz](https://www.graphviz.org/).
-Use {Evoasm::Program#to_gv} to obtain a [GV::Graph](http://www.rubydoc.info/github/furunkel/gv/GV/Graph), which
-can be saved to a file using [GV::Graph#save](http://www.rubydoc.info/github/furunkel/gv/GV/Graph#save-instance_method).
-
-![Function](examples/program.png)
-
