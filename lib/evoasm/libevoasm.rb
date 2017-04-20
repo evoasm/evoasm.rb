@@ -79,6 +79,11 @@ module Evoasm
       :int8
     ]
 
+    enum :metric, [
+      :absdiff,
+      :xor
+    ]
+
     enum :arch_id, [
       :x64
     ]
@@ -221,9 +226,11 @@ module Evoasm
     attach_evoasm_function :x64_cpu_state_get_rflags_flag, [:pointer, :x64_rflags_flag], :bool
     attach_evoasm_function :x64_cpu_state_clone, [:pointer, :pointer], :void
     attach_evoasm_function :x64_cpu_state_xor, [:pointer, :pointer, :pointer], :void
+    attach_evoasm_function :x64_cpu_state_calc_dist, [:pointer, :pointer, :metric], :double
     attach_evoasm_function :x64_cpu_state_memset, [:pointer, :int], :void
     attach_evoasm_function :x64_cpu_state_emit_load, [:pointer, :pointer], :bool
     attach_evoasm_function :x64_cpu_state_emit_store, [:pointer, :pointer], :bool
+    attach_evoasm_function :x64_cpu_state_rand, [:pointer, :pointer], :void
 
     attach_evoasm_function :x64_params_init, [:pointer], :void
     attach_evoasm_function :x64_params_alloc, [], :pointer

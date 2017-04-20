@@ -29,9 +29,19 @@ module Evoasm
       end
 
       def inspect
-        fields = @param_id_enum_type.symbols[0..-2].map { |s| "#{s}:#{self[s]}" }.join(' ')
+        fields = @param_id_enum_type.symbols[0..-2].map {|s| "#{s}:#{self[s]}"}.join(' ')
         "#<#{self.class.inspect} #{fields}>"
       end
+
+      def ==(other)
+        return true if other.equal?(self)
+        return false unless other.instance_of?(self.class)
+        @param_id_enum_type.symbols[0..-2].all? do |s|
+          self[s] == other[s]
+        end
+      end
+
+      alias_method :eql?, :==
 
       # @param hash [Hash] a
       # @param basic [Bool] whether to use the basic encoder
@@ -81,13 +91,13 @@ module Evoasm
             false => 0
           },
 
-          uint1: proc { |v| check_uint_range v, 1 },
-          int3: proc { |v| check_int_range v, 3 },
-          int4: proc { |v| check_int_range v, 4 },
-          int8: proc { |v| check_int_range v, 8 },
-          int32: proc { |v| check_int_range v, 32 },
-          int64: proc { |v| check_int_range v, 64 },
-          reg: proc { |v| @reg_id_enum_type[v] }
+          uint1: proc {|v| check_uint_range v, 1},
+          int3: proc {|v| check_int_range v, 3},
+          int4: proc {|v| check_int_range v, 4},
+          int8: proc {|v| check_int_range v, 8},
+          int32: proc {|v| check_int_range v, 32},
+          int64: proc {|v| check_int_range v, 64},
+          reg: proc {|v| @reg_id_enum_type[v]}
         }
 
         @inv_type_map = @type_map.map do |k, v|
@@ -98,7 +108,7 @@ module Evoasm
           end
         end.to_h
 
-        @inv_type_map[:reg] = proc { |v| v }
+        @inv_type_map[:reg] = proc {|v| v}
 
         super(ptr)
 
@@ -107,10 +117,27 @@ module Evoasm
         end
       end
 
-      # Returns whether this parameters are for basic encodning
+      # Returns whether this parameters are for basic encoding
       # @return [Bool]
       def basic?
         @basic
+      end
+
+      # Creates a random set of parameters for the given instruction
+      # and parameters
+      # @param [X64::Instruction] instruction
+      # @param [Array<Symbol>] parameter_names
+      # @return [X64::Parameters]
+      def self.random(instruction, parameter_names = %i(reg0 reg1 reg2 reg3 imm0), basic: true)
+        parameters = Evoasm::X64::Parameters.new(basic: basic)
+        instruction.parameters.each do |parameter|
+          if parameter_names.include? parameter.name
+            parameter_value = parameter.domain.rand
+            parameters[parameter.name] = parameter_value
+          end
+        end
+
+        parameters
       end
 
       # @param parameter_name [Symbol] the parameter's name

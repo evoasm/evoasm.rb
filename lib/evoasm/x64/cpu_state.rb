@@ -19,6 +19,13 @@ module Evoasm
         super(ptr)
       end
 
+      def self.random
+        cpu_state = new
+        Libevoasm.x64_cpu_state_rand cpu_state, PRNG.default
+
+        cpu_state
+      end
+
       # Sets the value of a register
       # @param register [Symbol] register to set
       # @param data [Array<Integer>, Integer] value as a single 64-bit integer or an array of multiple
@@ -55,6 +62,11 @@ module Evoasm
         xored = self.class.new
         Libevoasm.x64_cpu_state_xor self, other, xored
         xored
+      end
+
+      # @!visibility private
+      def distance(other, metric = :absdiff)
+        Libevoasm.x64_cpu_state_calc_dist self, other, metric
       end
 
       # Converts this object into a hash

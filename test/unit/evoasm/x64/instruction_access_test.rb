@@ -18,20 +18,6 @@ module Evoasm
         :alpha
       end
 
-      PARAMETERS = %i(reg0 reg1 reg2 reg3 imm0)
-
-      def random_parameters(instruction)
-        parameters = Evoasm::X64::Parameters.new(basic: true)
-        instruction.parameters.each do |parameter|
-          if PARAMETERS.include? parameter.name
-            parameter_value = parameter.domain.rand
-            parameters[parameter.name] = parameter_value
-          end
-        end
-
-        parameters
-      end
-
       def accessed_registers(registers, instruction, parameters, mode)
         registers.map do |register|
           word = instruction.operands.find do |operand|
@@ -60,7 +46,7 @@ module Evoasm
           buffer = Evoasm::Buffer.new 1024, :mmap
 
           100.times do
-            parameters = random_parameters(instruction)
+            parameters = Evoasm::X64::Parameters.random instruction
 
             cpu_state_before = CPUState.new
             cpu_state_after = CPUState.new
@@ -103,7 +89,7 @@ module Evoasm
           buffer = Evoasm::Buffer.new 1024, :mmap
 
           20.times do
-            parameters = random_parameters(instruction)
+            parameters = Evoasm::X64::Parameters.random instruction
 
             cpu_state_before = CPUState.new
             read_registers = accessed_registers(X64.registers, instruction, parameters, :read)
