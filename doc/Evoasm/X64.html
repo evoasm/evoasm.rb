@@ -211,6 +211,28 @@
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#id-class_method" title="id (class method)">.<strong>id</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#instruction-class_method" title="instruction (class method)">.<strong>instruction</strong>(instruction_name)  &#x21d2; Instruction </a>
     
 
@@ -450,20 +472,20 @@
       <pre class="lines">
 
 
-60
-61
-62
-63
 64
 65
 66
 67
 68
 69
-70</pre>
+70
+71
+72
+73
+74</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64.rb', line 60</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64.rb', line 64</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_emit_stack_frame'>emit_stack_frame</span><span class='lparen'>(</span><span class='id identifier rubyid_abi'>abi</span> <span class='op'>=</span> <span class='symbol'>:sysv</span><span class='comma'>,</span> <span class='id identifier rubyid_buffer'>buffer</span><span class='rparen'>)</span>
   <span class='kw'>unless</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_emit_func_prolog'>x64_emit_func_prolog</span> <span class='id identifier rubyid_abi'>abi</span><span class='comma'>,</span> <span class='id identifier rubyid_buffer'>buffer</span>
@@ -685,6 +707,36 @@ string</p>
 </div>
     
       <div class="method_details ">
+  <h3 class="signature " id="id-class_method">
+  
+    .<strong>id</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+49
+50
+51</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64.rb', line 49</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_id'>id</span>
+  <span class='symbol'>:x64</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
   <h3 class="signature " id="instruction-class_method">
   
     .<strong>instruction</strong>(instruction_name)  &#x21d2; <tt><span class='object_link'><a href="X64/Instruction.html" title="Evoasm::X64::Instruction (class)">Instruction</a></span></tt> 
@@ -743,12 +795,12 @@ string</p>
       <pre class="lines">
 
 
-52
-53
-54</pre>
+56
+57
+58</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64.rb', line 52</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64.rb', line 56</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_instruction'>instruction</span><span class='lparen'>(</span><span class='id identifier rubyid_instruction_name'>instruction_name</span><span class='rparen'>)</span>
   <span class='const'>Instruction</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_inst'>x64_inst</span><span class='lparen'>(</span><span class='id identifier rubyid_instruction_name'>instruction_name</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_instruction_name'>instruction_name</span>
@@ -887,10 +939,6 @@ registers)</p>
       <pre class="lines">
 
 
-79
-80
-81
-82
 83
 84
 85
@@ -919,10 +967,14 @@ registers)</p>
 108
 109
 110
-111</pre>
+111
+112
+113
+114
+115</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64.rb', line 79</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64.rb', line 83</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_instruction_names'>instruction_names</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_reg_types'>reg_types</span><span class='comma'>,</span> <span class='label'>operand_types:</span> <span class='lbracket'>[</span><span class='symbol'>:reg</span><span class='comma'>,</span> <span class='symbol'>:rm</span><span class='comma'>,</span> <span class='symbol'>:imm</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>useless:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>basic:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>features:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_inst_id_enum_type'>inst_id_enum_type</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_enum_type'>enum_type</span><span class='lparen'>(</span><span class='symbol'>:x64_inst_id</span><span class='rparen'>)</span>
@@ -1026,9 +1078,9 @@ registers)</p>
 </div>
 
       <div id="footer">
-  Generated on Thu Dec  1 17:34:52 2016 by
+  Generated on Fri Apr 21 23:13:25 2017 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.5 (ruby-2.3.0).
+  0.9.5 (ruby-2.4.0).
 </div>
 
     </div>

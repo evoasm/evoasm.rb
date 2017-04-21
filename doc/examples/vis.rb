@@ -21,18 +21,14 @@ parameters = Evoasm::Population::Parameters.new do |p|
   p.deme_size = 2048
   p.parameters = %i(reg0 reg1 reg2 reg3)
   p.kernel_size = 20
-  p.program_size = 3
-  p.mutation_rate = 0.03
   p.deme_count = 2
-  p.recur_limit = 100
 end
 
 population = Evoasm::Population.new parameters
-program, loss = population.run do
+kernel, loss = population.run do
   p "gen"
   population.plot File.join(__dir__, 'loss.gif')
 end
 
 p loss
 
-program.to_gv.save File.join(__dir__, 'program.png')

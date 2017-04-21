@@ -104,6 +104,16 @@
 </div>
 
 
+  <h2>Constant Summary</h2>
+  <dl class="constants">
+    
+      <dt id="DEFAULT_EXAMPLE_WINDOW_SIZE-constant" class="">DEFAULT_EXAMPLE_WINDOW_SIZE =
+        
+      </dt>
+      <dd><pre class="code"><span class='int'>128</span></pre></dd>
+    
+  </dl>
+
 
 
 
@@ -195,6 +205,33 @@ as keys.</p>
       <li class="public ">
   <span class="summary_signature">
     
+      <a href="#example_window_size-instance_method" title="#example_window_size (instance method)">#<strong>example_window_size</strong>  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>The size of the example window.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#examples-instance_method" title="#examples (instance method)">#<strong>examples</strong>  &#x21d2; Hash </a>
     
 
@@ -213,7 +250,7 @@ as keys.</p>
 
   
     <span class="summary_desc"><div class='inline'>
-<p>Shorthand to set expected program input and output.</p>
+<p>Shorthand to set expected kernel input and output.</p>
 </div></span>
   
 </li>
@@ -222,7 +259,7 @@ as keys.</p>
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#input-instance_method" title="#input (instance method)">#<strong>input</strong>  &#x21d2; Program::Input </a>
+      <a href="#input-instance_method" title="#input (instance method)">#<strong>input</strong>  &#x21d2; Kernel::Input </a>
     
 
     
@@ -276,7 +313,7 @@ as keys.</p>
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#kernel_size-instance_method" title="#kernel_size (instance method)">#<strong>kernel_size</strong>  &#x21d2; Integer </a>
+      <a href="#kernel_size-instance_method" title="#kernel_size (instance method)">#<strong>kernel_size</strong>  &#x21d2; Range, Integer </a>
     
 
     
@@ -294,7 +331,7 @@ as keys.</p>
 
   
     <span class="summary_desc"><div class='inline'>
-<p>The size of program kernels (number of instructions per kernel).</p>
+<p>Range of possible kernel sizes.</p>
 </div></span>
   
 </li>
@@ -303,34 +340,7 @@ as keys.</p>
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#mutation_rate-instance_method" title="#mutation_rate (instance method)">#<strong>mutation_rate</strong>  &#x21d2; Float 0..1 </a>
-    
-
-    
-  </span>
-  
-  
-  
-    
-    
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>The mutation rate.</p>
-</div></span>
-  
-</li>
-
-    
-      <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#output-instance_method" title="#output (instance method)">#<strong>output</strong>  &#x21d2; Program::Output </a>
+      <a href="#output-instance_method" title="#output (instance method)">#<strong>output</strong>  &#x21d2; Kernel::Output </a>
     
 
     
@@ -376,60 +386,6 @@ as keys.</p>
   
     <span class="summary_desc"><div class='inline'>
 <p>The list of architecture-dependent instruction parameters to use.</p>
-</div></span>
-  
-</li>
-
-    
-      <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#program_size-instance_method" title="#program_size (instance method)">#<strong>program_size</strong>  &#x21d2; Integer </a>
-    
-
-    
-  </span>
-  
-  
-  
-    
-    
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>The size of programs (number of kernels per program).</p>
-</div></span>
-  
-</li>
-
-    
-      <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#recur_limit-instance_method" title="#recur_limit (instance method)">#<strong>recur_limit</strong>  &#x21d2; Integer </a>
-    
-
-    
-  </span>
-  
-  
-  
-    
-    
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>The size of programs (number of kernels per program).</p>
 </div></span>
   
 </li>
@@ -593,7 +549,6 @@ as keys.</p>
       <pre class="lines">
 
 
-23
 24
 25
 26
@@ -612,10 +567,12 @@ as keys.</p>
 39
 40
 41
-42</pre>
+42
+43
+44</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 23</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 24</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_architecture'>architecture</span> <span class='op'>=</span> <span class='const'>Evoasm</span><span class='period'>.</span><span class='id identifier rubyid_architecture'>architecture</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_ptr'>ptr</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_alloc'>pop_params_alloc</span>
@@ -632,6 +589,7 @@ as keys.</p>
   <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_ptr'>ptr</span><span class='rparen'>)</span>
 
   <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_seed'>seed</span> <span class='op'>=</span> <span class='const'>PRNG</span><span class='op'>::</span><span class='const'>DEFAULT_SEED</span>
+  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_example_window_size'>example_window_size</span> <span class='op'>=</span> <span class='const'>DEFAULT_EXAMPLE_WINDOW_SIZE</span>
 
   <span class='kw'>if</span> <span class='id identifier rubyid_block'>block</span>
     <span class='id identifier rubyid_block'>block</span><span class='lbracket'>[</span><span class='kw'>self</span><span class='rbracket'>]</span>
@@ -693,12 +651,12 @@ as keys.</p>
       <pre class="lines">
 
 
-66
-67
-68</pre>
+68
+69
+70</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 66</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 68</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_deme_count'>deme_count</span>
   <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_get_n_demes'>pop_params_get_n_demes</span> <span class='kw'>self</span>
@@ -754,12 +712,12 @@ as keys.</p>
       <pre class="lines">
 
 
-56
-57
-58</pre>
+48
+49
+50</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 48</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_deme_size'>deme_size</span>
   <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_get_deme_size'>pop_params_get_deme_size</span> <span class='kw'>self</span>
@@ -817,16 +775,16 @@ as keys</p>
       <pre class="lines">
 
 
-91
-92
 93
 94
 95
 96
-97</pre>
+97
+98
+99</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 91</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 93</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_domains'>domains</span>
   <span class='id identifier rubyid_parameters'>parameters</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_parameter_name'>parameter_name</span><span class='op'>|</span>
@@ -834,6 +792,67 @@ as keys</p>
     <span class='id identifier rubyid_domain'>domain</span> <span class='op'>=</span> <span class='ivar'>@domains</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_domain'>domain</span><span class='op'>|</span> <span class='id identifier rubyid_domain'>domain</span> <span class='op'>==</span> <span class='id identifier rubyid_domain_ptr'>domain_ptr</span> <span class='rbrace'>}</span>
     <span class='lbracket'>[</span><span class='id identifier rubyid_parameter_name'>parameter_name</span><span class='comma'>,</span> <span class='id identifier rubyid_domain'>domain</span><span class='rbracket'>]</span>
   <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_to_h'>to_h</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="example_window_size=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="example_window_size-instance_method">
+  
+    #<strong>example_window_size</strong>  &#x21d2; <tt>Integer</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the size of the example window</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the size of the example window</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+58
+59
+60</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 58</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_example_window_size'>example_window_size</span>
+  <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_get_example_win_size'>pop_params_get_example_win_size</span> <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -854,7 +873,7 @@ as keys</p>
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns shorthand to set expected program input and output</p>
+<p>Returns shorthand to set expected kernel input and output</p>
 
 
   </div>
@@ -873,7 +892,7 @@ as keys</p>
       
         &mdash;
         <div class='inline'>
-<p>shorthand to set expected program input and output</p>
+<p>shorthand to set expected kernel input and output</p>
 </div>
       
     </li>
@@ -895,12 +914,12 @@ as keys</p>
       <pre class="lines">
 
 
-199
-200
-201</pre>
+189
+190
+191</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 199</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 189</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_examples'>examples</span>
   <span class='id identifier rubyid_input'>input</span><span class='period'>.</span><span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='id identifier rubyid_output'>output</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_h'>to_h</span>
@@ -915,7 +934,7 @@ as keys</p>
       <div class="method_details ">
   <h3 class="signature " id="input-instance_method">
   
-    #<strong>input</strong>  &#x21d2; <tt><span class='object_link'><a href="../Program/Input.html" title="Evoasm::Program::Input (class)">Program::Input</a></span></tt> 
+    #<strong>input</strong>  &#x21d2; <tt><span class='object_link'><a href="../Kernel/Input.html" title="Evoasm::Kernel::Input (class)">Kernel::Input</a></span></tt> 
   
 
   
@@ -937,7 +956,7 @@ as keys</p>
     <li>
       
       
-        <span class='type'>(<tt><span class='object_link'><a href="../Program/Input.html" title="Evoasm::Program::Input (class)">Program::Input</a></span></tt>)</span>
+        <span class='type'>(<tt><span class='object_link'><a href="../Kernel/Input.html" title="Evoasm::Kernel::Input (class)">Kernel::Input</a></span></tt>)</span>
       
       
       
@@ -956,12 +975,12 @@ as keys</p>
       <pre class="lines">
 
 
-16
 17
-18</pre>
+18
+19</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 16</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 17</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_input'>input</span>
   <span class='ivar'>@input</span>
@@ -1017,14 +1036,14 @@ as keys</p>
       <pre class="lines">
 
 
+144
+145
+146
 147
-148
-149
-150
-151</pre>
+148</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 147</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 144</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_instructions'>instructions</span>
   <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_get_n_insts'>pop_params_get_n_insts</span> <span class='kw'>self</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
@@ -1041,7 +1060,7 @@ as keys</p>
       <div class="method_details ">
   <h3 class="signature " id="kernel_size-instance_method">
   
-    #<strong>kernel_size</strong>  &#x21d2; <tt>Integer</tt> 
+    #<strong>kernel_size</strong>  &#x21d2; <tt>Range</tt>, <tt>Integer</tt> 
   
 
   
@@ -1050,7 +1069,7 @@ as keys</p>
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns the size of program kernels (number of instructions per kernel)</p>
+<p>Returns range of possible kernel sizes</p>
 
 
   </div>
@@ -1063,13 +1082,13 @@ as keys</p>
     <li>
       
       
-        <span class='type'>(<tt>Integer</tt>)</span>
+        <span class='type'>(<tt>Range</tt>, <tt>Integer</tt>)</span>
       
       
       
         &mdash;
         <div class='inline'>
-<p>the size of program kernels (number of instructions per kernel)</p>
+<p>range of possible kernel sizes</p>
 </div>
       
     </li>
@@ -1082,76 +1101,21 @@ as keys</p>
       <pre class="lines">
 
 
+165
+166
 167
 168
-169</pre>
+169
+170</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 167</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 165</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_kernel_size'>kernel_size</span>
-  <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_get_kernel_size'>pop_params_get_kernel_size</span> <span class='kw'>self</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      
-      <span id="mutation_rate=-instance_method"></span>
-      <div class="method_details ">
-  <h3 class="signature " id="mutation_rate-instance_method">
-  
-    #<strong>mutation_rate</strong>  &#x21d2; <tt>Float 0..1</tt> 
-  
+  <span class='id identifier rubyid_min'>min</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_get_min_kernel_size'>pop_params_get_min_kernel_size</span> <span class='kw'>self</span>
+  <span class='id identifier rubyid_max'>max</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_get_max_kernel_size'>pop_params_get_max_kernel_size</span> <span class='kw'>self</span>
 
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-<p>Returns the mutation rate</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Float 0..1</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>the mutation rate</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-46
-47
-48</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 46</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_mutation_rate'>mutation_rate</span>
-  <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_get_mut_rate'>pop_params_get_mut_rate</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='lparen'>(</span><span class='id identifier rubyid_min'>min</span><span class='op'>..</span><span class='id identifier rubyid_max'>max</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1163,7 +1127,7 @@ as keys</p>
       <div class="method_details ">
   <h3 class="signature " id="output-instance_method">
   
-    #<strong>output</strong>  &#x21d2; <tt><span class='object_link'><a href="../Program/Output.html" title="Evoasm::Program::Output (class)">Program::Output</a></span></tt> 
+    #<strong>output</strong>  &#x21d2; <tt><span class='object_link'><a href="../Kernel/Output.html" title="Evoasm::Kernel::Output (class)">Kernel::Output</a></span></tt> 
   
 
   
@@ -1185,7 +1149,7 @@ as keys</p>
     <li>
       
       
-        <span class='type'>(<tt><span class='object_link'><a href="../Program/Output.html" title="Evoasm::Program::Output (class)">Program::Output</a></span></tt>)</span>
+        <span class='type'>(<tt><span class='object_link'><a href="../Kernel/Output.html" title="Evoasm::Kernel::Output (class)">Kernel::Output</a></span></tt>)</span>
       
       
       
@@ -1204,12 +1168,12 @@ as keys</p>
       <pre class="lines">
 
 
-19
 20
-21</pre>
+21
+22</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 19</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 20</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_output'>output</span>
   <span class='ivar'>@output</span>
@@ -1265,141 +1229,19 @@ as keys</p>
       <pre class="lines">
 
 
-76
-77
 78
 79
-80</pre>
+80
+81
+82</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 76</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 78</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_parameters'>parameters</span>
   <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_get_n_params'>pop_params_get_n_params</span> <span class='kw'>self</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
     <span class='id identifier rubyid_parameters_enum_type'>parameters_enum_type</span><span class='lbracket'>[</span><span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_get_param'>pop_params_get_param</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_index'>index</span><span class='rparen'>)</span><span class='rbracket'>]</span>
   <span class='kw'>end</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      
-      <span id="program_size=-instance_method"></span>
-      <div class="method_details ">
-  <h3 class="signature " id="program_size-instance_method">
-  
-    #<strong>program_size</strong>  &#x21d2; <tt>Integer</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-<p>Returns the size of programs (number of kernels per program)</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Integer</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>the size of programs (number of kernels per program)</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-177
-178
-179</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 177</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_program_size'>program_size</span>
-  <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_get_program_size'>pop_params_get_program_size</span> <span class='kw'>self</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      
-      <span id="recur_limit=-instance_method"></span>
-      <div class="method_details ">
-  <h3 class="signature " id="recur_limit-instance_method">
-  
-    #<strong>recur_limit</strong>  &#x21d2; <tt>Integer</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-<p>Returns the size of programs (number of kernels per program)</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Integer</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>the size of programs (number of kernels per program)</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-187
-188
-189</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 187</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_recur_limit'>recur_limit</span>
-  <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_get_recur_limit'>pop_params_get_recur_limit</span> <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1452,14 +1294,14 @@ as keys</p>
       <pre class="lines">
 
 
+118
+119
+120
 121
-122
-123
-124
-125</pre>
+122</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 121</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 118</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_seed'>seed</span>
   <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'>PRNG</span><span class='op'>::</span><span class='const'>SEED_SIZE</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
@@ -1522,14 +1364,14 @@ as keys</p>
       <pre class="lines">
 
 
+136
+137
+138
 139
-140
-141
-142
-143</pre>
+140</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 139</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population/parameters.rb', line 136</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_validate!'>validate!</span>
   <span class='kw'>unless</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_params_validate'>pop_params_validate</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span>
@@ -1546,9 +1388,9 @@ as keys</p>
 </div>
 
       <div id="footer">
-  Generated on Thu Dec  1 17:34:53 2016 by
+  Generated on Fri Apr 21 23:13:26 2017 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.5 (ruby-2.3.0).
+  0.9.5 (ruby-2.4.0).
 </div>
 
     </div>

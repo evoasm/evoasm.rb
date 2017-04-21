@@ -99,7 +99,7 @@
   <dl>
     <dt>Defined in:</dt>
     <dd>lib/evoasm/population.rb<span class="defines">,<br />
-  lib/evoasm/population/plotter.rb,<br /> lib/evoasm/population/parameters.rb</span>
+  lib/evoasm/population/plotter.rb,<br /> lib/evoasm/population/parameters.rb,<br /> lib/evoasm/population/seed_builder.rb</span>
 </dd>
   </dl>
   
@@ -111,7 +111,7 @@
     
   
     
-      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Population/Parameters.html" title="Evoasm::Population::Parameters (class)">Parameters</a></span>, <span class='object_link'><a href="Population/Plotter.html" title="Evoasm::Population::Plotter (class)">Plotter</a></span>
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Population/Parameters.html" title="Evoasm::Population::Parameters (class)">Parameters</a></span>, <span class='object_link'><a href="Population/Plotter.html" title="Evoasm::Population::Plotter (class)">Plotter</a></span>, <span class='object_link'><a href="Population/SeedBuilder.html" title="Evoasm::Population::SeedBuilder (class)">SeedBuilder</a></span>
     
   
 </p>
@@ -121,6 +121,35 @@
 
   <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
   <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#architecture-instance_method" title="#architecture (instance method)">#<strong>architecture</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute architecture.</p>
+</div></span>
+  
+</li>
+
     
       <li class="public ">
   <span class="summary_signature">
@@ -167,6 +196,30 @@
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#best_kernel-instance_method" title="#best_kernel (instance method)">#<strong>best_kernel</strong>  &#x21d2; Kernel </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>The best kernel found so far.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#best_loss-instance_method" title="#best_loss (instance method)">#<strong>best_loss</strong>  &#x21d2; Float </a>
     
 
@@ -182,7 +235,7 @@
 
   
     <span class="summary_desc"><div class='inline'>
-<p>The loss of the best program found so far.</p>
+<p>The loss of the best kernel found so far.</p>
 </div></span>
   
 </li>
@@ -191,7 +244,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#best_program-instance_method" title="#best_program (instance method)">#<strong>best_program</strong>  &#x21d2; Program </a>
+      <a href="#evaluate-instance_method" title="#evaluate (instance method)">#<strong>evaluate</strong>(minor_generations = 5)  &#x21d2; void </a>
     
 
     
@@ -206,7 +259,7 @@
 
   
     <span class="summary_desc"><div class='inline'>
-<p>The best program found so far.</p>
+<p>Evaluates all kernels and kernels in the population.</p>
 </div></span>
   
 </li>
@@ -215,7 +268,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#evaluate-instance_method" title="#evaluate (instance method)">#<strong>evaluate</strong>  &#x21d2; void </a>
+      <a href="#generation-instance_method" title="#generation (instance method)">#<strong>generation</strong>  &#x21d2; Integer </a>
     
 
     
@@ -230,7 +283,7 @@
 
   
     <span class="summary_desc"><div class='inline'>
-<p>Evaluates all programs and kernels in the population.</p>
+<p>The current generation.</p>
 </div></span>
   
 </li>
@@ -265,79 +318,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#next_generation%21-instance_method" title="#next_generation! (instance method)">#<strong>next_generation!</strong>  &#x21d2; void </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>Execute a single generational cycle.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#plot-instance_method" title="#plot (instance method)">#<strong>plot</strong>(filename = nil)  &#x21d2; void </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>Plots the loss function.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#run-instance_method" title="#run (instance method)">#<strong>run</strong>(loss: nil, min_generations: nil, max_generations: 10, seed: true) {|self| ... } &#x21d2; Program </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>Starts the evolutionary process on this population.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#seed-instance_method" title="#seed (instance method)">#<strong>seed</strong>  &#x21d2; void </a>
+      <a href="#seed-instance_method" title="#seed (instance method)">#<strong>seed</strong>(&amp;block)  &#x21d2; void </a>
     
 
     
@@ -353,54 +334,6 @@
   
     <span class="summary_desc"><div class='inline'>
 <p>Seeds the population with random individuals.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#stop-instance_method" title="#stop (instance method)">#<strong>stop</strong>  &#x21d2; void </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>Stops the process started by <span class='object_link'><a href="#run-instance_method" title="Evoasm::Population#run (method)">#run</a></span>.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#summary-instance_method" title="#summary (instance method)">#<strong>summary</strong>(flat: false)  &#x21d2; Array </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>Gives a five-number summary for each deme, program and kernel.</p>
 </div></span>
   
 </li>
@@ -477,7 +410,6 @@
       <pre class="lines">
 
 
-18
 19
 20
 21
@@ -486,16 +418,19 @@
 24
 25
 26
-27</pre>
+27
+28
+29</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 18</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 19</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_parameters'>parameters</span><span class='comma'>,</span> <span class='id identifier rubyid_architecture'>architecture</span> <span class='op'>=</span> <span class='const'>Evoasm</span><span class='period'>.</span><span class='id identifier rubyid_architecture'>architecture</span><span class='rparen'>)</span>
   <span class='ivar'>@parameters</span> <span class='op'>=</span> <span class='id identifier rubyid_parameters'>parameters</span>
+  <span class='ivar'>@architecture</span> <span class='op'>=</span> <span class='id identifier rubyid_architecture'>architecture</span>
 
   <span class='id identifier rubyid_ptr'>ptr</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_alloc'>pop_alloc</span>
-  <span class='kw'>unless</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_init'>pop_init</span> <span class='id identifier rubyid_ptr'>ptr</span><span class='comma'>,</span> <span class='id identifier rubyid_architecture'>architecture</span><span class='comma'>,</span> <span class='ivar'>@parameters</span>
+  <span class='kw'>unless</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_init'>pop_init</span> <span class='id identifier rubyid_ptr'>ptr</span><span class='comma'>,</span> <span class='ivar'>@architecture</span><span class='comma'>,</span> <span class='ivar'>@parameters</span>
     <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Error</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span>
   <span class='kw'>end</span>
 
@@ -514,7 +449,50 @@
       
       <span id=""></span>
       <div class="method_details first">
-  <h3 class="signature first" id="parameters-instance_method">
+  <h3 class="signature first" id="architecture-instance_method">
+  
+    #<strong>architecture</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute architecture</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+9
+10
+11</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 9</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_architecture'>architecture</span>
+  <span class='ivar'>@architecture</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="parameters-instance_method">
   
     #<strong>parameters</strong>  &#x21d2; <tt><span class='object_link'><a href="Population/Parameters.html" title="Evoasm::Population::Parameters (class)">Population::Parameters</a></span></tt>  <span class="extras">(readonly)</span>
   
@@ -580,7 +558,76 @@
 
     
       <div class="method_details first">
-  <h3 class="signature first" id="best_loss-instance_method">
+  <h3 class="signature first" id="best_kernel-instance_method">
+  
+    #<strong>best_kernel</strong>  &#x21d2; <tt><span class='object_link'><a href="Kernel.html" title="Evoasm::Kernel (class)">Kernel</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the best kernel found so far</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Kernel.html" title="Evoasm::Kernel (class)">Kernel</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the best kernel found so far</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+63
+64
+65
+66
+67
+68
+69
+70</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 63</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_best_kernel'>best_kernel</span>
+  <span class='id identifier rubyid_kernel'>kernel</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_kernel_alloc'>kernel_alloc</span>
+  <span class='kw'>unless</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_load_best_kernel'>pop_load_best_kernel</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_kernel'>kernel</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Error</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span>
+  <span class='kw'>end</span>
+
+  <span class='const'>Kernel</span><span class='period'>.</span><span class='id identifier rubyid_wrap'>wrap</span> <span class='id identifier rubyid_kernel'>kernel</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="best_loss-instance_method">
   
     #<strong>best_loss</strong>  &#x21d2; <tt>Float</tt> 
   
@@ -591,7 +638,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns the loss of the best program found so far</p>
+<p>Returns the loss of the best kernel found so far</p>
 
 
   </div>
@@ -610,7 +657,7 @@
       
         &mdash;
         <div class='inline'>
-<p>the loss of the best program found so far</p>
+<p>the loss of the best kernel found so far</p>
 </div>
       
     </li>
@@ -620,7 +667,7 @@
   <p class="tag_title">See Also:</p>
   <ul class="see">
     
-      <li><span class='object_link'><a href="#best_program-instance_method" title="Evoasm::Population#best_program (method)">#best_program</a></span></li>
+      <li><span class='object_link'><a href="#best_kernel-instance_method" title="Evoasm::Population#best_kernel (method)">#best_kernel</a></span></li>
     
   </ul>
 
@@ -630,12 +677,12 @@
       <pre class="lines">
 
 
-45
-46
-47</pre>
+58
+59
+60</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 45</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 58</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_best_loss'>best_loss</span>
   <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_get_best_loss'>pop_get_best_loss</span> <span class='kw'>self</span>
@@ -646,78 +693,9 @@
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="best_program-instance_method">
-  
-    #<strong>best_program</strong>  &#x21d2; <tt><span class='object_link'><a href="Program.html" title="Evoasm::Program (class)">Program</a></span></tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-<p>Returns the best program found so far</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Program.html" title="Evoasm::Program (class)">Program</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>the best program found so far</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-50
-51
-52
-53
-54
-55
-56
-57</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 50</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_best_program'>best_program</span>
-  <span class='id identifier rubyid_program'>program</span> <span class='op'>=</span> <span class='const'>Program</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
-  <span class='kw'>unless</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_load_best_program'>pop_load_best_program</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_program'>program</span>
-    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Error</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span>
-  <span class='kw'>end</span>
-
-  <span class='id identifier rubyid_program'>program</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
   <h3 class="signature " id="evaluate-instance_method">
   
-    #<strong>evaluate</strong>  &#x21d2; <tt>void</tt> 
+    #<strong>evaluate</strong>(minor_generations = 5)  &#x21d2; <tt>void</tt> 
   
 
   
@@ -726,7 +704,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     <p class="note returns_void">This method returns an undefined value.</p>
-<p>Evaluates all programs and kernels in the population</p>
+<p>Evaluates all kernels and kernels in the population</p>
 
 
   </div>
@@ -740,17 +718,17 @@
       <pre class="lines">
 
 
-31
-32
 33
 34
-35</pre>
+35
+36
+37</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 31</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 33</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_evaluate'>evaluate</span>
-  <span class='kw'>unless</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_eval'>pop_eval</span> <span class='kw'>self</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_evaluate'>evaluate</span><span class='lparen'>(</span><span class='id identifier rubyid_minor_generations'>minor_generations</span> <span class='op'>=</span> <span class='int'>5</span><span class='rparen'>)</span>
+  <span class='kw'>unless</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_eval'>pop_eval</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_minor_generations'>minor_generations</span>
     <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Error</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span>
   <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
@@ -760,95 +738,9 @@
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="next_generation!-instance_method">
+  <h3 class="signature " id="generation-instance_method">
   
-    #<strong>next_generation!</strong>  &#x21d2; <tt>void</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note returns_void">This method returns an undefined value.</p>
-<p>Execute a single generational cycle</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-88
-89
-90</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 88</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_next_generation!'>next_generation!</span>
-  <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_next_gen'>pop_next_gen</span> <span class='kw'>self</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="plot-instance_method">
-  
-    #<strong>plot</strong>(filename = nil)  &#x21d2; <tt>void</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note returns_void">This method returns an undefined value.</p>
-<p>Plots the loss function</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-100
-101
-102
-103
-104</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 100</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_plot'>plot</span><span class='lparen'>(</span><span class='id identifier rubyid_filename'>filename</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
-  <span class='ivar'>@plotter</span> <span class='op'>||=</span> <span class='const'>Plotter</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_filename'>filename</span>
-  <span class='ivar'>@plotter</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span>
-  <span class='ivar'>@plotter</span><span class='period'>.</span><span class='id identifier rubyid_plot'>plot</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="run-instance_method">
-  
-    #<strong>run</strong>(loss: nil, min_generations: nil, max_generations: 10, seed: true) {|self| ... } &#x21d2; <tt><span class='object_link'><a href="Program.html" title="Evoasm::Program (class)">Program</a></span></tt> 
+    #<strong>generation</strong>  &#x21d2; <tt>Integer</tt> 
   
 
   
@@ -857,126 +749,26 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Starts the evolutionary process on this population</p>
+<p>Returns the current generation</p>
 
 
   </div>
 </div>
 <div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
   
-    <li>
-      
-        <span class='name'>loss</span>
-      
-      
-        <span class='type'>(<tt>Float</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>stop process if a program is found whose loss is less or equal than the
-specified loss</p>
-</div>
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>min_generations</span>
-      
-      
-        <span class='type'>(<tt>Integer</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>minimum number of generations to run</p>
-</div>
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>max_generations</span>
-      
-      
-        <span class='type'>(<tt>Integer</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>maximum number of generations to run</p>
-</div>
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>seed</span>
-      
-      
-        <span class='type'>(<tt>Bool</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>whether the population should be seeded before starting</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Yields:</p>
-<ul class="yield">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>self</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Yield Returns:</p>
-<ul class="yieldreturn">
-  
-    <li>
-      
-      
-        <span class='type'></span>
-      
-      
-      
-        
-        <div class='inline'>
-<p>a truthy value to stop the process</p>
-</div>
-      
-    </li>
-  
-</ul>
 <p class="tag_title">Returns:</p>
 <ul class="return">
   
     <li>
       
       
-        <span class='type'>(<tt><span class='object_link'><a href="Program.html" title="Evoasm::Program (class)">Program</a></span></tt>)</span>
+        <span class='type'>(<tt>Integer</tt>)</span>
       
       
       
         &mdash;
         <div class='inline'>
-<p>the best program found</p>
+<p>the current generation</p>
 </div>
       
     </li>
@@ -989,61 +781,15 @@ specified loss</p>
       <pre class="lines">
 
 
-115
-116
-117
-118
-119
-120
-121
-122
-123
-124
-125
-126
-127
-128
-129
-130
-131
-132
-133
-134
-135
-136
-137
-138
-139
-140</pre>
+40
+41
+42</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 115</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 40</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_run'>run</span><span class='lparen'>(</span><span class='label'>loss:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>min_generations:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>max_generations:</span> <span class='int'>10</span><span class='comma'>,</span> <span class='label'>seed:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
-  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_seed'>seed</span> <span class='kw'>if</span> <span class='id identifier rubyid_seed'>seed</span>
-  <span class='id identifier rubyid_best_program'>best_program</span> <span class='op'>=</span> <span class='kw'>nil</span>
-  <span class='id identifier rubyid_best_loss'>best_loss</span> <span class='op'>=</span> <span class='kw'>nil</span>
-  <span class='id identifier rubyid_generation'>generation</span> <span class='op'>=</span> <span class='int'>1</span>
-
-  <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span>
-    <span class='id identifier rubyid_evaluate'>evaluate</span>
-
-    <span class='id identifier rubyid_best_program'>best_program</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_best_program'>best_program</span>
-    <span class='id identifier rubyid_best_loss'>best_loss</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_best_loss'>best_loss</span>
-
-    <span class='id identifier rubyid_block'>block</span><span class='lbracket'>[</span><span class='kw'>self</span><span class='rbracket'>]</span>
-
-    <span class='kw'>break</span> <span class='kw'>if</span> <span class='ivar'>@stop</span>
-    <span class='id identifier rubyid_min_generations_reached'>min_generations_reached</span> <span class='op'>=</span> <span class='id identifier rubyid_min_generations'>min_generations</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>||</span> <span class='id identifier rubyid_generation'>generation</span> <span class='op'>&gt;=</span> <span class='id identifier rubyid_min_generations'>min_generations</span>
-    <span class='kw'>break</span> <span class='kw'>if</span> <span class='id identifier rubyid_min_generations_reached'>min_generations_reached</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_loss'>loss</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_best_loss'>best_loss</span> <span class='op'>&lt;=</span> <span class='id identifier rubyid_loss'>loss</span>
-    <span class='kw'>break</span> <span class='kw'>if</span> <span class='id identifier rubyid_generation'>generation</span> <span class='op'>&gt;=</span> <span class='id identifier rubyid_max_generations'>max_generations</span>
-
-    <span class='id identifier rubyid_next_generation!'>next_generation!</span>
-    <span class='id identifier rubyid_generation'>generation</span> <span class='op'>+=</span> <span class='int'>1</span>
-  <span class='kw'>end</span>
-
-  <span class='ivar'>@stop</span> <span class='op'>=</span> <span class='kw'>false</span>
-  <span class='kw'>return</span> <span class='id identifier rubyid_best_program'>best_program</span><span class='comma'>,</span> <span class='id identifier rubyid_best_loss'>best_loss</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_generation'>generation</span>
+  <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_get_gen_counter'>pop_get_gen_counter</span> <span class='kw'>self</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1053,7 +799,7 @@ specified loss</p>
       <div class="method_details ">
   <h3 class="signature " id="seed-instance_method">
   
-    #<strong>seed</strong>  &#x21d2; <tt>void</tt> 
+    #<strong>seed</strong>(&amp;block)  &#x21d2; <tt>void</tt> 
   
 
   
@@ -1076,137 +822,27 @@ specified loss</p>
       <pre class="lines">
 
 
-39
-40
-41</pre>
+46
+47
+48
+49
+50
+51
+52
+53
+54</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 39</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 46</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_seed'>seed</span>
-  <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_seed'>pop_seed</span> <span class='kw'>self</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="stop-instance_method">
-  
-    #<strong>stop</strong>  &#x21d2; <tt>void</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note returns_void">This method returns an undefined value.</p>
-<p>Stops the process started by <span class='object_link'><a href="#run-instance_method" title="Evoasm::Population#run (method)">#run</a></span></p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-94
-95
-96</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 94</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_stop'>stop</span>
-  <span class='ivar'>@stop</span> <span class='op'>=</span> <span class='kw'>true</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="summary-instance_method">
-  
-    #<strong>summary</strong>(flat: false)  &#x21d2; <tt>Array</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-<p>Gives a five-number summary for each deme, program and kernel.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Array</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>a 2-dimensional array of summaries.</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/population.rb', line 71</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_summary'>summary</span><span class='lparen'>(</span><span class='label'>flat:</span> <span class='kw'>false</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_summary_len'>summary_len</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_summary_len'>pop_summary_len</span> <span class='kw'>self</span>
-  <span class='id identifier rubyid_summary_ptr'>summary_ptr</span> <span class='op'>=</span> <span class='const'>FFI</span><span class='op'>::</span><span class='const'>MemoryPointer</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='symbol'>:float</span><span class='comma'>,</span> <span class='id identifier rubyid_summary_len'>summary_len</span>
-  <span class='kw'>unless</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_calc_summary'>pop_calc_summary</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_summary_ptr'>summary_ptr</span>
-    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Error</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_seed'>seed</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_block'>block</span>
+    <span class='id identifier rubyid_seed_builder'>seed_builder</span> <span class='op'>=</span> <span class='const'>SeedBuilder</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_parameters'>parameters</span><span class='period'>.</span><span class='id identifier rubyid_instructions'>instructions</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span>
+    <span class='id identifier rubyid_seed_builder'>seed_builder</span><span class='period'>.</span><span class='id identifier rubyid_seed_population!'>seed_population!</span>
+  <span class='kw'>else</span>
+    <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_pop_seed'>pop_seed</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='const'>FFI</span><span class='op'>::</span><span class='const'>Pointer</span><span class='op'>::</span><span class='const'>NULL</span>
   <span class='kw'>end</span>
 
-  <span class='id identifier rubyid_summary'>summary</span> <span class='op'>=</span> <span class='id identifier rubyid_summary_ptr'>summary_ptr</span><span class='period'>.</span><span class='id identifier rubyid_read_array_of_float'>read_array_of_float</span><span class='lparen'>(</span><span class='id identifier rubyid_summary_len'>summary_len</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each_slice'>each_slice</span><span class='lparen'>(</span><span class='id identifier rubyid_summary_len'>summary_len</span> <span class='op'>/</span> <span class='ivar'>@parameters</span><span class='period'>.</span><span class='id identifier rubyid_deme_count'>deme_count</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span>
-  <span class='kw'>unless</span> <span class='id identifier rubyid_flat'>flat</span>
-    <span class='id identifier rubyid_summary'>summary</span><span class='period'>.</span><span class='id identifier rubyid_map!'>map!</span><span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_deme_summary'>deme_summary</span><span class='op'>|</span> <span class='id identifier rubyid_deme_summary'>deme_summary</span><span class='period'>.</span><span class='id identifier rubyid_each_slice'>each_slice</span><span class='lparen'>(</span><span class='int'>5</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span><span class='rbrace'>}</span>
-  <span class='kw'>end</span>
-
-  <span class='id identifier rubyid_summary'>summary</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1218,9 +854,9 @@ specified loss</p>
 </div>
 
       <div id="footer">
-  Generated on Thu Dec  1 17:34:52 2016 by
+  Generated on Fri Apr 21 23:13:26 2017 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.5 (ruby-2.3.0).
+  0.9.5 (ruby-2.4.0).
 </div>
 
     </div>

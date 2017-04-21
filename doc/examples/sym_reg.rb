@@ -23,7 +23,6 @@ parameters = Evoasm::Population::Parameters.new do |p|
   p.deme_size = 1024
   p.deme_count = 1
   p.kernel_size = 10
-  p.program_size = 1
   p.parameters = %i(reg0 reg1 reg2 reg3)
 
   regs = %i(xmm0 xmm1 xmm2 xmm3)
@@ -43,22 +42,22 @@ end
 puts
 
 population = Evoasm::Population.new parameters
-program, loss = population.run
+kernel, loss = population.run
 
-puts program.disassemble format: true
-
-puts
-
-puts program.run 6.0
-puts program.run 7.0
+puts kernel.disassemble format: true
 
 puts
 
-program = program.eliminate_introns
-puts program.disassemble format: true
+puts kernel.run 6.0
+puts kernel.run 7.0
 
 puts
 
-puts program.run 6.0
-puts program.run 7.0
+kernel = kernel.eliminate_introns
+puts kernel.disassemble format: true
+
+puts
+
+puts kernel.run 6.0
+puts kernel.run 7.0
 

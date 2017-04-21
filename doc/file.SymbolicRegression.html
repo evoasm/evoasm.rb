@@ -169,7 +169,6 @@ to come up with a program that, given <em>x</em>, will output the corresponding
   <span class='id identifier rubyid_p'>p</span><span class='period'>.</span><span class='id identifier rubyid_deme_size'>deme_size</span> <span class='op'>=</span> <span class='int'>1024</span>
   <span class='id identifier rubyid_p'>p</span><span class='period'>.</span><span class='id identifier rubyid_deme_count'>deme_count</span> <span class='op'>=</span> <span class='int'>1</span>
   <span class='id identifier rubyid_p'>p</span><span class='period'>.</span><span class='id identifier rubyid_kernel_size'>kernel_size</span> <span class='op'>=</span> <span class='int'>10</span>
-  <span class='id identifier rubyid_p'>p</span><span class='period'>.</span><span class='id identifier rubyid_program_size'>program_size</span> <span class='op'>=</span> <span class='int'>1</span>
   <span class='id identifier rubyid_p'>p</span><span class='period'>.</span><span class='id identifier rubyid_parameters'>parameters</span> <span class='op'>=</span> <span class='qsymbols_beg'>%i(</span><span class='tstring_content'>reg0</span><span class='words_sep'> </span><span class='tstring_content'>reg1</span><span class='words_sep'> </span><span class='tstring_content'>reg2</span><span class='words_sep'> </span><span class='tstring_content'>reg3</span><span class='words_sep'>)</span>
 
   <span class='id identifier rubyid_regs'>regs</span> <span class='op'>=</span> <span class='qsymbols_beg'>%i(</span><span class='tstring_content'>xmm0</span><span class='words_sep'> </span><span class='tstring_content'>xmm1</span><span class='words_sep'> </span><span class='tstring_content'>xmm2</span><span class='words_sep'> </span><span class='tstring_content'>xmm3</span><span class='words_sep'>)</span>
@@ -189,24 +188,24 @@ to come up with a program that, given <em>x</em>, will output the corresponding
 <span class='id identifier rubyid_puts'>puts</span>
 
 <span class='id identifier rubyid_population'>population</span> <span class='op'>=</span> <span class='const'>Evoasm</span><span class='op'>::</span><span class='const'>Population</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='id identifier rubyid_parameters'>parameters</span>
-<span class='id identifier rubyid_program'>program</span><span class='comma'>,</span> <span class='id identifier rubyid_loss'>loss</span> <span class='op'>=</span> <span class='id identifier rubyid_population'>population</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span>
+<span class='id identifier rubyid_kernel'>kernel</span><span class='comma'>,</span> <span class='id identifier rubyid_loss'>loss</span> <span class='op'>=</span> <span class='id identifier rubyid_population'>population</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span>
 
-<span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_program'>program</span><span class='period'>.</span><span class='id identifier rubyid_disassemble'>disassemble</span> <span class='label'>format:</span> <span class='kw'>true</span>
-
-<span class='id identifier rubyid_puts'>puts</span>
-
-<span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_program'>program</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span> <span class='float'>6.0</span>
-<span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_program'>program</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span> <span class='float'>7.0</span>
+<span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_kernel'>kernel</span><span class='period'>.</span><span class='id identifier rubyid_disassemble'>disassemble</span> <span class='label'>format:</span> <span class='kw'>true</span>
 
 <span class='id identifier rubyid_puts'>puts</span>
 
-<span class='id identifier rubyid_program'>program</span> <span class='op'>=</span> <span class='id identifier rubyid_program'>program</span><span class='period'>.</span><span class='id identifier rubyid_eliminate_introns'>eliminate_introns</span>
-<span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_program'>program</span><span class='period'>.</span><span class='id identifier rubyid_disassemble'>disassemble</span> <span class='label'>format:</span> <span class='kw'>true</span>
+<span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_kernel'>kernel</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span> <span class='float'>6.0</span>
+<span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_kernel'>kernel</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span> <span class='float'>7.0</span>
 
 <span class='id identifier rubyid_puts'>puts</span>
 
-<span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_program'>program</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span> <span class='float'>6.0</span>
-<span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_program'>program</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span> <span class='float'>7.0</span></pre></p>
+<span class='id identifier rubyid_kernel'>kernel</span> <span class='op'>=</span> <span class='id identifier rubyid_kernel'>kernel</span><span class='period'>.</span><span class='id identifier rubyid_eliminate_introns'>eliminate_introns</span>
+<span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_kernel'>kernel</span><span class='period'>.</span><span class='id identifier rubyid_disassemble'>disassemble</span> <span class='label'>format:</span> <span class='kw'>true</span>
+
+<span class='id identifier rubyid_puts'>puts</span>
+
+<span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_kernel'>kernel</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span> <span class='float'>6.0</span>
+<span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_kernel'>kernel</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span> <span class='float'>7.0</span></pre></p>
 
 <p>On my machine, <em>Evoasm</em> will find a solution in less than a second:</p>
 
@@ -225,7 +224,7 @@ to come up with a program that, given <em>x</em>, will output the corresponding
 <h2>Examining the Solution</h2>
 
 <p>You can now experiment with the found program.
-Use the <span class='object_link'><a href="Evoasm/Program.html#run-instance_method" title="Evoasm::Program#run (method)">Program#run</a></span> method to run the found program with arbitrary input.</p>
+Use the <span class='object_link'><a href="Evoasm/Kernel.html#run-instance_method" title="Evoasm::Kernel#run (method)">Kernel#run</a></span> method to run the found program with arbitrary input.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_program'>program</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span> <span class='float'>1.0</span>  <span class='comment'># =&gt; [1.7320508075688772]
 </span><span class='comment'># test for values not given in table
@@ -251,19 +250,23 @@ This will considerably shorten the size of the solution:</p>
 0x555556ba59fd: vsqrtsd xmm1, xmm1, xmm3
 </code></pre>
 
-<p>For comparison, here is what GCC 6.2 outputs with <code>-O3 -march=core-avx2</code></p>
+<p>For comparison, here is what GCC 7 outputs with <code>-O3 -march=core-avx2 -ffast-math</code></p>
 
-<pre class="code ruby"><code class="ruby">vmulsd  %xmm0, %xmm0, %xmm2
-vaddsd  %xmm0, %xmm0, %xmm1
-vfmadd132sd     %xmm2, %xmm1, %xmm0
-vsqrtsd %xmm0, %xmm1, %xmm1
+<pre class="code ruby"><code class="ruby">        vmovapd xmm1, xmm0
+        vfmadd213sd xmm1, xmm0, QWORD PTR .LC0[rip]
+        vmulsd  xmm0, xmm1, xmm0
+        vsqrtsd xmm0, xmm0, xmm0
+
+.LC0:
+        .long   0
+        .long   1073741824
 </code></pre>
 </div></div>
 
       <div id="footer">
-  Generated on Thu Dec  1 17:34:51 2016 by
+  Generated on Fri Apr 21 23:13:25 2017 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.5 (ruby-2.3.0).
+  0.9.5 (ruby-2.4.0).
 </div>
 
     </div>

@@ -124,6 +124,37 @@ moment in time.</p>
 
   
     <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#random-class_method" title="random (class method)">.<strong>random</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
       Instance Method Summary
       <small><a href="#" class="summary_toggle">collapse</a></small>
     </h2>
@@ -395,6 +426,48 @@ object.</p>
 </div>
 
 
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="random-class_method">
+  
+    .<strong>random</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+22
+23
+24
+25
+26
+27</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 22</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_random'>random</span>
+  <span class='id identifier rubyid_cpu_state'>cpu_state</span> <span class='op'>=</span> <span class='id identifier rubyid_new'>new</span>
+  <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_cpu_state_rand'>x64_cpu_state_rand</span> <span class='id identifier rubyid_cpu_state'>cpu_state</span><span class='comma'>,</span> <span class='const'>PRNG</span><span class='period'>.</span><span class='id identifier rubyid_default'>default</span>
+
+  <span class='id identifier rubyid_cpu_state'>cpu_state</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
   <div id="instance_method_details" class="method_details_list">
     <h2>Instance Method Details</h2>
 
@@ -481,14 +554,14 @@ object.</p>
       <pre class="lines">
 
 
-38
-39
-40
-41
-42</pre>
+45
+46
+47
+48
+49</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 38</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 45</span>
 
 <span class='kw'>def</span> <span class='op'>[]</span><span class='lparen'>(</span><span class='id identifier rubyid_register'>register</span><span class='comma'>,</span> <span class='id identifier rubyid_word'>word</span> <span class='op'>=</span> <span class='symbol'>:none</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_data_ptr'>data_ptr</span> <span class='op'>=</span> <span class='const'>FFI</span><span class='op'>::</span><span class='const'>MemoryPointer</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='symbol'>:uint64</span><span class='comma'>,</span> <span class='int'>16</span>
@@ -563,15 +636,15 @@ object.</p>
       <pre class="lines">
 
 
-27
-28
-29
-30
-31
-32</pre>
+34
+35
+36
+37
+38
+39</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 27</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 34</span>
 
 <span class='kw'>def</span> <span class='op'>[]=</span><span class='lparen'>(</span><span class='id identifier rubyid_register'>register</span><span class='comma'>,</span> <span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_data'>data</span> <span class='op'>=</span> <span class='const'>Array</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
@@ -628,15 +701,15 @@ object.</p>
       <pre class="lines">
 
 
-46
-47
-48
-49
-50
-51</pre>
+53
+54
+55
+56
+57
+58</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 46</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 53</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_clone'>clone</span>
   <span class='id identifier rubyid_cloned_cpu_state'>cloned_cpu_state</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
@@ -714,14 +787,14 @@ object</p>
       <pre class="lines">
 
 
-88
-89
-90
-91
-92</pre>
+100
+101
+102
+103
+104</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 88</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 100</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_emit_load'>emit_load</span><span class='lparen'>(</span><span class='id identifier rubyid_buffer'>buffer</span><span class='rparen'>)</span>
   <span class='kw'>unless</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_cpu_state_emit_load'>x64_cpu_state_emit_load</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_buffer'>buffer</span>
@@ -797,14 +870,14 @@ object</p>
       <pre class="lines">
 
 
-77
-78
-79
-80
-81</pre>
+89
+90
+91
+92
+93</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 77</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 89</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_emit_store'>emit_store</span><span class='lparen'>(</span><span class='id identifier rubyid_buffer'>buffer</span><span class='rparen'>)</span>
   <span class='kw'>unless</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_cpu_state_emit_store'>x64_cpu_state_emit_store</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_buffer'>buffer</span>
@@ -831,12 +904,12 @@ object</p>
       <pre class="lines">
 
 
-68
-69
-70</pre>
+80
+81
+82</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 68</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 80</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_rflags_flag'>get_rflags_flag</span><span class='lparen'>(</span><span class='id identifier rubyid_flag'>flag</span><span class='rparen'>)</span>
   <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_cpu_state_get_rflags_flag'>x64_cpu_state_get_rflags_flag</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_flag'>flag</span>
@@ -890,14 +963,14 @@ object</p>
       <pre class="lines">
 
 
-62
-63
-64
-65
-66</pre>
+74
+75
+76
+77
+78</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 62</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/cpu_state.rb', line 74</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_h'>to_h</span>
   <span class='const'>X64</span><span class='period'>.</span><span class='id identifier rubyid_registers'>registers</span><span class='period'>.</span><span class='id identifier rubyid_each_with_object'>each_with_object</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_register'>register</span><span class='comma'>,</span> <span class='id identifier rubyid_hash'>hash</span><span class='op'>|</span>
@@ -914,9 +987,9 @@ object</p>
 </div>
 
       <div id="footer">
-  Generated on Thu Dec  1 17:34:52 2016 by
+  Generated on Fri Apr 21 23:13:26 2017 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.5 (ruby-2.3.0).
+  0.9.5 (ruby-2.4.0).
 </div>
 
     </div>
