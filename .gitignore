@@ -1,0 +1,5 @@
+.idea
+.yardoc
+ext
+experiments
+Gemfile.lock
