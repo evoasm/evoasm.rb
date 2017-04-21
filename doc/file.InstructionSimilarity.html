@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  File: Instruction Similarity
+  
+    &mdash; Documentation by YARD 0.9.5
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "InstructionSimilarity";
+  relpath = '';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="file_list.html"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: Instruction Similarity</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <iframe id="search_frame" src="file_list.html"></iframe>
+
+      <div id="content"><div id='filecontents'><h1>Instruction Similarity</h1>
+
+<p>Using <em>Evoasm</em>&#39;s <span class='object_link'><a href="Evoasm/X64/CPUState.html" title="Evoasm::X64::CPUState (class)">Evoasm::X64::CPUState</a></span> class it&#39;s possible to analyze
+how an instruction modifies the CPU&#39;s registers.</p>
+
+<p>The following examples finds for each instruction the 32 most similar instructions
+by running each on a random CPU state and comparing the results.</p>
+
+<p>The result is visualized in <a href="examples/inst_dist.html">this table</a>.</p>
+
+<p><pre class="code ruby"><span class='kw'>begin</span>
+  <span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>evoasm</span><span class='tstring_end'>&#39;</span></span>
+  <span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>evoasm/x64</span><span class='tstring_end'>&#39;</span></span>
+  <span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>evoasm/x64/cpu_state</span><span class='tstring_end'>&#39;</span></span>
+<span class='kw'>rescue</span> <span class='const'>LoadError</span>
+  <span class='gvar'>$LOAD_PATH</span><span class='period'>.</span><span class='id identifier rubyid_unshift'>unshift</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>../lib</span><span class='tstring_end'>&#39;</span></span>
+<span class='kw'>end</span>
+
+<span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>yaml</span><span class='tstring_end'>&#39;</span></span>
+
+<span class='id identifier rubyid_instruction_names'>instruction_names</span> <span class='op'>=</span> <span class='const'>Evoasm</span><span class='op'>::</span><span class='const'>X64</span><span class='op'>::</span><span class='id identifier rubyid_instruction_names'>instruction_names</span><span class='lparen'>(</span><span class='symbol'>:gp</span><span class='comma'>,</span> <span class='symbol'>:rflags</span><span class='comma'>,</span> <span class='symbol'>:xmm</span><span class='rparen'>)</span>
+<span class='id identifier rubyid_instructions'>instructions</span> <span class='op'>=</span> <span class='id identifier rubyid_instruction_names'>instruction_names</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_name'>name</span><span class='op'>|</span>
+  <span class='const'>Evoasm</span><span class='op'>::</span><span class='const'>X64</span><span class='period'>.</span><span class='id identifier rubyid_instruction'>instruction</span> <span class='id identifier rubyid_name'>name</span>
+<span class='kw'>end</span>
+
+
+<span class='id identifier rubyid_buffer'>buffer</span> <span class='op'>=</span> <span class='const'>Evoasm</span><span class='op'>::</span><span class='const'>Buffer</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='int'>1024</span><span class='comma'>,</span> <span class='symbol'>:mmap</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_run'>run</span><span class='lparen'>(</span><span class='id identifier rubyid_buffer'>buffer</span><span class='comma'>,</span> <span class='id identifier rubyid_instruction'>instruction</span><span class='comma'>,</span> <span class='id identifier rubyid_parameters'>parameters</span><span class='comma'>,</span> <span class='id identifier rubyid_cpu_state'>cpu_state</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_buffer'>buffer</span><span class='period'>.</span><span class='id identifier rubyid_reset'>reset</span>
+  <span class='const'>Evoasm</span><span class='op'>::</span><span class='const'>X64</span><span class='period'>.</span><span class='id identifier rubyid_emit_stack_frame'>emit_stack_frame</span> <span class='id identifier rubyid_buffer'>buffer</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_cpu_state'>cpu_state</span><span class='period'>.</span><span class='id identifier rubyid_emit_load'>emit_load</span> <span class='id identifier rubyid_buffer'>buffer</span>
+    <span class='id identifier rubyid_instruction'>instruction</span><span class='period'>.</span><span class='id identifier rubyid_encode'>encode</span> <span class='id identifier rubyid_parameters'>parameters</span><span class='comma'>,</span> <span class='id identifier rubyid_buffer'>buffer</span><span class='comma'>,</span> <span class='label'>basic:</span> <span class='kw'>true</span>
+    <span class='id identifier rubyid_cpu_state'>cpu_state</span><span class='period'>.</span><span class='id identifier rubyid_emit_store'>emit_store</span> <span class='id identifier rubyid_buffer'>buffer</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>begin</span>
+    <span class='id identifier rubyid_buffer'>buffer</span><span class='period'>.</span><span class='id identifier rubyid_execute!'>execute!</span>
+  <span class='kw'>rescue</span> <span class='const'>Evoasm</span><span class='op'>::</span><span class='const'>ExceptionError</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+
+<span class='id identifier rubyid_dists'>dists</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_instructions'>instructions</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='rparen'>)</span>
+
+<span class='const'>COLORS</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='lbracket'>[</span><span class='int'>1</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='int'>0</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='int'>1</span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='int'>0</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='int'>0</span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='int'>0</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='int'>0</span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='int'>1</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='int'>0</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='int'>1</span><span class='rbracket'>]</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span>
+
+
+<span class='kw'>def</span> <span class='id identifier rubyid_text_color'>text_color</span><span class='lparen'>(</span><span class='id identifier rubyid_bg_color'>bg_color</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_luminance'>luminance</span> <span class='op'>=</span> <span class='int'>1</span> <span class='op'>-</span> <span class='lparen'>(</span> <span class='float'>0.299</span> <span class='op'>*</span> <span class='id identifier rubyid_bg_color'>bg_color</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span> <span class='op'>+</span> <span class='float'>0.587</span> <span class='op'>*</span> <span class='id identifier rubyid_bg_color'>bg_color</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='op'>+</span> <span class='float'>0.114</span> <span class='op'>*</span> <span class='id identifier rubyid_bg_color'>bg_color</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='op'>/</span> <span class='float'>255.0</span>
+  <span class='kw'>return</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>black</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_luminance'>luminance</span> <span class='op'>&lt;</span> <span class='float'>0.5</span>
+  <span class='kw'>return</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>white</span><span class='tstring_end'>&#39;</span></span><span class='semicolon'>;</span>
+<span class='kw'>end</span>
+
+
+<span class='kw'>def</span> <span class='id identifier rubyid_heat_color'>heat_color</span><span class='lparen'>(</span><span class='id identifier rubyid_dist'>dist</span><span class='comma'>,</span> <span class='id identifier rubyid_min_dist'>min_dist</span><span class='comma'>,</span> <span class='id identifier rubyid_max_dist'>max_dist</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>black</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>white</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_dist'>dist</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+  <span class='id identifier rubyid_normalized_dist'>normalized_dist</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_dist'>dist</span> <span class='op'>-</span> <span class='id identifier rubyid_min_dist'>min_dist</span><span class='rparen'>)</span> <span class='op'>/</span> <span class='lparen'>(</span><span class='id identifier rubyid_max_dist'>max_dist</span> <span class='op'>-</span> <span class='id identifier rubyid_min_dist'>min_dist</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_distance'>distance</span> <span class='op'>=</span> <span class='id identifier rubyid_normalized_dist'>normalized_dist</span> <span class='op'>*</span> <span class='lparen'>(</span><span class='const'>COLORS</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>-</span> <span class='int'>2</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_floor_distance'>floor_distance</span> <span class='op'>=</span> <span class='id identifier rubyid_distance'>distance</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span>
+  <span class='id identifier rubyid_floor_color'>floor_color</span> <span class='op'>=</span> <span class='const'>COLORS</span><span class='lbracket'>[</span><span class='id identifier rubyid_floor_distance'>floor_distance</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_ceil_color'>ceil_color</span> <span class='op'>=</span> <span class='const'>COLORS</span><span class='lbracket'>[</span><span class='id identifier rubyid_floor_distance'>floor_distance</span> <span class='op'>+</span> <span class='int'>1</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_relative_distance'>relative_distance</span> <span class='op'>=</span> <span class='id identifier rubyid_distance'>distance</span> <span class='op'>-</span> <span class='id identifier rubyid_floor_distance'>floor_distance</span>
+
+  <span class='id identifier rubyid_heat_color'>heat_color</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>3</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_color_index'>color_index</span><span class='op'>|</span>
+    <span class='id identifier rubyid_floor_color'>floor_color</span><span class='lbracket'>[</span><span class='id identifier rubyid_color_index'>color_index</span><span class='rbracket'>]</span> <span class='op'>+</span> <span class='id identifier rubyid_relative_distance'>relative_distance</span> <span class='op'>*</span> <span class='lparen'>(</span><span class='id identifier rubyid_ceil_color'>ceil_color</span><span class='lbracket'>[</span><span class='id identifier rubyid_color_index'>color_index</span><span class='rbracket'>]</span> <span class='op'>-</span> <span class='id identifier rubyid_floor_color'>floor_color</span><span class='lbracket'>[</span><span class='id identifier rubyid_color_index'>color_index</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_heat_color'>heat_color</span><span class='period'>.</span><span class='id identifier rubyid_map!'>map!</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_color'>color</span><span class='op'>|</span>
+    <span class='lparen'>(</span><span class='id identifier rubyid_color'>color</span> <span class='op'>*</span> <span class='int'>255</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_text_color'>text_color</span> <span class='op'>=</span> <span class='id identifier rubyid_text_color'>text_color</span><span class='lparen'>(</span><span class='id identifier rubyid_heat_color'>heat_color</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_bg_color'>bg_color</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>#%02x%02x%02x</span><span class='tstring_end'>&quot;</span></span><span class='period'>.</span><span class='op'>%</span><span class='lparen'>(</span><span class='id identifier rubyid_heat_color'>heat_color</span><span class='rparen'>)</span>
+
+  <span class='lbracket'>[</span><span class='id identifier rubyid_bg_color'>bg_color</span><span class='comma'>,</span> <span class='id identifier rubyid_text_color'>text_color</span><span class='rbracket'>]</span>
+<span class='kw'>end</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_select_best'>select_best</span><span class='lparen'>(</span><span class='id identifier rubyid_instruction_names'>instruction_names</span><span class='comma'>,</span> <span class='id identifier rubyid_dists'>dists</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_instruction_names'>instruction_names</span><span class='period'>.</span><span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='id identifier rubyid_dists'>dists</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span><span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid__'>_</span><span class='comma'>,</span> <span class='id identifier rubyid_d'>d</span><span class='op'>|</span> <span class='id identifier rubyid_d'>d</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span><span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid__'>_</span><span class='comma'>,</span> <span class='id identifier rubyid_d'>d</span><span class='op'>|</span> <span class='id identifier rubyid_d'>d</span><span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_take'>take</span><span class='lparen'>(</span><span class='int'>32</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_h'>to_h</span>
+<span class='kw'>end</span>
+
+<span class='id identifier rubyid_instructions'>instructions</span><span class='period'>.</span><span class='id identifier rubyid_each_with_index'>each_with_index</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_instruction'>instruction</span><span class='comma'>,</span> <span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+
+  <span class='id identifier rubyid_absdiff_dists'>absdiff_dists</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_instructions'>instructions</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='comma'>,</span> <span class='int'>0</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_xor_dists'>xor_dists</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_instructions'>instructions</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='comma'>,</span> <span class='int'>0</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_instructions'>instructions</span><span class='period'>.</span><span class='id identifier rubyid_each_with_index'>each_with_index</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_other_instruction'>other_instruction</span><span class='comma'>,</span> <span class='id identifier rubyid_other_index'>other_index</span><span class='op'>|</span>
+
+    <span class='id identifier rubyid_n'>n</span> <span class='op'>=</span> <span class='int'>100</span>
+    <span class='id identifier rubyid_n'>n</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span> <span class='kw'>do</span>
+      <span class='id identifier rubyid_parameters'>parameters</span> <span class='op'>=</span> <span class='const'>Evoasm</span><span class='op'>::</span><span class='const'>X64</span><span class='op'>::</span><span class='const'>Parameters</span><span class='period'>.</span><span class='id identifier rubyid_random'>random</span> <span class='id identifier rubyid_instruction'>instruction</span>
+
+      <span class='id identifier rubyid_cpu_state'>cpu_state</span> <span class='op'>=</span> <span class='const'>Evoasm</span><span class='op'>::</span><span class='const'>X64</span><span class='op'>::</span><span class='const'>CPUState</span><span class='period'>.</span><span class='id identifier rubyid_random'>random</span>
+      <span class='id identifier rubyid_other_cpu_state'>other_cpu_state</span> <span class='op'>=</span> <span class='id identifier rubyid_cpu_state'>cpu_state</span><span class='period'>.</span><span class='id identifier rubyid_clone'>clone</span>
+
+      <span class='kw'>begin</span>
+        <span class='id identifier rubyid_run'>run</span> <span class='id identifier rubyid_buffer'>buffer</span><span class='comma'>,</span> <span class='id identifier rubyid_instruction'>instruction</span><span class='comma'>,</span> <span class='id identifier rubyid_parameters'>parameters</span><span class='comma'>,</span> <span class='id identifier rubyid_cpu_state'>cpu_state</span>
+        <span class='id identifier rubyid_run'>run</span> <span class='id identifier rubyid_buffer'>buffer</span><span class='comma'>,</span> <span class='id identifier rubyid_other_instruction'>other_instruction</span><span class='comma'>,</span> <span class='id identifier rubyid_parameters'>parameters</span><span class='comma'>,</span> <span class='id identifier rubyid_other_cpu_state'>other_cpu_state</span>
+
+        <span class='id identifier rubyid_absdiff_dist'>absdiff_dist</span> <span class='op'>=</span> <span class='id identifier rubyid_cpu_state'>cpu_state</span><span class='period'>.</span><span class='id identifier rubyid_distance'>distance</span><span class='lparen'>(</span><span class='id identifier rubyid_other_cpu_state'>other_cpu_state</span><span class='comma'>,</span> <span class='symbol'>:absdiff</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_xor_dist'>xor_dist</span> <span class='op'>=</span> <span class='id identifier rubyid_cpu_state'>cpu_state</span><span class='period'>.</span><span class='id identifier rubyid_distance'>distance</span><span class='lparen'>(</span><span class='id identifier rubyid_other_cpu_state'>other_cpu_state</span><span class='comma'>,</span> <span class='symbol'>:xor</span><span class='rparen'>)</span>
+
+        <span class='kw'>if</span> <span class='id identifier rubyid_instruction'>instruction</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='op'>==</span> <span class='id identifier rubyid_other_instruction'>other_instruction</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+          <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_absdiff_dist'>absdiff_dist</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_absdiff_dist'>absdiff_dist</span> <span class='op'>==</span> <span class='int'>0</span>
+          <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_xor_dist'>xor_dist</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_xor_dist'>xor_dist</span> <span class='op'>==</span> <span class='int'>0</span>
+        <span class='kw'>end</span>
+
+        <span class='id identifier rubyid_absdiff_dists'>absdiff_dists</span><span class='lbracket'>[</span><span class='id identifier rubyid_other_index'>other_index</span><span class='rbracket'>]</span> <span class='op'>+=</span> <span class='id identifier rubyid_absdiff_dist'>absdiff_dist</span> <span class='op'>/</span> <span class='id identifier rubyid_n'>n</span>
+        <span class='id identifier rubyid_xor_dists'>xor_dists</span><span class='lbracket'>[</span><span class='id identifier rubyid_other_index'>other_index</span><span class='rbracket'>]</span> <span class='op'>+=</span> <span class='id identifier rubyid_xor_dist'>xor_dist</span> <span class='op'>/</span> <span class='id identifier rubyid_n'>n</span>
+      <span class='kw'>rescue</span> <span class='const'>Evoasm</span><span class='op'>::</span><span class='const'>Error</span>
+        <span class='id identifier rubyid_absdiff_dists'>absdiff_dists</span><span class='lbracket'>[</span><span class='id identifier rubyid_other_index'>other_index</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>nil</span>
+        <span class='id identifier rubyid_xor_dists'>xor_dists</span><span class='lbracket'>[</span><span class='id identifier rubyid_other_index'>other_index</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>nil</span>
+        <span class='kw'>break</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_dists'>dists</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbrace'>{</span>
+    <span class='label'>absdiff:</span> <span class='id identifier rubyid_select_best'>select_best</span><span class='lparen'>(</span><span class='id identifier rubyid_instruction_names'>instruction_names</span><span class='comma'>,</span> <span class='id identifier rubyid_absdiff_dists'>absdiff_dists</span><span class='rparen'>)</span><span class='comma'>,</span>
+    <span class='label'>xor:</span> <span class='id identifier rubyid_select_best'>select_best</span><span class='lparen'>(</span><span class='id identifier rubyid_instruction_names'>instruction_names</span><span class='comma'>,</span> <span class='id identifier rubyid_xor_dists'>xor_dists</span><span class='rparen'>)</span><span class='comma'>,</span>
+  <span class='rbrace'>}</span>
+
+  <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='lparen'>(</span><span class='id identifier rubyid_index'>index</span> <span class='op'>/</span> <span class='id identifier rubyid_instructions'>instructions</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span> <span class='op'>*</span> <span class='int'>100</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span><span class='embexpr_end'>}</span><span class='tstring_content'>%</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_index'>index</span><span class='embexpr_end'>}</span><span class='tstring_content'> / </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_instructions'>instructions</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_puts'>puts</span>
+<span class='kw'>end</span>
+
+
+<span class='id identifier rubyid_html'>html</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&lt;html&gt;</span><span class='tstring_end'>&quot;</span></span>
+<span class='id identifier rubyid_html'>html</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&lt;table&gt;</span><span class='tstring_end'>&quot;</span></span>
+<span class='id identifier rubyid_instructions'>instructions</span><span class='period'>.</span><span class='id identifier rubyid_each_with_index'>each_with_index</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_instruction'>instruction</span><span class='comma'>,</span> <span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+
+  <span class='id identifier rubyid_dists'>dists</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each_with_index'>each_with_index</span> <span class='kw'>do</span> <span class='op'>|</span><span class='lparen'>(</span><span class='id identifier rubyid__'>_</span><span class='comma'>,</span> <span class='id identifier rubyid_d'>d</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+    <span class='id identifier rubyid_html'>html</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&lt;tr&gt;</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_html'>html</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>%Q{</span><span class='tstring_content'>&lt;th scope=&quot;row&quot; rowspan=&quot;2&quot;&gt;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_instruction'>instruction</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>&lt;/th&gt;</span><span class='tstring_end'>}</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_index'>index</span> <span class='op'>==</span> <span class='int'>0</span>
+
+    <span class='id identifier rubyid_min_dist'>min_dist</span> <span class='op'>=</span> <span class='id identifier rubyid_d'>d</span><span class='period'>.</span><span class='id identifier rubyid_min_by'>min_by</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid__'>_</span><span class='comma'>,</span> <span class='id identifier rubyid_d'>d</span><span class='op'>|</span> <span class='id identifier rubyid_d'>d</span> <span class='rbrace'>}</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_max_dist'>max_dist</span> <span class='op'>=</span> <span class='id identifier rubyid_d'>d</span><span class='period'>.</span><span class='id identifier rubyid_max_by'>max_by</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid__'>_</span><span class='comma'>,</span> <span class='id identifier rubyid_d'>d</span><span class='op'>|</span> <span class='id identifier rubyid_d'>d</span> <span class='rbrace'>}</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span>
+
+    <span class='id identifier rubyid_d'>d</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_other_instruction_name'>other_instruction_name</span><span class='comma'>,</span> <span class='id identifier rubyid_dist'>dist</span><span class='op'>|</span>
+      <span class='id identifier rubyid_bg_color'>bg_color</span><span class='comma'>,</span> <span class='id identifier rubyid_text_color'>text_color</span> <span class='op'>=</span> <span class='id identifier rubyid_heat_color'>heat_color</span> <span class='id identifier rubyid_dist'>dist</span><span class='comma'>,</span> <span class='id identifier rubyid_min_dist'>min_dist</span><span class='comma'>,</span> <span class='id identifier rubyid_max_dist'>max_dist</span>
+      <span class='id identifier rubyid_html'>html</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>%Q{</span><span class='tstring_content'>&lt;td style=&quot;background-color: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_bg_color'>bg_color</span><span class='embexpr_end'>}</span><span class='tstring_content'>; color: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_text_color'>text_color</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot;&gt;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_other_instruction_name'>other_instruction_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_dist'>dist</span><span class='period'>.</span><span class='id identifier rubyid_round'>round</span> <span class='int'>3</span><span class='embexpr_end'>}</span><span class='tstring_content'>&lt;/td&gt;</span><span class='tstring_end'>}</span></span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_html'>html</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&lt;/tr&gt;</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+
+
+<span class='kw'>end</span>
+
+<span class='id identifier rubyid_html'>html</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&lt;/table&gt;</span><span class='tstring_end'>&quot;</span></span>
+<span class='id identifier rubyid_html'>html</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&lt;/html&gt;</span><span class='tstring_end'>&quot;</span></span>
+
+<span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_write'>write</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>inst_dist.yml</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='const'>YAML</span><span class='period'>.</span><span class='id identifier rubyid_dump'>dump</span><span class='lparen'>(</span><span class='id identifier rubyid_instruction_names'>instruction_names</span><span class='period'>.</span><span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='id identifier rubyid_dists'>dists</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_h'>to_h</span><span class='rparen'>)</span>
+<span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_write'>write</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>inst_dist.html</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_html'>html</span></pre></p>
+</div></div>
+
+      <div id="footer">
+  Generated on Fri Apr 21 23:40:31 2017 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.5 (ruby-2.4.0).
+</div>
+
+    </div>
+  </body>
+</html>
