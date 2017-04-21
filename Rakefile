@@ -51,7 +51,8 @@ namespace :yard do
     sh 'git checkout gh-pages'
     rm_r 'doc'
     mv File.join(tmp_dir, 'doc'), 'doc'
-    sh 'git commit doc -m "Update documentation"'
+    sh 'git add "doc/*"'
+    sh 'git commit -m "Update documentation"'
     sh 'git push origin gh-pages'
     sh 'git checkout master'
     remove_entry tmp_dir
