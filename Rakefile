@@ -46,13 +46,15 @@ namespace :yard do
 
   desc "Push YARD documentation to GitHub Pages"
   task :push => :build do
-    cp_r 'doc', Dir.tmpdir
+    tmp_dir = Dir.mktmpdir
+    cp_r 'doc', tmp_dir
     sh 'git checkout gh-pages'
     rm_r 'doc'
-    mv File.join(Dir.tmpdir, 'doc'), 'doc'
+    mv File.join(tmp_dir, 'doc'), 'doc'
     sh 'git commit doc -m "Update documentation"'
     sh 'git push origin gh-pages'
     sh 'git checkout master'
+    remove_entry tmp_dir
   end
 
 end
