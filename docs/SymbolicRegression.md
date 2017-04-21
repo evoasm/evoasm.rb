@@ -65,7 +65,7 @@ On my machine, *Evoasm* will find a solution in less than a second:
 
 ## Examining the Solution
 You can now experiment with the found program.
-Use the {Evoasm::Program#run Program#run} method to run the found program with arbitrary input.
+Use the {Evoasm::Kernel#run Kernel#run} method to run the found program with arbitrary input.
 
 ```ruby
 program.run 1.0  # => [1.7320508075688772]
