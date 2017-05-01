@@ -67,8 +67,11 @@ def heat_color(dist, min_dist, max_dist)
   [bg_color, text_color]
 end
 
-def select_best(instruction_names, dists)
-  instruction_names.zip(dists).select{ |_, d| d }.sort_by{ |_, d| d}.take(32).to_h
+MAX_ABSDIFF_DIST = 1000
+MAX_XOR_DIST = 0.15
+
+def select_best(instruction_names, dists, max)
+  instruction_names.zip(dists).select{ |_, d| d && d <= max }.sort_by{ |_, d| d}.take(64).to_h
 end
 
 instructions.each_with_index do |instruction, index|
@@ -78,7 +81,7 @@ instructions.each_with_index do |instruction, index|
 
   instructions.each_with_index do |other_instruction, other_index|
 
-    n = 100
+    n = 200
     n.times do
       parameters = Evoasm::X64::Parameters.random instruction
 
@@ -108,8 +111,8 @@ instructions.each_with_index do |instruction, index|
   end
 
   dists[index] = {
-    absdiff: select_best(instruction_names, absdiff_dists),
-    xor: select_best(instruction_names, xor_dists),
+    absdiff: select_best(instruction_names, absdiff_dists, MAX_ABSDIFF_DIST),
+    xor: select_best(instruction_names, xor_dists, MAX_XOR_DIST),
   }
 
   puts "#{(index / instructions.size.to_f * 100).to_i}%"
@@ -124,14 +127,13 @@ instructions.each_with_index do |instruction, index|
 
   dists[index].each_with_index do |(_, d), index|
     html << "<tr>"
-    html << %Q{<th scope="row" rowspan="2">#{instruction.name}</th>} if index == 0
+    html << %(<th scope="row" rowspan="2">#{instruction.name}</th>) if index == 0
 
-    min_dist = d.min_by { |_, d| d }[1]
-    max_dist = d.max_by { |_, d| d }[1]
+    max_dist = index.zero? ? MAX_ABSDIFF_DIST : MAX_XOR_DIST
 
     d.each do |other_instruction_name, dist|
-      bg_color, text_color = heat_color dist, min_dist, max_dist
-      html << %Q{<td style="background-color: #{bg_color}; color: #{text_color}">#{other_instruction_name}/#{dist.round 3}</td>}
+      bg_color, text_color = heat_color dist, 0, max_dist
+      html << %(<td style="background-color: #{bg_color}; color: #{text_color}">#{other_instruction_name}/#{dist.round 3}</td>)
     end
     html << "</tr>"
   end
@@ -142,5 +144,5 @@ end
 html << "</table>"
 html << "</html>"
 
-File.write 'inst_dist.yml', YAML.dump(instruction_names.zip(dists).to_h)
-File.write 'inst_dist.html', html
+File.write  File.join(__dir__, 'inst_dist.yml'), YAML.dump(instruction_names.zip(dists).to_h)
+File.write File.join(__dir__, 'inst_dist.html'), html
