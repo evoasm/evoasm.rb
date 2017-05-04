@@ -128,8 +128,8 @@ module Evoasm
       # @param [X64::Instruction] instruction
       # @return [X64::Parameters]
       def self.random(instruction)
-        parameters = Evoasm::X64::Parameters.new(basic: true)
-        Libevoasm.x64_basic_params_rand parameters, instruction, Evoasm::PRNG.default
+        parameters = Evoasm::X64::Parameters.new
+        Libevoasm.x64_params_rand parameters, instruction, Evoasm::PRNG.default
         parameters
       end
 

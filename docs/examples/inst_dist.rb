@@ -20,7 +20,7 @@ def run(buffer, instruction, parameters, cpu_state)
   buffer.reset
   Evoasm::X64.emit_stack_frame buffer do
     cpu_state.emit_load buffer
-    instruction.encode parameters, buffer, basic: true
+    instruction.encode parameters, buffer
     cpu_state.emit_store buffer
   end
 
@@ -102,9 +102,10 @@ instructions.each_with_index do |instruction, index|
 
         absdiff_dists[other_index] += absdiff_dist / n
         hamming_dists[other_index] += hamming_dist / n
-      rescue Evoasm::Error
+      rescue Evoasm::Error => e
         absdiff_dists[other_index] = nil
         hamming_dists[other_index] = nil
+        puts e.message
         break
       end
     end
