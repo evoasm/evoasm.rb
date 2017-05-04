@@ -54,7 +54,7 @@ module Evoasm
       # @param instruction_name [Symbol] instruction name
       # @return [Instruction]
       def instruction(instruction_name)
-        Instruction.new Libevoasm.x64_inst(instruction_name), instruction_name
+        Instruction.new Libevoasm.x64_get_inst(instruction_name), instruction_name
       end
 
       # Emits a stack frame for the given ABI
@@ -106,7 +106,7 @@ module Evoasm
 
         n_insts = inst_id_enum_type[:none]
         array = FFI::MemoryPointer.new :int, n_insts
-        len = Libevoasm.x64_insts(flags_as_flags, features_as_flags,
+        len = Libevoasm.x64_get_insts(flags_as_flags, features_as_flags,
                                    op_types_as_flags, reg_types_as_flags, array)
 
         instruction_ids = array.read_array_of_type(:int, :read_int, len)

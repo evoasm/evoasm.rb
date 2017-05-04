@@ -77,7 +77,7 @@ module Evoasm
         end
       end
 
-      def get_rflags_flag(flag)
+      def rflags_flag(flag)
         Libevoasm.x64_cpu_state_get_rflags_flag self, flag
       end
 

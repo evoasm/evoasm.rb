@@ -68,7 +68,7 @@ def heat_color(dist, min_dist, max_dist)
 end
 
 MAX_ABSDIFF_DIST = 1000
-MAX_XOR_DIST = 0.15
+MAX_HAMMING_DIST = 0.15
 
 def select_best(instruction_names, dists, max)
   instruction_names.zip(dists).select{ |_, d| d && d <= max }.sort_by{ |_, d| d}.take(64).to_h
@@ -77,7 +77,7 @@ end
 instructions.each_with_index do |instruction, index|
 
   absdiff_dists = Array.new(instructions.size, 0)
-  xor_dists = Array.new(instructions.size, 0)
+  hamming_dists = Array.new(instructions.size, 0)
 
   instructions.each_with_index do |other_instruction, other_index|
 
@@ -93,18 +93,18 @@ instructions.each_with_index do |instruction, index|
         run buffer, other_instruction, parameters, other_cpu_state
 
         absdiff_dist = cpu_state.distance(other_cpu_state, :absdiff)
-        xor_dist = cpu_state.distance(other_cpu_state, :xor)
+        hamming_dist = cpu_state.distance(other_cpu_state, :hamming)
 
         if instruction.name == other_instruction.name
           raise "#{absdiff_dist}" unless absdiff_dist == 0
-          raise "#{xor_dist}" unless xor_dist == 0
+          raise "#{hamming_dist}" unless hamming_dist == 0
         end
 
         absdiff_dists[other_index] += absdiff_dist / n
-        xor_dists[other_index] += xor_dist / n
+        hamming_dists[other_index] += hamming_dist / n
       rescue Evoasm::Error
         absdiff_dists[other_index] = nil
-        xor_dists[other_index] = nil
+        hamming_dists[other_index] = nil
         break
       end
     end
@@ -112,7 +112,7 @@ instructions.each_with_index do |instruction, index|
 
   dists[index] = {
     absdiff: select_best(instruction_names, absdiff_dists, MAX_ABSDIFF_DIST),
-    xor: select_best(instruction_names, xor_dists, MAX_XOR_DIST),
+    hamming: select_best(instruction_names, hamming_dists, MAX_HAMMING_DIST),
   }
 
   puts "#{(index / instructions.size.to_f * 100).to_i}%"
@@ -129,7 +129,7 @@ instructions.each_with_index do |instruction, index|
     html << "<tr>"
     html << %(<th scope="row" rowspan="2">#{instruction.name}</th>) if index == 0
 
-    max_dist = index.zero? ? MAX_ABSDIFF_DIST : MAX_XOR_DIST
+    max_dist = index.zero? ? MAX_ABSDIFF_DIST : MAX_HAMMING_DIST
 
     d.each do |other_instruction_name, dist|
       bg_color, text_color = heat_color dist, 0, max_dist

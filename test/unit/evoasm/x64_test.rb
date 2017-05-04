@@ -10,7 +10,7 @@ module Evoasm
     def test_features
       features = Evoasm::X64.features
       refute_empty features
-      assert features.all? { |feature, _| feature.is_a? Symbol }
+      assert(features.all? { |feature, _| feature.is_a? Symbol })
 
       if RUBY_PLATFORM =~ /linux/
         cpu_info = File.read '/proc/cpuinfo'

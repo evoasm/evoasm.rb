@@ -35,6 +35,12 @@ module Evoasm
         assert_disassembles_to 'add r11w, r12w', :add_r16_rm16,
                                reg0: :r11, reg1: :r12
 
+
+        assert_raises Evoasm::Error do
+          assemble 'add r11d, r12d', :add_r32_rm32,
+                   reg0: :xmm11, reg1: :xmm12
+        end
+
       end
 
       def test_indirect
@@ -60,6 +66,13 @@ module Evoasm
         assert_disassembles_to 'add r10, qword ptr [r11 + r12*4]', :add_r64_rm64,
                                reg0: :r10, reg_base: :r11, reg_index: :r12, scale: 4
 
+        assert_raises Evoasm::Error do
+          assemble :add_r64_rm64, reg0: :r10, reg_base: :xmm11
+        end
+
+        assert_raises Evoasm::Error do
+          assemble :add_r64_rm64, reg0: :r10, reg_index: :xmm11
+        end
 
         # Force SIB
         with_forced_sib = assemble :add_r64_rm64,
@@ -254,6 +267,17 @@ module Evoasm
 
         assert_disassembles_to 'add qword ptr [rax], 0xa', :add_rm64_imm8,
                                reg_base: :a, imm0: 0xa
+
+        assert_disassembles_to 'add qword ptr [rax], -0xa', :add_rm64_imm8,
+                               reg_base: :a, imm0: -0xa
+
+        assert_raises Evoasm::Error do |e|
+          assemble :add_rm64_imm8, reg0: :a, imm0: 0xfff
+        end
+
+        assert_raises Evoasm::Error do |e|
+          assemble :add_rm64_imm8, reg0: :a, imm0: -0xfff
+        end
       end
 
       def test_vex

@@ -81,7 +81,7 @@ module Evoasm
 
     enum :metric, [
       :absdiff,
-      :xor
+      :hamming
     ]
 
     enum :arch_id, [
@@ -240,6 +240,7 @@ module Evoasm
     attach_evoasm_function :x64_param_get_type, [:x64_param_id], :x64_param_type
 
     attach_evoasm_function :x64_basic_params_init, [:pointer], :void
+    attach_evoasm_function :x64_basic_params_rand, [:pointer, :pointer, :pointer], :void
     attach_evoasm_function :x64_basic_params_alloc, [], :pointer
     attach_evoasm_function :x64_basic_params_free, [:pointer], :void
     attach_evoasm_function :x64_basic_params_set, [:pointer, :x64_basic_param_id, :int64], :void
@@ -250,7 +251,8 @@ module Evoasm
     attach_evoasm_function :param_get_domain, [:pointer], :pointer
 
     attach_evoasm_function :x64_init, [], :bool
-    attach_evoasm_function :x64_insts, [:uint64, :uint64, :uint64, :uint64, :pointer], :size_t
+    attach_evoasm_function :x64_get_insts, [:uint64, :uint64, :uint64, :uint64, :pointer], :size_t
+    attach_evoasm_function :x64_get_inst, [:x64_inst_id], :pointer
 
     attach_evoasm_function :x64_enc, [:x64_inst_id, :pointer, :pointer], :bool
     attach_evoasm_function :x64_enc_basic, [:x64_inst_id, :pointer, :pointer], :bool
@@ -258,7 +260,6 @@ module Evoasm
     attach_evoasm_function :x64_emit_func_prolog, [:x64_abi, :pointer], :bool
     attach_evoasm_function :x64_emit_func_epilog, [:x64_abi, :pointer], :bool
 
-    attach_evoasm_function :x64_inst, [:x64_inst_id], :pointer
     attach_evoasm_function :x64_inst_get_param, [:pointer, :size_t], :pointer
     attach_evoasm_function :x64_inst_get_n_params, [:pointer], :size_t
     attach_evoasm_function :x64_inst_get_operand, [:pointer, :size_t], :pointer

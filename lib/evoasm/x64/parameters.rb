@@ -126,17 +126,10 @@ module Evoasm
       # Creates a random set of parameters for the given instruction
       # and parameters
       # @param [X64::Instruction] instruction
-      # @param [Array<Symbol>] parameter_names
       # @return [X64::Parameters]
-      def self.random(instruction, parameter_names = %i(reg0 reg1 reg2 reg3 imm0), basic: true)
-        parameters = Evoasm::X64::Parameters.new(basic: basic)
-        instruction.parameters.each do |parameter|
-          if parameter_names.include? parameter.name
-            parameter_value = parameter.domain.rand
-            parameters[parameter.name] = parameter_value
-          end
-        end
-
+      def self.random(instruction)
+        parameters = Evoasm::X64::Parameters.new(basic: true)
+        Libevoasm.x64_basic_params_rand parameters, instruction, Evoasm::PRNG.default
         parameters
       end
 
