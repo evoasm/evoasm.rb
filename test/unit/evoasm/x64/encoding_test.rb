@@ -35,10 +35,11 @@ module Evoasm
         assert_disassembles_to 'add r11w, r12w', :add_r16_rm16,
                                reg0: :r11, reg1: :r12
 
+        assert_disassembles_to 'movsx ax, dl', :movsx_r16_rm8,
+                               reg0: :a, reg1: :d
 
         assert_raises Evoasm::Error do
-          assemble 'add r11d, r12d', :add_r32_rm32,
-                   reg0: :xmm11, reg1: :xmm12
+          assemble :add_r32_rm32, reg0: :xmm11, reg1: :xmm12
         end
 
       end
@@ -245,6 +246,7 @@ module Evoasm
           assert_disassembles_to 'add sil, dil', inst,
                                  reg0: :si, reg1: :di
 
+
           assert_raises Evoasm::Error do
             Evoasm::X64.encode :add_r8_rm8,
                                reg0: :si,
@@ -258,6 +260,12 @@ module Evoasm
 
         assert_disassembles_to 'mov sil, 0x10', :mov_r8_imm8,
                                reg0: :si, imm0: 0x10
+
+        assert_disassembles_to 'movsx ax, dl', :movsx_r16_rm8,
+                               reg0: :a, reg1: :d, reg1_high_byte?: false
+
+        assert_disassembles_to 'movsx ax, dh', :movsx_r16_rm8,
+                               reg0: :a, reg1: :d, reg1_high_byte?: true
 
       end
 
