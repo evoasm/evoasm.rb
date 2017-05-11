@@ -6,6 +6,7 @@ module Evoasm
     extend FFI::Library
 
     require 'evoasm/libevoasm/x64_enums'
+    require 'evoasm/libevoasm/enums'
 
     GEM_LIBEVOASM_FILENAME = File.join(Evoasm.ext_dir, 'evoasm_ext', FFI.map_library_name('evoasm'))
     DEV_LIBEVOASM_FILENAME = File.join(Evoasm.root_dir, '..', 'libevoasm', 'cmake-build-debug', FFI.map_library_name('evoasm'))
@@ -77,11 +78,6 @@ module Evoasm
       :int32,
       :int16,
       :int8
-    ]
-
-    enum :metric, [
-      :absdiff,
-      :hamming
     ]
 
     enum :arch_id, [
@@ -238,7 +234,8 @@ module Evoasm
     attach_evoasm_function :x64_params_set, [:pointer, :x64_param_id, :int64], :void
     attach_evoasm_function :x64_params_get, [:pointer, :x64_param_id], :int64
     attach_evoasm_function :x64_param_get_type, [:x64_param_id], :x64_param_type
-    attach_evoasm_function :x64_params_rand, [:pointer, :pointer, :pointer], :void
+    attach_evoasm_function :x64_params_rand, [:pointer, :pointer, :pointer], :bool
+    attach_evoasm_function :x64_params_rand2, [:pointer, :pointer, :pointer, :pointer], :bool
 
     attach_evoasm_function :x64_basic_params_init, [:pointer], :void
     attach_evoasm_function :x64_basic_params_alloc, [], :pointer
@@ -319,7 +316,7 @@ module Evoasm
 
     attach_evoasm_function :pop_seed, [:pointer, :pointer], :bool
     attach_evoasm_function :pop_eval, [:pointer, :size_t], :bool
-    attach_evoasm_function :pop_next_gen, [:pointer], :void
+    attach_evoasm_function :pop_next_gen, [:pointer], :bool
 
     attach_evoasm_function :pop_alloc, [], :pointer
     attach_evoasm_function :pop_destroy, [:pointer], :void
@@ -371,6 +368,8 @@ module Evoasm
     attach_evoasm_function :pop_params_get_param, [:pointer, :size_t], :param_id
     attach_evoasm_function :pop_params_get_seed, [:pointer, :size_t], :uint64
     attach_evoasm_function :pop_params_set_seed, [:pointer, :size_t, :uint64], :void
+    attach_evoasm_function :pop_params_get_dist_metric, [:pointer], :metric
+    attach_evoasm_function :pop_params_set_dist_metric, [:pointer, :metric], :void
     attach_evoasm_function :pop_params_validate, [:pointer], :bool
 
     attach_evoasm_function :prng_init, [:pointer, :pointer], :void

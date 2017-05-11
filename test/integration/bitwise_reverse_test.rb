@@ -2,6 +2,7 @@ require 'evoasm/test'
 require 'evoasm/population'
 require 'population_helper'
 
+Evoasm.log_level = :info
 
 module Evoasm
   class BitwiseReverseTest < Minitest::Test
@@ -26,6 +27,8 @@ module Evoasm
       @domains = {
         imm0: [0b01010101, 0b11001100, 0b00001111, 0b10101010, 0b00110011, 0b11110000, 1, 2, 4]
       }
+      @distance_metric = :hamming
+      @deme_count = 1
 
       start
     end

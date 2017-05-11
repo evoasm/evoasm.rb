@@ -99,7 +99,10 @@ module Evoasm
     # Execute a single generational cycle
     # @return [void]
     def next_generation!
-      Libevoasm.pop_next_gen self
+      success = Libevoasm.pop_next_gen self
+      unless success
+        raise Error.last
+      end
     end
 
     # Stops the process started by {#run}
@@ -130,11 +133,13 @@ module Evoasm
       best_loss = nil
 
       loop do
+        p "loop"
         evaluate
 
         best_loss = self.best_loss
         generation = self.generation
 
+        p "loop1"
         block[self, generation]
 
         break if @stop
@@ -142,7 +147,9 @@ module Evoasm
         break if min_generations_reached && loss && best_loss <= loss
         break if max_generations && generation >= max_generations
 
+        p "loop2"
         next_generation!
+        p "loop3"
       end
 
       @stop = false

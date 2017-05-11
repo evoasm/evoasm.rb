@@ -43,6 +43,7 @@ module Evoasm
       #  reg2: regs,
       #  reg3: regs
       #}
+      @distance_metric = :absdiff
 
       start
     end

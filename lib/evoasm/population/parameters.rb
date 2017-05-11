@@ -73,6 +73,16 @@ module Evoasm
         Libevoasm.pop_params_set_n_demes self, deme_count
       end
 
+      # @!attribute distance_metric
+      # @return [Integer] the metric used for distance calculations
+      def distance_metric
+        Libevoasm.pop_params_get_dist_metric self
+      end
+
+      def distance_metric=(distance_metric)
+        Libevoasm.pop_params_set_dist_metric self, distance_metric
+      end
+
       # @!attribute parameters
       # @return [Array<Symbol>] the list of architecture-dependent instruction parameters to use
       def parameters

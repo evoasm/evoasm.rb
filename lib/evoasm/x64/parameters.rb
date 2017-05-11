@@ -5,11 +5,7 @@ module Evoasm
 
       # @!visibility private
       def self.release(ptr)
-        if ptr.basic?
-          Libevoasm.x64_basic_params_free ptr
-        else
-          Libevoasm.x64_params_free ptr
-        end
+        Libevoasm.x64_params_free ptr
       end
 
       # @!visibility private
@@ -22,7 +18,8 @@ module Evoasm
           end
           parameters
         when Hash
-          new parameters, basic: basic
+          klass = basic ? BasicParameters : Parameters
+          klass.new parameters
         else
           raise ArgumentError, "cannot convert #{parameters.class} into parameter"
         end
@@ -45,8 +42,8 @@ module Evoasm
 
       # @param hash [Hash] a
       # @param basic [Bool] whether to use the basic encoder
-      def initialize(hash = {}, basic: false)
-        if basic
+      def initialize(hash = {})
+        if basic?
           ptr = Libevoasm.x64_basic_params_alloc
           Libevoasm.x64_basic_params_init ptr
         else
@@ -55,13 +52,12 @@ module Evoasm
         end
 
         @param_id_enum_type =
-          if basic
+          if basic?
             Libevoasm.enum_type(:x64_basic_param_id)
           else
             Libevoasm.enum_type(:x64_param_id)
           end
 
-        @basic = basic
         @disp_size_enum_type = Libevoasm.enum_type :x64_disp_size
         @addr_size_enum_type = Libevoasm.enum_type :x64_addr_size
         @scale_enum_type = Libevoasm.enum_type :x64_scale
@@ -120,17 +116,27 @@ module Evoasm
       # Returns whether this parameters are for basic encoding
       # @return [Bool]
       def basic?
-        @basic
+        false
       end
 
       # Creates a random set of parameters for the given instruction
       # and parameters
-      # @param [X64::Instruction] instruction
+      # @param [X64::Instruction, Array<X64::Instruction>] instruction
       # @return [X64::Parameters]
-      def self.random(instruction)
+      def self.random(instruction, other_instruction = nil)
         parameters = Evoasm::X64::Parameters.new
-        Libevoasm.x64_params_rand parameters, instruction, Evoasm::PRNG.default
-        parameters
+        success =
+          if other_instruction
+            Libevoasm.x64_params_rand2 parameters, instruction, other_instruction, Evoasm::PRNG.default
+          else
+            Libevoasm.x64_params_rand parameters, instruction, Evoasm::PRNG.default
+          end
+
+        if success
+         parameters
+        else
+          nil
+        end
       end
 
       # @param parameter_name [Symbol] the parameter's name
@@ -227,5 +233,21 @@ module Evoasm
         id
       end
     end
+
+    class BasicParameters < Parameters
+      # @!visibility private
+      def self.release(ptr)
+        Libevoasm.x64_basic_params_free ptr
+      end
+
+      def random
+        raise NotImplementedError
+      end
+
+      def basic?
+        return true
+      end
+    end
+
   end
 end

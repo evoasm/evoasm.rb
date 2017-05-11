@@ -17,6 +17,7 @@ end
 buffer = Evoasm::Buffer.new 1024, :mmap
 
 def run(buffer, instruction, parameters, cpu_state)
+  #puts "Running #{instruction.name} #{%i(reg0 reg1 reg2 imm0 reg0_high_byte? reg1_high_byte?).map {|p| parameters[p]}.inspect}"
   buffer.reset
   Evoasm::X64.emit_stack_frame buffer do
     cpu_state.emit_load buffer
@@ -26,7 +27,7 @@ def run(buffer, instruction, parameters, cpu_state)
 
   begin
     buffer.execute!
-  rescue Evoasm::ExceptionError
+  rescue Evoasm::ExceptionError => e
   end
 end
 
@@ -36,9 +37,9 @@ COLORS = [[1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 1, 1], [0, 0, 1]].freeze
 
 
 def text_color(bg_color)
-  luminance = 1 - ( 0.299 * bg_color[0] + 0.587 * bg_color[1] + 0.114 * bg_color[2]) / 255.0
+  luminance = 1 - (0.299 * bg_color[0] + 0.587 * bg_color[1] + 0.114 * bg_color[2]) / 255.0
   return 'black' if luminance < 0.5
-  return 'white';
+  'white'
 end
 
 
@@ -69,51 +70,105 @@ end
 
 MAX_ABSDIFF_DIST = 1000
 MAX_HAMMING_DIST = 0.15
+MAX_TRIES = 200
 
-def select_best(instruction_names, dists, max)
-  instruction_names.zip(dists).select{ |_, d| d && d <= max }.sort_by{ |_, d| d}.take(64).to_h
+def select_best(dists)
+  dists.sort_by {|hash| hash[:dist]}
+    .take(64)
 end
 
-instructions.each_with_index do |instruction, index|
+IMMS = [0, 1, -1, +2, -2, -8, 8, 0xFF, 0x0F, 0xF0, 0xFF00, 0xFF00FF00, 0b01010101, 0b10101010, 2**10, 2**15, 2**20, 2**30]
+PARAMS = %i(reg0 reg1 reg2 reg3 imm0)
 
-  absdiff_dists = Array.new(instructions.size, 0)
-  hamming_dists = Array.new(instructions.size, 0)
+param_names_cache = []
+imm_insts = []
 
-  instructions.each_with_index do |other_instruction, other_index|
+instructions.each_with_index do |inst, inst_index|
+  param_names = inst.parameters.map(&:name)
+  param_names_cache[inst_index] = param_names
+  imm_insts[inst_index] = param_names.include? :imm0
+end
 
-    n = 200
-    n.times do
-      parameters = Evoasm::X64::Parameters.random instruction
+instructions.each_with_index do |inst, index|
 
-      cpu_state = Evoasm::X64::CPUState.random
-      other_cpu_state = cpu_state.clone
+  absdiff_dists = []
+  hamming_dists = []
 
-      begin
-        run buffer, instruction, parameters, cpu_state
-        run buffer, other_instruction, parameters, other_cpu_state
+  instructions.each_with_index do |other_inst, other_index|
 
-        absdiff_dist = cpu_state.distance(other_cpu_state, :absdiff)
-        hamming_dist = cpu_state.distance(other_cpu_state, :hamming)
+    n = 20
 
-        if instruction.name == other_instruction.name
-          raise "#{absdiff_dist}" unless absdiff_dist == 0
-          raise "#{hamming_dist}" unless hamming_dist == 0
+    if !imm_insts[index] && imm_insts[other_index]
+      imms = IMMS
+    else
+      imms = [nil]
+    end
+
+    imms.each do |imm|
+
+      mean_absdiff_dist = 0
+      mean_hamming_dist = 0
+
+      actual_n = 0
+      tries = 0
+
+      while actual_n < n && tries < MAX_TRIES
+        parameters = Evoasm::X64::Parameters.random inst, other_inst
+
+        tries += 1
+
+        if parameters.nil?
+          next
         end
 
-        absdiff_dists[other_index] += absdiff_dist / n
-        hamming_dists[other_index] += hamming_dist / n
-      rescue Evoasm::Error => e
-        absdiff_dists[other_index] = nil
-        hamming_dists[other_index] = nil
-        puts e.message
-        break
+        #p [parameters[:reg0], parameters[:reg1], parameters[:reg3]]
+
+        parameters[:imm0] = imm if imm
+
+        cpu_state = Evoasm::X64::CPUState.random
+        other_cpu_state = cpu_state.clone
+
+        begin
+          run buffer, inst, parameters, cpu_state
+          run buffer, other_inst, parameters, other_cpu_state
+
+          absdiff_dist = cpu_state.distance(other_cpu_state, :absdiff)
+          hamming_dist = cpu_state.distance(other_cpu_state, :hamming)
+
+          if inst.name == other_inst.name
+            raise "#{absdiff_dist}" unless absdiff_dist == 0
+            raise "#{hamming_dist}" unless hamming_dist == 0
+          end
+
+          mean_absdiff_dist += absdiff_dist / n
+          mean_hamming_dist += hamming_dist / n
+          actual_n += 1
+        rescue Evoasm::Error => e
+          #puts [e.message, other_instruction.name]
+        end
+      end
+
+      if actual_n > 0
+        if mean_absdiff_dist < MAX_ABSDIFF_DIST || mean_hamming_dist < MAX_HAMMING_DIST
+
+          additional_params = (param_names_cache[other_index] - param_names_cache[index]) & PARAMS
+
+          if mean_absdiff_dist < MAX_ABSDIFF_DIST
+            absdiff_dists << {inst: other_inst.name, dist: mean_absdiff_dist, imm: imm, params: additional_params}
+          end
+
+          if mean_hamming_dist < MAX_HAMMING_DIST
+            hamming_dists << {inst: other_inst.name, dist: mean_hamming_dist, imm: imm, params: additional_params}
+          end
+
+        end
       end
     end
   end
 
   dists[index] = {
-    absdiff: select_best(instruction_names, absdiff_dists, MAX_ABSDIFF_DIST),
-    hamming: select_best(instruction_names, hamming_dists, MAX_HAMMING_DIST),
+    absdiff: select_best(absdiff_dists),
+    hamming: select_best(hamming_dists),
   }
 
   puts "#{(index / instructions.size.to_f * 100).to_i}%"
@@ -126,15 +181,18 @@ html = "<html>"
 html << "<table>"
 instructions.each_with_index do |instruction, index|
 
-  dists[index].each_with_index do |(_, d), index|
+  dists[index].each_with_index do |(_, inst_dists), index|
     html << "<tr>"
     html << %(<th scope="row" rowspan="2">#{instruction.name}</th>) if index == 0
 
     max_dist = index.zero? ? MAX_ABSDIFF_DIST : MAX_HAMMING_DIST
 
-    d.each do |other_instruction_name, dist|
+    inst_dists.each do |hash|
+      dist = hash[:dist]
+      imm = hash[:imm]
+      other_inst_name = hash[:inst]
       bg_color, text_color = heat_color dist, 0, max_dist
-      html << %(<td style="background-color: #{bg_color}; color: #{text_color}">#{other_instruction_name}/#{dist.round 3}</td>)
+      html << %(<td style="background-color: #{bg_color}; color: #{text_color}">#{other_inst_name}/#{dist.round 3} (#{imm})</td>)
     end
     html << "</tr>"
   end
@@ -145,5 +203,5 @@ end
 html << "</table>"
 html << "</html>"
 
-File.write  File.join(__dir__, 'inst_dist.yml'), YAML.dump(instruction_names.zip(dists).to_h)
+File.write File.join(__dir__, 'inst_dist.yml'), YAML.dump(instruction_names.zip(dists).to_h)
 File.write File.join(__dir__, 'inst_dist.html'), html

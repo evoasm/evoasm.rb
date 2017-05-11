@@ -24,6 +24,7 @@ module PopulationHelper
       p.parameters = @parameters
       p.domains = @domains if @domains
       p.seed = @seed if @seed
+      p.distance_metric = @distance_metric
     end
 
     Evoasm::Population.new parameters
