@@ -371,6 +371,8 @@ module Evoasm
     attach_evoasm_function :pop_params_get_dist_metric, [:pointer], :metric
     attach_evoasm_function :pop_params_set_dist_metric, [:pointer, :metric], :void
     attach_evoasm_function :pop_params_validate, [:pointer], :bool
+    attach_evoasm_function :pop_params_get_n_local_search_iters, [:pointer], :size_t
+    attach_evoasm_function :pop_params_set_n_local_search_iters, [:pointer, :size_t], :void
 
     attach_evoasm_function :prng_init, [:pointer, :pointer], :void
     attach_evoasm_function :prng_alloc, [], :pointer

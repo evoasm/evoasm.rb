@@ -83,6 +83,16 @@ module Evoasm
         Libevoasm.pop_params_set_dist_metric self, distance_metric
       end
 
+      # @!attribute local_search_iteration_count
+      # @return [Integer] the number of iterations spent doing local search
+      def local_search_iteration_count
+        Libevoasm.pop_params_get_n_local_search_iters self
+      end
+
+      def local_search_iteration_count=(iteration_count)
+        Libevoasm.pop_params_set_n_local_search_iters self, iteration_count
+      end
+
       # @!attribute parameters
       # @return [Array<Symbol>] the list of architecture-dependent instruction parameters to use
       def parameters

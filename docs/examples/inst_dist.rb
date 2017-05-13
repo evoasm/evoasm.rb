@@ -70,7 +70,7 @@ end
 
 MAX_ABSDIFF_DIST = 1000
 MAX_HAMMING_DIST = 0.15
-MAX_TRIES = 200
+MAX_TRIES = 50
 
 def select_best(dists)
   dists.sort_by {|hash| hash[:dist]}
@@ -96,7 +96,7 @@ instructions.each_with_index do |inst, index|
 
   instructions.each_with_index do |other_inst, other_index|
 
-    n = 20
+    n = 10
 
     if !imm_insts[index] && imm_insts[other_index]
       imms = IMMS
