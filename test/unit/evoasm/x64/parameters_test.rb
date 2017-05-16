@@ -7,7 +7,7 @@ module Evoasm
     class ParametersTest < Minitest::Test
       def setup
         @parameters = Parameters.new
-        @basic_parameters = Parameters.new basic: true
+        @basic_parameters = BasicParameters.new
       end
 
       def test_basic
@@ -30,7 +30,7 @@ module Evoasm
 
       def test_eql
         parameters = Parameters.new
-        basic_parameters = Parameters.new basic: true
+        basic_parameters = BasicParameters.new
 
         assert_equal @parameters, parameters
         assert_equal @basic_parameters, basic_parameters

@@ -31,22 +31,22 @@ module Evoasm
     end
 
     def test_type_domain
-      type_domain = Evoasm::TypeDomain.new :int8
+      type_domain = Evoasm::RangeDomain.new :int8
       assert_equal :int8, type_domain.type
       assert_equal -2**7, type_domain.min
       assert_equal 2**7 - 1, type_domain.max
 
-      type_domain = Evoasm::TypeDomain.new :int16
+      type_domain = Evoasm::RangeDomain.new :int16
       assert_equal :int16, type_domain.type
       assert_equal -2**15, type_domain.min
       assert_equal 2**15 - 1, type_domain.max
 
-      type_domain = Evoasm::TypeDomain.new :int32
+      type_domain = Evoasm::RangeDomain.new :int32
       assert_equal :int32, type_domain.type
       assert_equal -2**31, type_domain.min
       assert_equal 2**31 - 1, type_domain.max
 
-      type_domain = Evoasm::TypeDomain.new :int64
+      type_domain = Evoasm::RangeDomain.new :int64
       assert_equal :int64, type_domain.type
       assert_equal -2**63, type_domain.min
       assert_equal 2**63 - 1, type_domain.max

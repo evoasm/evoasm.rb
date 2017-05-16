@@ -92,9 +92,11 @@ module Evoasm
       end
 
       # Gives the operand's word
+      # @param instruction [Instruction] instruction this parameter belongs to
+      # @param parameters [Parameters] parameters
       # @return [Symbol] the operand word
-      def word
-        Libevoasm.x64_operand_get_word(self)
+      def word(instruction = nil, parameters = nil)
+        Libevoasm.x64_operand_get_word(self, instruction, parameters)
       end
 
       # Returns the operand's register size

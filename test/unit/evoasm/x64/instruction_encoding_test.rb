@@ -697,7 +697,7 @@ module Evoasm
 
           raise if combinations.empty?
           combinations.each do |combination|
-            parameters = Evoasm::X64::Parameters.new(basic: basic)
+            parameters = Evoasm::X64::Parameters.for(basic: basic)
             combination.each do |operand|
               operand.parameter_names.zip(operand.parameter_values) do |name, value|
                 parameters[name] = value

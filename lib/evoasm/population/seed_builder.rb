@@ -50,7 +50,7 @@ module Evoasm
         @kernels.each do |kernel, kernel_index|
           kernel.instructions.each_with_index do |instruction, instruction_index|
             inst_id, params_hash = instruction
-            parameters = Evoasm::X64::Parameters.new(params_hash, basic: true)
+            parameters = Evoasm::X64::BasicParameters.new(params_hash)
             Libevoasm.deme_kernels_set_inst kernels, kernel_index, instruction_index, inst_id, parameters
           end
           Libevoasm.deme_kernels_set_size kernels, kernel_index, kernel.instructions.size

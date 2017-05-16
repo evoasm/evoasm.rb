@@ -35,7 +35,7 @@ module Evoasm
             parameter_name = operand.parameter&.name
             next false if parameter_name.nil?
             parameters[parameter_name] == register
-          end&.word
+          end&.word(instruction, parameters)
 
           [register, word] if word
         end.compact.to_h
@@ -48,37 +48,43 @@ module Evoasm
           100.times do
             parameters = Evoasm::X64::Parameters.random instruction
 
-            cpu_state_before = CPUState.new
-            cpu_state_after = CPUState.new
+            catch :invalid_params do
+              cpu_state_before = CPUState.new
+              cpu_state_after = CPUState.new
 
-            buffer.reset
-            X64.emit_stack_frame buffer do
-              cpu_state_before.emit_store buffer
-              instruction.encode parameters, buffer, basic: true
-              cpu_state_after.emit_store buffer
-            end
+              buffer.reset
+              X64.emit_stack_frame buffer do
+                cpu_state_before.emit_store buffer
+                begin
+                  instruction.encode parameters, buffer
+                rescue Error
+                  throw :invalid_params
+                end
+                cpu_state_after.emit_store buffer
+              end
 
-            begin
-              buffer.execute!
+              begin
+                buffer.execute!
 
-              cpu_state_diff = cpu_state_before.xor cpu_state_after
+                cpu_state_diff = cpu_state_before.xor cpu_state_after
 
-              written_registers = cpu_state_diff.to_h.select do |register, value|
-                # Ignore for now
-                # MXCSR is almost never checked
-                # and does not really affect code flow
-                register != :mxcsr && !value.all? { |v| v == 0 }
-              end.map(&:first)
+                written_registers = cpu_state_diff.to_h.select do |register, value|
+                  # Ignore for now
+                  # MXCSR is almost never checked
+                  # and does not really affect code flow
+                  register != :mxcsr && !value.all? {|v| v == 0}
+                end.map(&:first)
 
-              expected_written_registers = accessed_registers(written_registers, instruction, parameters, :write).keys
-              unexpected_written_registers = written_registers - expected_written_registers
+                expected_written_registers = accessed_registers(written_registers, instruction, parameters, :write).keys
+                unexpected_written_registers = written_registers - expected_written_registers
 
-              assert_empty unexpected_written_registers, "No operand found that writes to #{unexpected_written_registers} ("\
+                assert_empty unexpected_written_registers, "No operand found that writes to #{unexpected_written_registers} ("\
                        "(#{instruction.name} #{parameters.inspect})."\
                        "The following registers have been written to #{written_registers}"
 
-                #buffer.__log__ :warn
-            rescue ExceptionError
+                  #buffer.__log__ :warn
+              rescue ExceptionError
+              end
             end
           end
         end
@@ -91,55 +97,61 @@ module Evoasm
           20.times do
             parameters = Evoasm::X64::Parameters.random instruction
 
-            cpu_state_before = CPUState.new
-            read_registers = accessed_registers(X64.registers, instruction, parameters, :read)
-            read_registers.each do |read_register, _|
-              cpu_state_before[read_register] = Array.new(4) { rand(999999999) }
-            end
-            #p [instruction.name, accessed_registers(X64.registers, instruction, parameters, :read)]
-
-            non_read_registers = X64.registers - accessed_registers(X64.registers, instruction, parameters, :read).keys
-            written_registers = accessed_registers(X64.registers, instruction, parameters, :write)
-            expected_cpu_state_after = nil
-
-            20.times do
-              non_read_registers.each do |non_read_register|
-                value = Array.new(4) { rand(999999999) }
-                #next if non_read_register == :rflags
-                #p [non_read_register, value]
-                cpu_state_before[non_read_register] = value
+            catch(:invalid_params) do
+              cpu_state_before = CPUState.new
+              read_registers = accessed_registers(X64.registers, instruction, parameters, :read)
+              read_registers.each do |read_register, _|
+                cpu_state_before[read_register] = Array.new(4) {rand(999999999)}
               end
-              #parameters = random_parameters(instruction)
+              #p [instruction.name, accessed_registers(X64.registers, instruction, parameters, :read)]
 
-              #p cpu_state_before.get :rflags
+              non_read_registers = X64.registers - accessed_registers(X64.registers, instruction, parameters, :read).keys
+              written_registers = accessed_registers(X64.registers, instruction, parameters, :write)
+              expected_cpu_state_after = nil
 
-              buffer.reset
+              20.times do
+                non_read_registers.each do |non_read_register|
+                  value = Array.new(4) {rand(999999999)}
+                  #next if non_read_register == :rflags
+                  #p [non_read_register, value]
+                  cpu_state_before[non_read_register] = value
+                end
+                #parameters = random_parameters(instruction)
 
-              cpu_state_after = CPUState.new
-              X64.emit_stack_frame buffer do
-                cpu_state_before.emit_load buffer
-                instruction.encode parameters, buffer, basic: true
-                cpu_state_after.emit_store buffer
-              end
+                #p cpu_state_before.get :rflags
 
-              begin
-                #buffer.__log__ :warn
-                buffer.execute!
+                buffer.reset
 
-                if expected_cpu_state_after
-                  written_registers.each do |written_register, written_word|
-                    next if written_register == :rflags
-                    message = "#{written_register} mismatch (#{cpu_state_before[written_register]})"\
-                              "#{non_read_registers}"
-                    #p [instruction.name, parameters, cpu_state_after.to_h]
-                    assert_equal expected_cpu_state_after[written_register, written_word], cpu_state_after[written_register, written_word], message
+                cpu_state_after = CPUState.new
+                X64.emit_stack_frame buffer do
+                  cpu_state_before.emit_load buffer
+                  begin
+                    instruction.encode parameters, buffer
+                  rescue Error
+                    throw :invalid_params
                   end
-                else
-                  #p ["pre", instruction.name, parameters, cpu_state_after.to_h]
-                  expected_cpu_state_after = cpu_state_after
+                  cpu_state_after.emit_store buffer
                 end
 
-              rescue ExceptionError
+                begin
+                  #buffer.__log__ :warn
+                  buffer.execute!
+
+                  if expected_cpu_state_after
+                    written_registers.each do |written_register, written_word|
+                      next if written_register == :rflags
+                      message = "#{written_register} mismatch (#{cpu_state_before[written_register]})"\
+                              "#{non_read_registers}"
+                      #p [instruction.name, parameters, cpu_state_after.to_h]
+                      assert_equal expected_cpu_state_after[written_register, written_word], cpu_state_after[written_register, written_word], message
+                    end
+                  else
+                    #p ["pre", instruction.name, parameters, cpu_state_after.to_h]
+                    expected_cpu_state_after = cpu_state_after
+                  end
+
+                rescue ExceptionError
+                end
               end
             end
           end

@@ -74,10 +74,14 @@ module Evoasm
     enum :domain_type, [
       :enum,
       :range,
-      :int64,
-      :int32,
+    ]
+
+    enum :range_domain_type, [
+      :int8,
       :int16,
-      :int8
+      :int32,
+      :int64,
+      :custom
     ]
 
     enum :arch_id, [
@@ -273,7 +277,7 @@ module Evoasm
     attach_evoasm_function :x64_operand_is_implicit, [:pointer], :bool
     attach_evoasm_function :x64_operand_is_mnem, [:pointer], :bool
     attach_evoasm_function :x64_operand_get_type, [:pointer], :x64_operand_type
-    attach_evoasm_function :x64_operand_get_word, [:pointer], :x64_operand_word
+    attach_evoasm_function :x64_operand_get_word, [:pointer, :pointer, :pointer], :x64_operand_word
     attach_evoasm_function :x64_operand_get_size, [:pointer], :x64_operand_size
     attach_evoasm_function :x64_operand_get_reg_size, [:pointer], :x64_operand_size
     attach_evoasm_function :x64_operand_get_index_reg_size, [:pointer], :x64_operand_size
@@ -387,6 +391,7 @@ module Evoasm
 
     attach_evoasm_function :enum_domain_get_len, [:pointer], :size_t
     attach_evoasm_function :enum_domain_get_val, [:pointer, :size_t], :int64
+    attach_evoasm_function :range_domain_get_type, [:pointer], :range_domain_type
     attach_evoasm_function :domain_alloc, [], :pointer
     attach_evoasm_function :domain_free, [:pointer], :void
     attach_evoasm_function :domain_rand, [:pointer, :pointer], :int64

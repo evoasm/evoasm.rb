@@ -42,6 +42,7 @@ module Evoasm
 
       def new(type, var_args)
         ptr = Libevoasm.domain_alloc
+
         success = Libevoasm.domain_init ptr, type, *var_args
 
         if success
@@ -98,19 +99,23 @@ module Evoasm
 
   # @!visibility private
   class RangeDomain < Domain
-    def self.new(min, max)
-      super(:range, [:int64, min, :int64, max])
-    end
-  end
+    def self.new(min_or_type, max = nil)
+      if max.nil?
+        range_type = min_or_type
+        min = 0
+        max = 0
+      else
+        range_type = :custom
+        min = min_or_type
+        max = max
+      end
 
-  # @!visibility private
-  class TypeDomain < Domain
-    def self.new(type)
-      super(type, [])
+      range_type_value = Libevoasm.enum_type(:range_domain_type).find range_type
+      super(:range, [:int, range_type_value, :int64, min, :int64, max])
     end
 
     def type
-      Libevoasm.domain_get_type self
+      Libevoasm.range_domain_get_type self
     end
   end
 end

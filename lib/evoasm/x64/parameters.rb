@@ -9,7 +9,7 @@ module Evoasm
       end
 
       # @!visibility private
-      def self.for(parameters, basic: false)
+      def self.for(parameters = {}, basic: false)
         case parameters
         when self
           if basic && !parameters.basic?
@@ -133,7 +133,7 @@ module Evoasm
           end
 
         if success
-         parameters
+          parameters
         else
           nil
         end
