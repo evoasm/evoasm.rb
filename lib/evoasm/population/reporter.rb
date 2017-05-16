@@ -58,7 +58,7 @@ module Evoasm
           if deme_index == @deme_count - 1
             $stdout.write "\n"
           else
-            $stdout.write "\t"
+            $stdout.write "\t\t"
           end
         end
       end

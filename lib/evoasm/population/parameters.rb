@@ -151,6 +151,16 @@ module Evoasm
         end
       end
 
+      # @!attribute tournament_size
+      # @return [Integer] the tournament size used for selection
+      def tournament_size
+       Libevoasm.pop_params_get_tourn_size self
+      end
+
+      def tournament_size=(tournament_size)
+        Libevoasm.pop_params_set_tourn_size(self, tournament_size)
+      end
+
       # Validate the parameters
       # @raise [Error] if the parameters are invalid
       def validate!

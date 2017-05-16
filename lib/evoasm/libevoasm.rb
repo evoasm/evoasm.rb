@@ -347,20 +347,21 @@ module Evoasm
     attach_evoasm_function :pop_params_init, [:pointer], :void
     attach_evoasm_function :pop_params_get_kernel_input, [:pointer], :pointer
     attach_evoasm_function :pop_params_get_kernel_output, [:pointer], :pointer
-    attach_evoasm_function :pop_params_get_n_insts, [:pointer], :size_t
+    attach_evoasm_function :pop_params_get_n_insts, [:pointer], :uint16
     attach_evoasm_function :pop_params_get_inst, [:pointer, :size_t], :inst_id
-    attach_evoasm_function :pop_params_get_deme_size, [:pointer], :size_t
-    attach_evoasm_function :pop_params_set_deme_size, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_get_n_demes, [:pointer], :size_t
-    attach_evoasm_function :pop_params_set_n_demes, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_get_example_win_size, [:pointer], :size_t
-    attach_evoasm_function :pop_params_set_example_win_size, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_set_min_kernel_size, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_set_max_kernel_size, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_get_min_kernel_size, [:pointer], :size_t
-    attach_evoasm_function :pop_params_get_max_kernel_size, [:pointer], :size_t
-    attach_evoasm_function :pop_params_set_recur_limit, [:pointer, :size_t], :void
-    attach_evoasm_function :pop_params_set_n_insts, [:pointer, :size_t], :void
+    attach_evoasm_function :pop_params_get_deme_size, [:pointer], :uint16
+    attach_evoasm_function :pop_params_set_deme_size, [:pointer, :uint16], :void
+    attach_evoasm_function :pop_params_get_n_demes, [:pointer], :uint16
+    attach_evoasm_function :pop_params_set_n_demes, [:pointer, :uint16], :void
+    attach_evoasm_function :pop_params_get_tourn_size, [:pointer], :uint8
+    attach_evoasm_function :pop_params_set_tourn_size, [:pointer, :uint8], :void
+    attach_evoasm_function :pop_params_get_example_win_size, [:pointer], :uint16
+    attach_evoasm_function :pop_params_set_example_win_size, [:pointer, :uint16], :void
+    attach_evoasm_function :pop_params_set_min_kernel_size, [:pointer, :uint16], :void
+    attach_evoasm_function :pop_params_set_max_kernel_size, [:pointer, :uint16], :void
+    attach_evoasm_function :pop_params_get_min_kernel_size, [:pointer], :uint16
+    attach_evoasm_function :pop_params_get_max_kernel_size, [:pointer], :uint16
+    attach_evoasm_function :pop_params_set_n_insts, [:pointer, :uint16], :void
     attach_evoasm_function :pop_params_set_kernel_input, [:pointer, :pointer], :void
     attach_evoasm_function :pop_params_set_kernel_output, [:pointer, :pointer], :void
     attach_evoasm_function :pop_params_set_inst, [:pointer, :size_t, :inst_id], :void

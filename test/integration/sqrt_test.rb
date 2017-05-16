@@ -36,6 +36,7 @@ module Evoasm
       @deme_size = 3000
       @kernel_size = 100
       @parameters = %i(reg0 reg1 reg2 reg3)
+      @distance_metric = :absdiff
       #regs = %i(xmm0 xmm1 xmm2 xmm3)
       #@domains = {
       #  reg0: regs,
@@ -44,6 +45,7 @@ module Evoasm
       #  reg3: regs
       #}
       @distance_metric = :absdiff
+      @local_search_iteration_count = 0
 
       start
     end
