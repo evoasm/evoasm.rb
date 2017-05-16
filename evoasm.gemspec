@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
   spec.extensions    = %w(ext/evoasm_ext/Rakefile)
 
-  spec.add_dependency 'pastel', '~> 0.6'
+  spec.add_dependency 'colorize', '~> 0.8'
   spec.add_dependency 'ffi', '~> 1.9'
 
   spec.add_development_dependency 'bundler', '~> 1.7'

@@ -34,6 +34,7 @@ module PopulationHelper
   def start(loss = 0.0, min_generations: 0, max_generations: 1024, &block)
     @population = new_population
     @found_kernel = nil
+    last_report_generation = nil
 
     @found_kernel, loss = @population.run(loss: loss, min_generations: min_generations, max_generations: max_generations) do |population, generation|
       best_loss = @population.best_loss
@@ -45,8 +46,8 @@ module PopulationHelper
         block[@population]
       end
 
-      if generation % 10
-        @population.plot
+      if last_report_generation.nil? || generation - last_report_generation > 5
+        @population.report
       end
 
     end

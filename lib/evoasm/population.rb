@@ -119,6 +119,13 @@ module Evoasm
       @plotter.plot
     end
 
+    # Prints population statistics to the terminal
+    def report
+      @reporter ||= Reporter.new self
+      @reporter.update
+      @reporter.report
+    end
+
     # Starts the evolutionary process on this population
     # @param loss [Float] stop process if a kernel is found whose loss is less or equal than the specified loss
     # @param min_generations [Integer] minimum number of generations to run
@@ -133,13 +140,11 @@ module Evoasm
       best_loss = nil
 
       loop do
-        p "loop"
         evaluate
 
         best_loss = self.best_loss
         generation = self.generation
 
-        p "loop1"
         block[self, generation]
 
         break if @stop
@@ -147,9 +152,7 @@ module Evoasm
         break if min_generations_reached && loss && best_loss <= loss
         break if max_generations && generation >= max_generations
 
-        p "loop2"
         next_generation!
-        p "loop3"
       end
 
       @stop = false
@@ -163,3 +166,4 @@ end
 require 'evoasm/population/parameters'
 require 'evoasm/population/seed_builder'
 require 'evoasm/population/plotter'
+require 'evoasm/population/reporter'
