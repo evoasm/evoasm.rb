@@ -13,6 +13,7 @@ module Evoasm
 
     lib_filename =
       if !ARGV.include?('--use-gem-libevoasm') && File.exist?(DEV_LIBEVOASM_FILENAME)
+        puts "Using internal libevoasm"
         DEV_LIBEVOASM_FILENAME
       else
         GEM_LIBEVOASM_FILENAME

@@ -15,7 +15,7 @@ if ARGV.include?('--debug')
   CFLAGS << ' -ggdb3 -O0'
 else
   DEFS << ' -DNDEBUG'
-  CFLAGS << ' -O3 -march=native'
+  CFLAGS << ' -O3 -g -march=native'
 end
 
 if ARGV.include?('--paranoid')
