@@ -1,7 +1,6 @@
 require 'bundler/gem_tasks'
 require 'rake/testtask'
 
-require 'evoasm/gen'
 
 import 'ext/evoasm_ext/compile.rake'
 
@@ -24,9 +23,12 @@ task :test => ['test:unit', 'test:integration']
 task :default => :test
 
 
-require 'evoasm/gen'
-Evoasm::Gen::GenTask.new 'lib/evoasm/libevoasm' do |t|
-  t.file_types = %i(ruby_ffi)
+begin
+  require 'evoasm/gen'
+  Evoasm::Gen::GenTask.new 'lib/evoasm/libevoasm' do |t|
+    t.file_types = %i(ruby_ffi)
+  end
+rescue LoadError
 end
 
 begin
