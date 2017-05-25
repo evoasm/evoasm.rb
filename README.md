@@ -16,23 +16,31 @@ Currently, the only supported architecture is **x86-64**.
 * Fast JIT
 * [x86-64](https://github.com/evoasm/evoasm-gen/blob/master/data/tables/x64.csv) up to AVX2 (no FPU)
 * Lightweight backend [C library](https://github.com/evoasm/libevoasm) with no third-party dependencies
+* Support for floating-point and integer inputs/outputs including SIMD vectors
+* Automatically generated and verified instruction encoder
 * Ruby bindings
 
 ## Installation
 
-    $ gem install evoasm --pre
+    $ git clone https://github.com/evoasm/evoasm
+    $ bundle install --without development test
+    $ bundle exec rake compile # compile libevoasm
+    $ bundle exec ruby docs/examples/sym_reg.rb # run example
 
 ### Requirements
 
-* Ruby (MRI >= 2.3, JRuby >= 9.1.2)
+* Ruby (MRI >= 2.3)
 * [Capstone](http://www.capstone-engine.org/) for disassembling (*optional*).
 * [Gnuplot](http://gnuplot.sourceforge.net) for visualizing loss functions (*optional*)
 * POSIX-compliant OS (Linux and Mac OS X should both work).
 
+
 ## Documentation
 
-Please see the [API documentation](https://evoasm.github.io/evoasm/doc/) or
-have a look at the [examples](https://evoasm.github.io/evoasm/doc/file.SymbolicRegression.html).
+Please see the [API documentation](https://evoasm.github.io/evoasm/doc/),
+have a look at the [examples](https://evoasm.github.io/evoasm/doc/file.SymbolicRegression.html)
+or the [test cases](https://github.com/evoasm/evoasm/tree/master/test/integration).
+
 
 ## Contributing
 
