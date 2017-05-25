@@ -11,7 +11,7 @@ end
 
 p expression
 
-examples = (0..100).step(0.5).map do |x|
+examples = (0..10).map do |x|
   [x, ExpressionScope.module_eval(expression)]
 end.to_h
 
@@ -19,7 +19,7 @@ parameters = Evoasm::Population::Parameters.new do |p|
   p.instructions = Evoasm::X64.instruction_names(:xmm)
   p.examples = examples
   p.deme_size = 1024
-  p.deme_count = 1
+  p.deme_count = 4
   p.kernel_size = 10
   p.distance_metric = :absdiff
   p.parameters = %i(reg0 reg1 reg2 reg3)
@@ -41,14 +41,18 @@ end
 puts
 
 population = Evoasm::Population.new parameters
-kernel, loss = population.run do
+kernel, loss = population.run max_generations: 1000 do
   population.report
 end
 
 puts kernel.disassemble format: true
 
-puts
 
 kernel = kernel.eliminate_introns
 puts kernel.disassemble format: true
 
+puts "Average loss is #{loss}"
+puts "x\texpected\tactual"
+examples.each do |x, y|
+  puts "#{x}\t#{y.round(3)}\t#{kernel.run(x).round(3)}"
+end
