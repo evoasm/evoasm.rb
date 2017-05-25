@@ -18,13 +18,15 @@ Currently, the only supported architecture is **x86-64**.
 * Lightweight backend [C library](https://github.com/evoasm/libevoasm) with no third-party dependencies
 * Support for floating-point and integer inputs/outputs including SIMD vectors
 * Automatically generated and verified instruction encoder
+* Parallel island model using OpenMP
 * Ruby bindings
 
 ## Installation
 
-    $ git clone https://github.com/evoasm/evoasm
-    $ bundle install --without development test
-    $ bundle exec rake compile # compile libevoasm
+    $ git clone --recursive https://github.com/evoasm/evoasm
+    $ bundle install
+    # compile libevoasm, omit --no-omp if your compiler has OpenMP support
+    $ bundle exec rake compile -- --no-omp
     $ bundle exec ruby docs/examples/sym_reg.rb # run example
 
 ### Requirements
