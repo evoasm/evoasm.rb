@@ -145,7 +145,7 @@ module Evoasm
         best_loss = self.best_loss
         generation = self.generation
 
-        block[self, generation]
+        block[self, generation] if block
 
         break if @stop
         min_generations_reached = min_generations.nil? || generation >= min_generations
