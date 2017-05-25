@@ -24,7 +24,7 @@ parameters = Evoasm::Population::Parameters.new do |p|
   p.distance_metric = :absdiff
   p.parameters = %i(reg0 reg1 reg2 reg3)
 
-  regs = %i(xmm0 xmm1 xmm2 xmm3)
+  regs = %i(xmm0 xmm1 xmm2 xmm3 imm0)
 
   p.domains = {
     reg0: regs,
@@ -41,12 +41,13 @@ end
 puts
 
 population = Evoasm::Population.new parameters
-kernel, loss = population.run max_generations: 1000 do
+kernel, loss = population.run loss: 0.0, max_generations: 100000 do
   population.report
 end
 
 puts kernel.disassemble format: true
 
+puts
 
 kernel = kernel.eliminate_introns
 puts kernel.disassemble format: true

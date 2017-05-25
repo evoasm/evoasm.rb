@@ -149,7 +149,8 @@ module Evoasm
 
         break if @stop
         min_generations_reached = min_generations.nil? || generation >= min_generations
-        break if min_generations_reached && loss && best_loss <= loss
+        loss_reached = loss && best_loss <= loss
+        break if min_generations_reached && loss_reached
         break if max_generations && generation >= max_generations
 
         next_generation!

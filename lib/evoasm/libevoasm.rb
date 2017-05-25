@@ -11,10 +11,13 @@ module Evoasm
     GEM_LIBEVOASM_FILENAME = File.join(Evoasm.ext_dir, 'evoasm_ext', FFI.map_library_name('evoasm'))
     DEV_LIBEVOASM_FILENAME = File.join(Evoasm.root_dir, '..', 'libevoasm', 'cmake-build-debug', FFI.map_library_name('evoasm'))
 
+    USE_GEM_LIBEVOASM_OPTION = '--use-gem-libevoasm'
+
     lib_filename =
-      if !ARGV.include?('--use-gem-libevoasm') && File.exist?(DEV_LIBEVOASM_FILENAME)
+      if !ARGV.include?(USE_GEM_LIBEVOASM_OPTION) && File.exist?(DEV_LIBEVOASM_FILENAME)
         DEV_LIBEVOASM_FILENAME
       else
+        ARGV.delete USE_GEM_LIBEVOASM_OPTION
         puts "Using internal libevoasm"
         GEM_LIBEVOASM_FILENAME
       end
