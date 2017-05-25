@@ -28,7 +28,8 @@ begin
   Evoasm::Gen::GenTask.new 'lib/evoasm/libevoasm' do |t|
     t.file_types = %i(ruby_ffi)
   end
-rescue LoadError
+rescue LoadError => e
+  puts "Generator tasks disabled (#{e})"
 end
 
 begin
@@ -36,30 +37,35 @@ begin
   Evoasm::Scrapers::X64.new do |t|
     t.output_filename = Evoasm::Tasks::GenTask::X64_TABLE_FILENAME
   end
-rescue LoadError
+rescue LoadError => e
+  puts "Scraper tasks disabled (#{e})"
 end
 
-namespace :yard do
+begin
   require 'yard'
-  YARD::Rake::YardocTask.new :build do |t|
-    t.files   = %w(lib/**/*.rb - docs/**/*.md)
-    t.options = %w(--asset docs/examples:examples)
-  end
+  namespace :yard do
+    YARD::Rake::YardocTask.new :build do |t|
+      t.files = %w(lib/**/*.rb - docs/**/*.md)
+      t.options = %w(--asset docs/examples:examples)
+    end
 
-  desc "Push YARD documentation to GitHub Pages"
-  task :push => :build do
-    tmp_dir = Dir.mktmpdir
-    cp_r 'doc', tmp_dir
-    sh 'git checkout gh-pages'
-    rm_r 'doc'
-    mv File.join(tmp_dir, 'doc'), 'doc'
-    sh 'git add "doc/*"'
-    sh 'git commit -m "Update documentation"'
-    sh 'git push origin gh-pages'
-    sh 'git checkout master'
-    remove_entry tmp_dir
-  end
+    desc "Push YARD documentation to GitHub Pages"
+    task :push => :build do
+      tmp_dir = Dir.mktmpdir
+      cp_r 'doc', tmp_dir
+      sh 'git checkout gh-pages'
+      rm_r 'doc'
+      mv File.join(tmp_dir, 'doc'), 'doc'
+      sh 'git add "doc/*"'
+      sh 'git commit -m "Update documentation"'
+      sh 'git push origin gh-pages'
+      sh 'git checkout master'
+      remove_entry tmp_dir
+    end
 
+  end
+rescue LoadError => e
+  puts "YARD tasks disabled (#{e})"
 end
 
 
