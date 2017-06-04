@@ -273,6 +273,7 @@ module Evoasm
     attach_evoasm_function :x64_inst_enc, [:pointer, :pointer, :pointer], :bool
     attach_evoasm_function :x64_inst_enc_basic, [:pointer, :pointer, :pointer], :bool
     attach_evoasm_function :x64_inst_is_basic, [:pointer], :bool
+    attach_evoasm_function :x64_inst_get_operand_idx, [:pointer, :pointer], :ssize_t
 
     attach_evoasm_function :x64_operand_get_param_idx, [:pointer], :size_t
     attach_evoasm_function :x64_operand_is_read, [:pointer], :bool
@@ -281,7 +282,7 @@ module Evoasm
     attach_evoasm_function :x64_operand_is_implicit, [:pointer], :bool
     attach_evoasm_function :x64_operand_is_mnem, [:pointer], :bool
     attach_evoasm_function :x64_operand_get_type, [:pointer], :x64_operand_type
-    attach_evoasm_function :x64_operand_get_word, [:pointer, :pointer, :pointer], :x64_operand_word
+    attach_evoasm_function :x64_operand_get_word, [:pointer, :pointer, :pointer, :bool], :x64_operand_word
     attach_evoasm_function :x64_operand_get_size, [:pointer], :x64_operand_size
     attach_evoasm_function :x64_operand_get_reg_size, [:pointer], :x64_operand_size
     attach_evoasm_function :x64_operand_get_index_reg_size, [:pointer], :x64_operand_size
@@ -289,6 +290,8 @@ module Evoasm
     attach_evoasm_function :x64_operand_get_reg_type, [:pointer], :x64_reg_type
     attach_evoasm_function :x64_operand_get_reg_id, [:pointer], :x64_reg_id
     attach_evoasm_function :x64_operand_get_imm, [:pointer], :int8
+
+    attach_evoasm_function :x64_operand_word_get_mask, [:x64_operand_word, :pointer], :bool
 
     attach_evoasm_function :kernel_destroy, [:pointer], :bool
     attach_evoasm_function :kernel_alloc, [], :pointer
@@ -304,8 +307,8 @@ module Evoasm
     attach_evoasm_function :kernel_get_output_arity, [:pointer], :size_t
 
     attach_evoasm_function :kernel_elim_introns, [:pointer, :pointer], :bool
-    attach_evoasm_function :kernel_is_input_reg, [:pointer, :size_t, :uint8], :bool
-    attach_evoasm_function :kernel_is_output_reg, [:pointer, :size_t, :uint8], :bool
+    attach_evoasm_function :kernel_is_input_reg, [:pointer, :uint8], :bool
+    attach_evoasm_function :kernel_is_output_reg, [:pointer, :uint8], :bool
     attach_evoasm_function :kernel_get_output_reg, [:pointer, :size_t], :reg_id
     attach_evoasm_function :kernel_get_arity, [:pointer], :size_t
 
@@ -343,6 +346,14 @@ module Evoasm
 
     attach_evoasm_function :deme_kernels_set_inst, [:pointer, :size_t, :size_t, :inst_id, :pointer], :void
     attach_evoasm_function :deme_kernels_set_size, [:pointer, :size_t, :size_t], :void
+
+    attach_evoasm_function :bitmap_alloc, [:size_t], :pointer
+    attach_evoasm_function :bitmap_free, [:pointer], :void
+    attach_evoasm_function :bitmap_init, [:pointer, :size_t], :void
+    attach_evoasm_function :bitmap_get, [:pointer, :size_t], :bool
+    attach_evoasm_function :bitmap_set, [:pointer, :size_t], :void
+    attach_evoasm_function :bitmap_unset, [:pointer, :size_t], :void
+    attach_evoasm_function :bitmap_set_to, [:pointer, :size_t, :bool], :void
 
     # attach_evoasm_function :pop_params_get_mut_rate, [:pointer], :float
     attach_evoasm_function :pop_params_get_n_params, [:pointer], :uint8

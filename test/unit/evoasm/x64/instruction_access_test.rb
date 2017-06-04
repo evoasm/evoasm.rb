@@ -18,27 +18,52 @@ module Evoasm
         :alpha
       end
 
-      def accessed_registers(registers, instruction, parameters, mode)
+      def accessed_operand(register, instruction, parameters, mode)
+        instruction.operands.find do |operand|
+          case mode
+          when :write
+            next false unless operand.written? || operand.maybe_written?
+          when :read
+            next false unless operand.read?
+          else
+            raise
+          end
+
+          next true if operand.register == register
+
+          parameter_name = operand.parameter&.name
+          next false if parameter_name.nil?
+          parameters[parameter_name] == register
+        end
+      end
+
+      def accessed_registers(registers, instruction, parameters, mode, only_registers: false, include_operand_index: false, word_mask: false)
         registers.map do |register|
-          word = instruction.operands.find do |operand|
-            case mode
-            when :write
-              next false unless operand.written? || operand.maybe_written?
-            when :read
-              next false unless operand.read?
-            else
-              raise
+          operand = accessed_operand register, instruction, parameters, mode
+
+          if operand
+            word = operand.word(mode, parameters)
+
+            if word
+              if only_registers
+                register
+              else
+                tuple = [register]
+                if word_mask
+                  tuple << operand.word_mask(mode, parameters)
+                else
+                  tuple << word
+                end
+
+                if include_operand_index
+                  tuple << operand_index
+                end
+
+                tuple
+              end
             end
-
-            next true if operand.register == register
-
-            parameter_name = operand.parameter&.name
-            next false if parameter_name.nil?
-            parameters[parameter_name] == register
-          end&.word(instruction, parameters)
-
-          [register, word] if word
-        end.compact.to_h
+          end
+        end.compact
       end
 
       def self.define_write_test(instruction)
@@ -75,7 +100,7 @@ module Evoasm
                   register != :mxcsr && !value.all? {|v| v == 0}
                 end.map(&:first)
 
-                expected_written_registers = accessed_registers(written_registers, instruction, parameters, :write).keys
+                expected_written_registers = accessed_registers(written_registers, instruction, parameters, :write, only_registers: true)
                 unexpected_written_registers = written_registers - expected_written_registers
 
                 assert_empty unexpected_written_registers, "No operand found that writes to #{unexpected_written_registers} ("\
@@ -88,6 +113,91 @@ module Evoasm
             end
           end
         end
+      end
+
+      EXPECTED_MASK = [0, 0, 0, 0, 0, 0, 0, 0]
+
+      def self.define_partial_write_test(instruction)
+        define_method :"test_#{instruction.name}_partial_writes" do
+          buffer = Evoasm::Buffer.new 1024, :mmap
+
+          masks = instruction.operands.map do |operand|
+            next nil if operand.register_type == :rflags
+            operand.word_mask :write
+          end
+
+          p [instruction.name, masks]
+
+          500.times do
+
+            parameters = Evoasm::X64::Parameters.random instruction
+            parameters[:reg0_high_byte?] = false
+            parameters[:reg1_high_byte?] = false
+
+            catch :invalid_params do
+              cpu_state_before = CPUState.random
+              cpu_state_after = cpu_state_before.clone #CPUState.new
+
+              buffer.reset
+              X64.emit_stack_frame buffer do
+                cpu_state_before.emit_store buffer
+                begin
+                  instruction.encode parameters, buffer
+                rescue Error
+                  throw :invalid_params
+                end
+                cpu_state_after.emit_store buffer
+              end
+
+              begin
+                buffer.execute!
+
+                cpu_state_diff = cpu_state_before.xor cpu_state_after
+
+                writes = cpu_state_diff.to_h.select do |register, values|
+                  # Ignore for now
+                  # MXCSR is almost never checked
+                  # and does not really affect code flow
+                  register != :mxcsr && register != :rflags && !values.all? {|v| v == 0}
+                end
+                written_registers = writes.map(&:first)
+
+                #expected_written_registers = accessed_registers(written_registers, instruction, parameters, :write, include_operand_index: true, word_mask: true)
+
+                writes.each do |register, values|
+                  operand = accessed_operand register, instruction, parameters, :write
+                  values.each_with_index do |value, value_index|
+                      masks[operand.index][value_index] &= ~value
+                  end
+                end
+
+                  # p expected_written_registers
+                  # p accessed_registers(written_registers, instruction, parameters, :write)
+
+                  # unexpected_written_registers = written_registers - expected_written_registers
+                  #
+                  # assert_empty unexpected_written_registers, "No operand found that writes to #{unexpected_written_registers} ("\
+                  #        "(#{instruction.name} #{parameters.inspect})."\
+                  #        "The following registers have been written to #{written_registers}"
+                  #
+                  #   #buffer.__log__ :warn
+              rescue ExceptionError
+              end
+            end
+          end
+
+          masks.each_with_index do |mask, index|
+            if mask
+              if mask != EXPECTED_MASK
+                operand = instruction.operand index
+                p [instruction.name, operand.parameter&.name, operand.type, index, operand.word(:write), operand.word_mask(:write)[0].to_s(2), mask, mask[0].to_s(2)]
+              end
+              assert_equal EXPECTED_MASK, mask
+            end
+          end
+          p [instruction.name, masks]
+        end
+
       end
 
       def self.define_read_test(instruction)
@@ -105,7 +215,7 @@ module Evoasm
               end
               #p [instruction.name, accessed_registers(X64.registers, instruction, parameters, :read)]
 
-              non_read_registers = X64.registers - accessed_registers(X64.registers, instruction, parameters, :read).keys
+              non_read_registers = X64.registers - accessed_registers(X64.registers, instruction, parameters, :read, only_registers: true)
               written_registers = accessed_registers(X64.registers, instruction, parameters, :write)
               expected_cpu_state_after = nil
 
@@ -165,6 +275,7 @@ module Evoasm
         next if instruction.name == :std
 
         define_write_test instruction
+        define_partial_write_test instruction
 
         next if instruction.name =~ /^cmov/
         #next if instruction.name =~ /^pins/

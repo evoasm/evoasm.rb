@@ -81,7 +81,7 @@ module Evoasm
   # @!visibility private
   class EnumerationDomain < Domain
     def self.new(*values)
-      values = values.flatten
+      values = values.flatten.sort
       var_args = [:uint, values.size, *values.flat_map { |v| [:int64, v]}]
       super(:enum, var_args)
     end

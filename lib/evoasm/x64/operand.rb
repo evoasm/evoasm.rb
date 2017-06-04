@@ -1,3 +1,5 @@
+require 'evoasm/bitmap'
+
 module Evoasm
   module X64
     # Represents a formal instruction operand
@@ -81,8 +83,12 @@ module Evoasm
       # Returns the operand's register type (e.g. if implicit) if available
       # @return [Symbol, nil] the operand's register type or nil if there is none
       def register_type
-        reg_type = Libevoasm.x64_operand_get_reg_type self
-        reg_type == :none ? nil : reg_type
+        if type == :rm || type == :reg
+          reg_type = Libevoasm.x64_operand_get_reg_type self
+          reg_type == :none ? nil : reg_type
+        else
+          nil
+        end
       end
 
       # Gives the operand's size
@@ -92,11 +98,37 @@ module Evoasm
       end
 
       # Gives the operand's word
+      # @param mode [:read, :write] the access mode
       # @param instruction [Instruction] instruction this parameter belongs to
       # @param parameters [Parameters] parameters
       # @return [Symbol] the operand word
-      def word(instruction = nil, parameters = nil)
-        Libevoasm.x64_operand_get_word(self, instruction, parameters)
+      def word(mode, parameters = nil, mask: false)
+        word = Libevoasm.x64_operand_get_word(self, @instruction, parameters, mode == :read)
+        if word && mask
+          mask = Bitmap.new 512
+          Libevoasm.x64_operand_word_get_mask(word, mask)
+          mask
+        else
+          word
+        end
+      end
+
+      def word_mask(mode, parameters = nil)
+        word = Libevoasm.x64_operand_get_word(self, @instruction, parameters, mode == :read)
+        if word && word != :none
+          #mask = Bitmap.new 512
+          mask = FFI::MemoryPointer.new :uint64, 8
+          Libevoasm.x64_operand_word_get_mask(word, mask)
+          mask.read_array_of_uint64 8
+        else
+          nil
+        end
+      end
+
+      def index
+        index = Libevoasm.x64_inst_get_operand_idx @instruction, self
+        return nil if index == -1
+        index
       end
 
       # Returns the operand's register size
