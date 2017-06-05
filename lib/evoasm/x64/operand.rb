@@ -45,6 +45,19 @@ module Evoasm
         Libevoasm.x64_operand_is_implicit self
       end
 
+      def inspect(parameters = nil)
+        info = case type
+               when :reg, :rm
+                 "#{register_type}:#{register parameters}"
+               when :imm
+                 "imm:#{immediate}"
+               when :mem
+                 'mem'
+               end
+
+        "#<#{self.class.inspect} #{index} #{info}>"
+      end
+
       # Returns whether this operand is explicit
       def explicit?
         !implicit?
@@ -58,10 +71,23 @@ module Evoasm
 
       # Returns the operand's register (e.g. if implicit) if available
       # @return [Symbol, nil] the operand's register or nil if there is none
-      def register
+      def register(parameters = nil)
         if type == :rm || type == :reg
           reg_id = Libevoasm.x64_operand_get_reg_id self
-          reg_id == :none ? nil : reg_id
+          if reg_id == :none
+            if parameters
+              parameter_name = parameter&.name
+              if parameter_name
+                parameters[parameter_name]
+              else
+                nil
+              end
+            else
+              nil
+            end
+          else
+            reg_id
+          end
         else
           nil
         end

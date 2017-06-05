@@ -29,6 +29,11 @@ module Evoasm
         data = (1..4).to_a
         @cpu_state[:xmm0] = data
         assert_equal data, @cpu_state[:xmm0]
+
+        data = (1..2).to_a
+        @cpu_state[:mm0] = data
+        assert_equal data, @cpu_state[:mm0]
+
       end
 
       def test_clone

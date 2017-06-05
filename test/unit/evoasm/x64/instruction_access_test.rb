@@ -116,17 +116,18 @@ module Evoasm
       end
 
       EXPECTED_MASK = [0, 0, 0, 0, 0, 0, 0, 0]
-
       def self.define_partial_write_test(instruction)
         define_method :"test_#{instruction.name}_partial_writes" do
           buffer = Evoasm::Buffer.new 1024, :mmap
 
           masks = instruction.operands.map do |operand|
-            next nil if operand.register_type == :rflags
-            operand.word_mask :write
+            next nil if operand.register_type == :rflags || operand.register_type == :mxcsr
+            operand.word_mask(:write).tap do |mask|
+              p [operand, mask]
+            end
           end
 
-          p [instruction.name, masks]
+          p [instruction.name, masks.map {|mask| Array(mask).map{|m| m.to_s 2}}]
 
           500.times do
 
@@ -140,7 +141,7 @@ module Evoasm
 
               buffer.reset
               X64.emit_stack_frame buffer do
-                cpu_state_before.emit_store buffer
+                cpu_state_before.emit_load buffer
                 begin
                   instruction.encode parameters, buffer
                 rescue Error
@@ -154,20 +155,22 @@ module Evoasm
 
                 cpu_state_diff = cpu_state_before.xor cpu_state_after
 
-                writes = cpu_state_diff.to_h.select do |register, values|
-                  # Ignore for now
-                  # MXCSR is almost never checked
-                  # and does not really affect code flow
-                  register != :mxcsr && register != :rflags && !values.all? {|v| v == 0}
-                end
-                written_registers = writes.map(&:first)
+                writes = cpu_state_diff.to_h
 
                 #expected_written_registers = accessed_registers(written_registers, instruction, parameters, :write, include_operand_index: true, word_mask: true)
 
                 writes.each do |register, values|
+                  next if register == :ip || register == :rflags || register == :mxcsr
+                  next if values.all? {|v| v == 0}
+
                   operand = accessed_operand register, instruction, parameters, :write
+                  if operand.nil?
+                    p ["?", register, parameters, values]
+                  end
+                  p ["write", instruction.name, register, values.map { |v| v.to_s(2) }, operand.index]
+                  mask_for_operand = masks[operand.index]
                   values.each_with_index do |value, value_index|
-                      masks[operand.index][value_index] &= ~value
+                      mask_for_operand[value_index] &= ~value
                   end
                 end
 
@@ -186,13 +189,19 @@ module Evoasm
             end
           end
 
-          masks.each_with_index do |mask, index|
+          masks.each_with_index do |mask, mask_index|
             if mask
-              if mask != EXPECTED_MASK
-                operand = instruction.operand index
-                p [instruction.name, operand.parameter&.name, operand.type, index, operand.word(:write), operand.word_mask(:write)[0].to_s(2), mask, mask[0].to_s(2)]
+              operand = instruction.operand mask_index
+              mask.each_with_index do |mask_value, mask_value_index|
+                mask_bin_str = mask_value.to_s(2).ljust(64, '0')
+                mask_bin_str_reverse = mask_bin_str.reverse
+                4.times do |word_index|
+                  word = mask_bin_str_reverse[word_index * 4, 16]
+                  unwritten_bits_count = word.each_char.count { |char| char == '0' }
+
+                  refute unwritten_bits_count == 0, "#{mask_value_index * 4 + word_index}th word has no writes on operand #{operand.inspect} (#{mask_bin_str.each_char.each_slice(16).map(&:join).join(' ')})"
+                end
               end
-              assert_equal EXPECTED_MASK, mask
             end
           end
           p [instruction.name, masks]
