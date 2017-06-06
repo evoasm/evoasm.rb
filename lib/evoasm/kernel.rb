@@ -133,6 +133,14 @@ module Evoasm
       io_registers true
     end
 
+    # Gives the mapping of input arguments to  input registers of this kernel
+    # @return [Hash<Symbol, Integer>] input mapping
+    def input_mapping
+      io_registers(true).each_with_object({}) do |reg, mapping|
+        mapping[reg] = Libevoasm.kernel_get_reg_input_mapping(self, reg)
+      end
+    end
+
     # Gives the output registers of this kernel
     # @return [Array<Symbol>] output registers
     def output_registers

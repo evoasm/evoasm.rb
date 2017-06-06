@@ -30,13 +30,10 @@ instructions += %i(
   mov_rm64_imm32
 )
 
-p instructions.grep(/aes/)
-p instructions.grep(/pins/)
-
 parameters = Evoasm::Population::Parameters.new do |p|
   p.instructions = instructions
   p.examples = examples
-  p.deme_size = 1024
+  p.deme_size = 256
   p.deme_count = 6
   p.kernel_size = 10
   p.distance_metric = :absdiff
@@ -44,13 +41,25 @@ parameters = Evoasm::Population::Parameters.new do |p|
 
   regs = %i(xmm0 xmm1 xmm2 xmm3 a b c d)
 
-  p.domains = {
+  imms = expression.scan(/\b\d+(?:\.\d+)?\b/).map do |imm|
+    [
+      [imm.to_f].pack('d').unpack('Q'),
+      [imm.to_f].pack('f').unpack('L'),
+      imm.to_i
+    ]
+  end.flatten
+
+  domains = {
     reg0: regs,
     reg1: regs,
     reg2: regs,
-    reg3: regs,
-    imm0: [2.0]
+    reg3: regs
   }
+
+  domains[:imm0] = imms unless imms.empty?
+
+
+  p.domains = domains
 end
 
 puts "Supported features:"
@@ -71,8 +80,10 @@ puts
 kernel = kernel.eliminate_introns
 puts kernel.disassemble format: true
 
-puts "Inputs registers: #{kernel.input_registers.join(', ').bold}"
+puts "Input registers: #{kernel.input_mapping.map { |reg, arg| "#{reg.to_s.bold}:#{arg}"}.join(', ')}"
+puts "Output registers: #{kernel.output_registers.join(', ').bold}"
 puts "Average loss is #{loss.to_s.bold}"
+puts "Generations: #{population.generation}"
 puts
 puts "x\texpected\tactual"
 examples.each do |x, y|

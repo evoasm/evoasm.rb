@@ -301,6 +301,7 @@ module Evoasm
     attach_evoasm_function :kernel_get_size, [:pointer], :size_t
     attach_evoasm_function :kernel_get_code, [:pointer, :bool, :pointer], :size_t
 
+
     attach_evoasm_function :kernel_get_input_type, [:pointer, :size_t], :kernel_io_val_type
     attach_evoasm_function :kernel_get_output_type, [:pointer, :size_t], :kernel_io_val_type
     attach_evoasm_function :kernel_get_input_arity, [:pointer], :size_t
@@ -308,8 +309,10 @@ module Evoasm
 
     attach_evoasm_function :kernel_elim_introns, [:pointer, :pointer], :bool
     attach_evoasm_function :kernel_is_input_reg, [:pointer, :uint8], :bool
+    attach_evoasm_function :kernel_get_reg_input_mapping, [:pointer, :reg_id], :size_t
     attach_evoasm_function :kernel_is_output_reg, [:pointer, :uint8], :bool
     attach_evoasm_function :kernel_get_output_reg, [:pointer, :size_t], :reg_id
+
     attach_evoasm_function :kernel_get_arity, [:pointer], :size_t
 
     attach_evoasm_function :kernel_io_alloc, [], :pointer
