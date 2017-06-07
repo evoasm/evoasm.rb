@@ -93,7 +93,7 @@
     
   
     
-      <strong class="classes">Classes:</strong> <span class='object_link'><a href="X64/CPUState.html" title="Evoasm::X64::CPUState (class)">CPUState</a></span>, <span class='object_link'><a href="X64/Instruction.html" title="Evoasm::X64::Instruction (class)">Instruction</a></span>, <span class='object_link'><a href="X64/Operand.html" title="Evoasm::X64::Operand (class)">Operand</a></span>, <span class='object_link'><a href="X64/Parameters.html" title="Evoasm::X64::Parameters (class)">Parameters</a></span>
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="X64/BasicParameters.html" title="Evoasm::X64::BasicParameters (class)">BasicParameters</a></span>, <span class='object_link'><a href="X64/CPUState.html" title="Evoasm::X64::CPUState (class)">CPUState</a></span>, <span class='object_link'><a href="X64/Instruction.html" title="Evoasm::X64::Instruction (class)">Instruction</a></span>, <span class='object_link'><a href="X64/Operand.html" title="Evoasm::X64::Operand (class)">Operand</a></span>, <span class='object_link'><a href="X64/Parameters.html" title="Evoasm::X64::Parameters (class)">Parameters</a></span>
     
   
 </p>
@@ -803,7 +803,7 @@ string</p>
       <pre class="code"><span class="info file"># File 'lib/evoasm/x64.rb', line 56</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_instruction'>instruction</span><span class='lparen'>(</span><span class='id identifier rubyid_instruction_name'>instruction_name</span><span class='rparen'>)</span>
-  <span class='const'>Instruction</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_inst'>x64_inst</span><span class='lparen'>(</span><span class='id identifier rubyid_instruction_name'>instruction_name</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_instruction_name'>instruction_name</span>
+  <span class='const'>Instruction</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_get_inst'>x64_get_inst</span><span class='lparen'>(</span><span class='id identifier rubyid_instruction_name'>instruction_name</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_instruction_name'>instruction_name</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1002,7 +1002,7 @@ registers)</p>
 
   <span class='id identifier rubyid_n_insts'>n_insts</span> <span class='op'>=</span> <span class='id identifier rubyid_inst_id_enum_type'>inst_id_enum_type</span><span class='lbracket'>[</span><span class='symbol'>:none</span><span class='rbracket'>]</span>
   <span class='id identifier rubyid_array'>array</span> <span class='op'>=</span> <span class='const'>FFI</span><span class='op'>::</span><span class='const'>MemoryPointer</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='symbol'>:int</span><span class='comma'>,</span> <span class='id identifier rubyid_n_insts'>n_insts</span>
-  <span class='id identifier rubyid_len'>len</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_insts'>x64_insts</span><span class='lparen'>(</span><span class='id identifier rubyid_flags_as_flags'>flags_as_flags</span><span class='comma'>,</span> <span class='id identifier rubyid_features_as_flags'>features_as_flags</span><span class='comma'>,</span>
+  <span class='id identifier rubyid_len'>len</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_get_insts'>x64_get_insts</span><span class='lparen'>(</span><span class='id identifier rubyid_flags_as_flags'>flags_as_flags</span><span class='comma'>,</span> <span class='id identifier rubyid_features_as_flags'>features_as_flags</span><span class='comma'>,</span>
                              <span class='id identifier rubyid_op_types_as_flags'>op_types_as_flags</span><span class='comma'>,</span> <span class='id identifier rubyid_reg_types_as_flags'>reg_types_as_flags</span><span class='comma'>,</span> <span class='id identifier rubyid_array'>array</span><span class='rparen'>)</span>
 
   <span class='id identifier rubyid_instruction_ids'>instruction_ids</span> <span class='op'>=</span> <span class='id identifier rubyid_array'>array</span><span class='period'>.</span><span class='id identifier rubyid_read_array_of_type'>read_array_of_type</span><span class='lparen'>(</span><span class='symbol'>:int</span><span class='comma'>,</span> <span class='symbol'>:read_int</span><span class='comma'>,</span> <span class='id identifier rubyid_len'>len</span><span class='rparen'>)</span>
@@ -1078,7 +1078,7 @@ registers)</p>
 </div>
 
       <div id="footer">
-  Generated on Fri Apr 21 23:48:38 2017 by
+  Generated on Wed Jun  7 13:39:24 2017 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.4.0).
 </div>

@@ -248,6 +248,28 @@
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#index-instance_method" title="#index (instance method)">#<strong>index</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#index_register_size-instance_method" title="#index_register_size (instance method)">#<strong>index_register_size</strong>  &#x21d2; Integer<sup>?</sup> </a>
     
 
@@ -265,6 +287,28 @@
     <span class="summary_desc"><div class='inline'>
 <p>Returns the operand&#39;s index register size (e.g. in VSIB instructions).</p>
 </div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#inspect-instance_method" title="#inspect (instance method)">#<strong>inspect</strong>(parameters = nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
   
 </li>
 
@@ -393,7 +437,7 @@ move instruction).</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#register-instance_method" title="#register (instance method)">#<strong>register</strong>  &#x21d2; Symbol<sup>?</sup> </a>
+      <a href="#register-instance_method" title="#register (instance method)">#<strong>register</strong>(parameters = nil)  &#x21d2; Symbol<sup>?</sup> </a>
     
 
     
@@ -513,7 +557,7 @@ move instruction).</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#word-instance_method" title="#word (instance method)">#<strong>word</strong>  &#x21d2; Symbol </a>
+      <a href="#word-instance_method" title="#word (instance method)">#<strong>word</strong>(mode, parameters = nil, mask: false)  &#x21d2; Symbol </a>
     
 
     
@@ -530,6 +574,28 @@ move instruction).</p>
     <span class="summary_desc"><div class='inline'>
 <p>Gives the operand&#39;s word.</p>
 </div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#word_mask-instance_method" title="#word_mask (instance method)">#<strong>word_mask</strong>(mode, parameters = nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
   
 </li>
 
@@ -622,12 +688,12 @@ move instruction).</p>
       <pre class="lines">
 
 
-7
-8
-9</pre>
+9
+10
+11</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 7</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 9</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_instruction'>instruction</span>
   <span class='ivar'>@instruction</span>
@@ -683,12 +749,12 @@ move instruction).</p>
       <pre class="lines">
 
 
-47
-48
-49</pre>
+62
+63
+64</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 47</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 62</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_explicit?'>explicit?</span>
   <span class='op'>!</span><span class='id identifier rubyid_implicit?'>implicit?</span>
@@ -742,17 +808,17 @@ move instruction).</p>
       <pre class="lines">
 
 
-72
-73
-74
-75
-76
-77
-78
-79</pre>
+100
+101
+102
+103
+104
+105
+106
+107</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 72</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 100</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_immediate'>immediate</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_type'>type</span> <span class='op'>==</span> <span class='symbol'>:imm</span>
@@ -806,15 +872,49 @@ move instruction).</p>
       <pre class="lines">
 
 
-42
-43
-44</pre>
+44
+45
+46</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 42</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 44</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_implicit?'>implicit?</span>
   <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_is_implicit'>x64_operand_is_implicit</span> <span class='kw'>self</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="index-instance_method">
+  
+    #<strong>index</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+153
+154
+155
+156
+157</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 153</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_index'>index</span>
+  <span class='id identifier rubyid_index'>index</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_inst_get_operand_idx'>x64_inst_get_operand_idx</span> <span class='ivar'>@instruction</span><span class='comma'>,</span> <span class='kw'>self</span>
+  <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>if</span> <span class='id identifier rubyid_index'>index</span> <span class='op'>==</span> <span class='op'>-</span><span class='int'>1</span>
+  <span class='id identifier rubyid_index'>index</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -866,16 +966,16 @@ a index register</p>
       <pre class="lines">
 
 
-112
-113
-114
-115
-116
-117
-118</pre>
+171
+172
+173
+174
+175
+176
+177</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 112</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 171</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_index_register_size'>index_register_size</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_type'>type</span> <span class='op'>==</span> <span class='symbol'>:vsib</span>
@@ -883,6 +983,54 @@ a index register</p>
   <span class='kw'>else</span>
     <span class='kw'>nil</span>
   <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="inspect-instance_method">
+  
+    #<strong>inspect</strong>(parameters = nil)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 48</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_inspect'>inspect</span><span class='lparen'>(</span><span class='id identifier rubyid_parameters'>parameters</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_info'>info</span> <span class='op'>=</span> <span class='kw'>case</span> <span class='id identifier rubyid_type'>type</span>
+         <span class='kw'>when</span> <span class='symbol'>:reg</span><span class='comma'>,</span> <span class='symbol'>:rm</span>
+           <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_register_type'>register_type</span><span class='embexpr_end'>}</span><span class='tstring_content'>:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_register'>register</span> <span class='id identifier rubyid_parameters'>parameters</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+         <span class='kw'>when</span> <span class='symbol'>:imm</span>
+           <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>imm:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_immediate'>immediate</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+         <span class='kw'>when</span> <span class='symbol'>:mem</span>
+           <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>mem</span><span class='tstring_end'>&#39;</span></span>
+         <span class='kw'>end</span>
+
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>#&lt;</span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_index'>index</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_info'>info</span><span class='embexpr_end'>}</span><span class='tstring_content'>&gt;</span><span class='tstring_end'>&quot;</span></span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -929,12 +1077,12 @@ move instruction)</p>
       <pre class="lines">
 
 
-32
-33
-34</pre>
+34
+35
+36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 32</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 34</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_maybe_written?'>maybe_written?</span>
   <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_is_maybe_written'>x64_operand_is_maybe_written</span> <span class='kw'>self</span>
@@ -989,16 +1137,16 @@ operand</p>
       <pre class="lines">
 
 
-122
-123
-124
-125
-126
-127
-128</pre>
+181
+182
+183
+184
+185
+186
+187</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 122</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 181</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_memory_size'>memory_size</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_type'>type</span> <span class='op'>==</span> <span class='symbol'>:rm</span> <span class='op'>||</span> <span class='id identifier rubyid_type'>type</span> <span class='op'>==</span> <span class='symbol'>:mem</span> <span class='op'>||</span> <span class='id identifier rubyid_type'>type</span> <span class='op'>==</span> <span class='symbol'>:vsib</span>
@@ -1051,12 +1199,12 @@ operand</p>
       <pre class="lines">
 
 
-37
-38
-39</pre>
+39
+40
+41</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 37</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 39</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_mnemonic?'>mnemonic?</span>
   <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_is_mnem'>x64_operand_is_mnem</span> <span class='kw'>self</span>
@@ -1110,12 +1258,12 @@ operand</p>
       <pre class="lines">
 
 
-17
-18
-19</pre>
+19
+20
+21</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 17</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 19</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_parameter'>parameter</span>
   <span class='ivar'>@instruction</span><span class='period'>.</span><span class='id identifier rubyid_parameters'>parameters</span><span class='lbracket'>[</span><span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_get_param_idx'>x64_operand_get_param_idx</span> <span class='kw'>self</span><span class='rbracket'>]</span>
@@ -1164,12 +1312,12 @@ operand</p>
       <pre class="lines">
 
 
-22
-23
-24</pre>
+24
+25
+26</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 22</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 24</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_read?'>read?</span>
   <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_is_read'>x64_operand_is_read</span> <span class='kw'>self</span>
@@ -1182,7 +1330,7 @@ operand</p>
       <div class="method_details ">
   <h3 class="signature " id="register-instance_method">
   
-    #<strong>register</strong>  &#x21d2; <tt>Symbol</tt><sup>?</sup> 
+    #<strong>register</strong>(parameters = nil)  &#x21d2; <tt>Symbol</tt><sup>?</sup> 
   
 
   
@@ -1223,22 +1371,48 @@ operand</p>
       <pre class="lines">
 
 
-59
-60
-61
-62
-63
-64
-65
-66</pre>
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 59</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 74</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_register'>register</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_register'>register</span><span class='lparen'>(</span><span class='id identifier rubyid_parameters'>parameters</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_type'>type</span> <span class='op'>==</span> <span class='symbol'>:rm</span> <span class='op'>||</span> <span class='id identifier rubyid_type'>type</span> <span class='op'>==</span> <span class='symbol'>:reg</span>
     <span class='id identifier rubyid_reg_id'>reg_id</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_get_reg_id'>x64_operand_get_reg_id</span> <span class='kw'>self</span>
-    <span class='id identifier rubyid_reg_id'>reg_id</span> <span class='op'>==</span> <span class='symbol'>:none</span> <span class='op'>?</span> <span class='kw'>nil</span> <span class='op'>:</span> <span class='id identifier rubyid_reg_id'>reg_id</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_reg_id'>reg_id</span> <span class='op'>==</span> <span class='symbol'>:none</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_parameters'>parameters</span>
+        <span class='id identifier rubyid_parameter_name'>parameter_name</span> <span class='op'>=</span> <span class='id identifier rubyid_parameter'>parameter</span><span class='op'>&amp;.</span><span class='id identifier rubyid_name'>name</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_parameter_name'>parameter_name</span>
+          <span class='id identifier rubyid_parameters'>parameters</span><span class='lbracket'>[</span><span class='id identifier rubyid_parameter_name'>parameter_name</span><span class='rbracket'>]</span>
+        <span class='kw'>else</span>
+          <span class='kw'>nil</span>
+        <span class='kw'>end</span>
+      <span class='kw'>else</span>
+        <span class='kw'>nil</span>
+      <span class='kw'>end</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_reg_id'>reg_id</span>
+    <span class='kw'>end</span>
   <span class='kw'>else</span>
     <span class='kw'>nil</span>
   <span class='kw'>end</span>
@@ -1293,16 +1467,16 @@ register</p>
       <pre class="lines">
 
 
-102
-103
-104
-105
-106
-107
-108</pre>
+161
+162
+163
+164
+165
+166
+167</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 102</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 161</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_register_size'>register_size</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_type'>type</span> <span class='op'>==</span> <span class='symbol'>:rm</span> <span class='op'>||</span> <span class='id identifier rubyid_type'>type</span> <span class='op'>==</span> <span class='symbol'>:reg</span>
@@ -1360,17 +1534,25 @@ register</p>
       <pre class="lines">
 
 
-83
-84
-85
-86</pre>
+111
+112
+113
+114
+115
+116
+117
+118</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 83</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 111</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_register_type'>register_type</span>
-  <span class='id identifier rubyid_reg_type'>reg_type</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_get_reg_type'>x64_operand_get_reg_type</span> <span class='kw'>self</span>
-  <span class='id identifier rubyid_reg_type'>reg_type</span> <span class='op'>==</span> <span class='symbol'>:none</span> <span class='op'>?</span> <span class='kw'>nil</span> <span class='op'>:</span> <span class='id identifier rubyid_reg_type'>reg_type</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_type'>type</span> <span class='op'>==</span> <span class='symbol'>:rm</span> <span class='op'>||</span> <span class='id identifier rubyid_type'>type</span> <span class='op'>==</span> <span class='symbol'>:reg</span>
+    <span class='id identifier rubyid_reg_type'>reg_type</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_get_reg_type'>x64_operand_get_reg_type</span> <span class='kw'>self</span>
+    <span class='id identifier rubyid_reg_type'>reg_type</span> <span class='op'>==</span> <span class='symbol'>:none</span> <span class='op'>?</span> <span class='kw'>nil</span> <span class='op'>:</span> <span class='id identifier rubyid_reg_type'>reg_type</span>
+  <span class='kw'>else</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1421,12 +1603,12 @@ register</p>
       <pre class="lines">
 
 
-90
-91
-92</pre>
+122
+123
+124</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 90</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 122</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_size'>size</span>
   <span class='id identifier rubyid_convert_size'>convert_size</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_get_size'>x64_operand_get_size</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span>
@@ -1480,12 +1662,12 @@ register</p>
       <pre class="lines">
 
 
-53
-54
-55</pre>
+68
+69
+70</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 53</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 68</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_type'>type</span>
   <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_get_type'>x64_operand_get_type</span> <span class='kw'>self</span>
@@ -1498,7 +1680,7 @@ register</p>
       <div class="method_details ">
   <h3 class="signature " id="word-instance_method">
   
-    #<strong>word</strong>  &#x21d2; <tt>Symbol</tt> 
+    #<strong>word</strong>(mode, parameters = nil, mask: false)  &#x21d2; <tt>Symbol</tt> 
   
 
   
@@ -1513,7 +1695,45 @@ register</p>
   </div>
 </div>
 <div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
   
+    <li>
+      
+        <span class='name'>mode</span>
+      
+      
+        <span class='type'>(<tt>:read</tt>, <tt>:write</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>the access mode</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>parameters</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Parameters.html" title="Evoasm::X64::Parameters (class)">Parameters</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>parameters</p>
+</div>
+      
+    </li>
+  
+</ul>
+
 <p class="tag_title">Returns:</p>
 <ul class="return">
   
@@ -1539,15 +1759,75 @@ register</p>
       <pre class="lines">
 
 
-96
-97
-98</pre>
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 96</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 130</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_word'>word</span>
-  <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_get_word'>x64_operand_get_word</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_word'>word</span><span class='lparen'>(</span><span class='id identifier rubyid_mode'>mode</span><span class='comma'>,</span> <span class='id identifier rubyid_parameters'>parameters</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>mask:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_word'>word</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_get_word'>x64_operand_get_word</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@instruction</span><span class='comma'>,</span> <span class='id identifier rubyid_parameters'>parameters</span><span class='comma'>,</span> <span class='id identifier rubyid_mode'>mode</span> <span class='op'>==</span> <span class='symbol'>:read</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_word'>word</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_mask'>mask</span>
+    <span class='id identifier rubyid_mask'>mask</span> <span class='op'>=</span> <span class='const'>Bitmap</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='int'>512</span>
+    <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_word_get_mask'>x64_operand_word_get_mask</span><span class='lparen'>(</span><span class='id identifier rubyid_word'>word</span><span class='comma'>,</span> <span class='id identifier rubyid_mask'>mask</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_mask'>mask</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_word'>word</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="word_mask-instance_method">
+  
+    #<strong>word_mask</strong>(mode, parameters = nil)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 141</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_word_mask'>word_mask</span><span class='lparen'>(</span><span class='id identifier rubyid_mode'>mode</span><span class='comma'>,</span> <span class='id identifier rubyid_parameters'>parameters</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_word'>word</span> <span class='op'>=</span> <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_get_word'>x64_operand_get_word</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@instruction</span><span class='comma'>,</span> <span class='id identifier rubyid_parameters'>parameters</span><span class='comma'>,</span> <span class='id identifier rubyid_mode'>mode</span> <span class='op'>==</span> <span class='symbol'>:read</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_word'>word</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_word'>word</span> <span class='op'>!=</span> <span class='symbol'>:none</span>
+    <span class='comment'>#mask = Bitmap.new 512
+</span>    <span class='id identifier rubyid_mask'>mask</span> <span class='op'>=</span> <span class='const'>FFI</span><span class='op'>::</span><span class='const'>MemoryPointer</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='symbol'>:uint64</span><span class='comma'>,</span> <span class='int'>8</span>
+    <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_word_get_mask'>x64_operand_word_get_mask</span><span class='lparen'>(</span><span class='id identifier rubyid_word'>word</span><span class='comma'>,</span> <span class='id identifier rubyid_mask'>mask</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_mask'>mask</span><span class='period'>.</span><span class='id identifier rubyid_read_array_of_uint64'>read_array_of_uint64</span> <span class='int'>8</span>
+  <span class='kw'>else</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1593,12 +1873,12 @@ register</p>
       <pre class="lines">
 
 
-27
-28
-29</pre>
+29
+30
+31</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 27</span>
+      <pre class="code"><span class="info file"># File 'lib/evoasm/x64/operand.rb', line 29</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_written?'>written?</span>
   <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_x64_operand_is_written'>x64_operand_is_written</span> <span class='kw'>self</span>
@@ -1613,7 +1893,7 @@ register</p>
 </div>
 
       <div id="footer">
-  Generated on Fri Apr 21 23:48:38 2017 by
+  Generated on Wed Jun  7 13:39:24 2017 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.4.0).
 </div>

@@ -78,18 +78,25 @@ by means of genetic programming.
 <li>Fast JIT</li>
 <li><a href="https://github.com/evoasm/evoasm-gen/blob/master/data/tables/x64.csv">x86-64</a> up to AVX2 (no FPU)</li>
 <li>Lightweight backend <a href="https://github.com/evoasm/libevoasm">C library</a> with no third-party dependencies</li>
+<li>Support for floating-point and integer inputs/outputs including SIMD vectors</li>
+<li>Automatically generated and verified instruction encoder</li>
+<li>Parallel island model using OpenMP</li>
 <li>Ruby bindings</li>
 </ul>
 
 <h2>Installation</h2>
 
-<pre class="code ruby"><code class="ruby">$ gem install evoasm --pre
+<pre class="code ruby"><code class="ruby">$ git clone --recursive https://github.com/evoasm/evoasm
+$ bundle install
+# compile libevoasm, omit --no-omp if your compiler has OpenMP support
+$ bundle exec rake compile -- --no-omp
+$ bundle exec ruby docs/examples/sym_reg.rb # run example
 </code></pre>
 
 <h3>Requirements</h3>
 
 <ul>
-<li>Ruby (MRI &gt;= 2.3, JRuby &gt;= 9.1.2)</li>
+<li>Ruby (MRI &gt;= 2.3)</li>
 <li><a href="http://www.capstone-engine.org/">Capstone</a> for disassembling (<em>optional</em>).</li>
 <li><a href="http://gnuplot.sourceforge.net">Gnuplot</a> for visualizing loss functions (<em>optional</em>)</li>
 <li>POSIX-compliant OS (Linux and Mac OS X should both work).</li>
@@ -97,8 +104,9 @@ by means of genetic programming.
 
 <h2>Documentation</h2>
 
-<p>Please see the <a href="https://evoasm.github.io/evoasm/doc/">API documentation</a> or
-have a look at the <a href="https://evoasm.github.io/evoasm/doc/file.SymbolicRegression.html">examples</a>.</p>
+<p>Please see the <a href="https://evoasm.github.io/evoasm/doc/">API documentation</a>,
+have a look at the <a href="https://evoasm.github.io/evoasm/doc/file.SymbolicRegression.html">examples</a>
+or the <a href="https://github.com/evoasm/evoasm/tree/master/test/integration">test cases</a>.</p>
 
 <h2>Contributing</h2>
 
@@ -116,7 +124,7 @@ have a look at the <a href="https://evoasm.github.io/evoasm/doc/file.SymbolicReg
 </div></div>
 
       <div id="footer">
-  Generated on Fri Apr 21 23:48:38 2017 by
+  Generated on Wed Jun  7 13:39:24 2017 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.4.0).
 </div>

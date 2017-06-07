@@ -717,7 +717,7 @@
   <span class='ivar'>@kernels</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_kernel'>kernel</span><span class='comma'>,</span> <span class='id identifier rubyid_kernel_index'>kernel_index</span><span class='op'>|</span>
     <span class='id identifier rubyid_kernel'>kernel</span><span class='period'>.</span><span class='id identifier rubyid_instructions'>instructions</span><span class='period'>.</span><span class='id identifier rubyid_each_with_index'>each_with_index</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_instruction'>instruction</span><span class='comma'>,</span> <span class='id identifier rubyid_instruction_index'>instruction_index</span><span class='op'>|</span>
       <span class='id identifier rubyid_inst_id'>inst_id</span><span class='comma'>,</span> <span class='id identifier rubyid_params_hash'>params_hash</span> <span class='op'>=</span> <span class='id identifier rubyid_instruction'>instruction</span>
-      <span class='id identifier rubyid_parameters'>parameters</span> <span class='op'>=</span> <span class='const'>Evoasm</span><span class='op'>::</span><span class='const'>X64</span><span class='op'>::</span><span class='const'>Parameters</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_params_hash'>params_hash</span><span class='comma'>,</span> <span class='label'>basic:</span> <span class='kw'>true</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_parameters'>parameters</span> <span class='op'>=</span> <span class='const'>Evoasm</span><span class='op'>::</span><span class='const'>X64</span><span class='op'>::</span><span class='const'>BasicParameters</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_params_hash'>params_hash</span><span class='rparen'>)</span>
       <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_deme_kernels_set_inst'>deme_kernels_set_inst</span> <span class='id identifier rubyid_kernels'>kernels</span><span class='comma'>,</span> <span class='id identifier rubyid_kernel_index'>kernel_index</span><span class='comma'>,</span> <span class='id identifier rubyid_instruction_index'>instruction_index</span><span class='comma'>,</span> <span class='id identifier rubyid_inst_id'>inst_id</span><span class='comma'>,</span> <span class='id identifier rubyid_parameters'>parameters</span>
     <span class='kw'>end</span>
     <span class='const'>Libevoasm</span><span class='period'>.</span><span class='id identifier rubyid_deme_kernels_set_size'>deme_kernels_set_size</span> <span class='id identifier rubyid_kernels'>kernels</span><span class='comma'>,</span> <span class='id identifier rubyid_kernel_index'>kernel_index</span><span class='comma'>,</span> <span class='id identifier rubyid_kernel'>kernel</span><span class='period'>.</span><span class='id identifier rubyid_instructions'>instructions</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span>
@@ -741,7 +741,7 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Apr 21 23:48:39 2017 by
+  Generated on Wed Jun  7 13:39:24 2017 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.4.0).
 </div>
