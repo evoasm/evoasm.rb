@@ -1,4 +1,5 @@
 /.bundle/
+/oprofile_data/
 /.yardoc
 /Gemfile.lock
 /_yardoc/
