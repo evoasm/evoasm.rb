@@ -13,8 +13,9 @@ end
 
 p expression
 
+imms = expression.scan(/\b\d+(?:\.\d+)?\b/).map(&:to_f)
 examples = (0..10).map do |x|
-  [x, ExpressionScope.module_eval(expression)]
+  [[x.to_f, *imms], ExpressionScope.module_eval(expression)]
 end.to_h
 
 
@@ -41,13 +42,6 @@ parameters = Evoasm::Population::Parameters.new do |p|
 
   regs = %i(xmm0 xmm1 xmm2 xmm3 a b c d)
 
-  imms = expression.scan(/\b\d+(?:\.\d+)?\b/).map do |imm|
-    [
-      [imm.to_f].pack('d').unpack('Q'),
-      [imm.to_f].pack('f').unpack('L'),
-      imm.to_i
-    ]
-  end.flatten
 
   domains = {
     reg0: regs,
@@ -56,7 +50,15 @@ parameters = Evoasm::Population::Parameters.new do |p|
     reg3: regs
   }
 
-  domains[:imm0] = imms unless imms.empty?
+  imm_domain = imms.flat_map do |imm|
+    [
+      [imm.to_f].pack('d').unpack('Q'),
+      [imm.to_f].pack('f').unpack('L'),
+      imm
+    ]
+  end
+
+  domains[:imm0] = imm_domain unless imm_domain.empty?
 
 
   p.domains = domains
@@ -87,5 +89,5 @@ puts "Generations: #{population.generation}"
 puts
 puts "x\texpected\tactual"
 examples.each do |x, y|
-  puts "#{x}\t#{y.round(3)}\t\t#{kernel.run(x).round(3)}"
+  puts "#{x}\t#{y.round(3)}\t\t#{kernel.run(*x).round(3)}"
 end

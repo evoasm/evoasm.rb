@@ -125,7 +125,6 @@ module Evoasm
 
       # Gives the operand's word
       # @param mode [:read, :write] the access mode
-      # @param instruction [Instruction] instruction this parameter belongs to
       # @param parameters [Parameters] parameters
       # @return [Symbol] the operand word
       def word(mode, parameters = nil, mask: false)

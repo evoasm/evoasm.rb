@@ -40,8 +40,7 @@ module Evoasm
 
       alias_method :eql?, :==
 
-      # @param hash [Hash] a
-      # @param basic [Bool] whether to use the basic encoder
+      # @param hash [Hash] an optional hash containing parameters
       def initialize(hash = {})
         if basic?
           ptr = Libevoasm.x64_basic_params_alloc
