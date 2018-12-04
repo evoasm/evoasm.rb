@@ -39,9 +39,9 @@ Currently, the only supported architecture is **x86-64**.
 
 ## Documentation
 
-Please see the [API documentation](https://evoasm.github.io/evoasm/doc/),
-have a look at the [examples](https://evoasm.github.io/evoasm/doc/file.SymbolicRegression.html)
-or the [test cases](https://github.com/evoasm/evoasm/tree/master/test/integration).
+Please see the [API documentation](https://evoasm.github.io/evoasm.rb/doc/),
+have a look at the [examples](https://evoasm.github.io/evoasm.rb/doc/file.SymbolicRegression.html)
+or the [test cases](https://github.com/evoasm/evoasm.rb/tree/master/test/integration).
 
 
 ## Contributing
